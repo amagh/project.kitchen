@@ -19,6 +19,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:authorities="project.hnoct.kitchen"
+            android:name=".data.RecipeProvider"
+            android:exported="false"
+            android:enabled="true" />
+
     </application>
 
 </manifest>

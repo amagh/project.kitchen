@@ -5,7 +5,7 @@ import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-import org.jsoup.Connection;
+import java.util.GregorianCalendar;
 
 /**
  * Created by hnoct on 2/16/2017.
@@ -19,6 +19,15 @@ public class RecipeContract {
     public static final String PATH_RECIPE = "recipe";
     public static final String PATH_INGREDIENT = "ingredient";
     public static final String PATH_LINK = "link";
+
+    /**
+     * Method for standardizing the time that is added to the database
+     * @return
+     */
+    public static long getCurrentTime() {
+        GregorianCalendar gc = new GregorianCalendar();
+        return gc.getTimeInMillis();
+    }
 
     /**
      * Entry for the Recipe Table

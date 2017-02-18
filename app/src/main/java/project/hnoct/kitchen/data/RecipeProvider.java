@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import project.hnoct.kitchen.data.RecipeContract.RecipeEntry;
@@ -14,10 +15,12 @@ import project.hnoct.kitchen.data.RecipeContract.LinkEntry;
 
 /**
  * Created by hnoct on 2/16/2017.
+ * ContentProvider with methods for accessing, inserting, modifying, and deleting from the database
  */
 
 public class RecipeProvider extends ContentProvider {
     /** Constants **/
+    // Return values for the {@link #sUriMatcher}
     static final int RECIPE = 100;
     static final int RECIPE_WITH_ID = 101;
     static final int RECIPE_AND_INGREDIENT = 200;
@@ -41,7 +44,8 @@ public class RecipeProvider extends ContentProvider {
         );
     }
 
-    // URI Matcher used by this Content Provider
+    // UriMatcher used by this Content Provider for differentiating the data being accessed based
+    // on a provided URI
     private static final UriMatcher sUriMatcher = buildUriMatcher();
 
     /** Member Variables **/
@@ -200,10 +204,12 @@ public class RecipeProvider extends ContentProvider {
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        // Cursor to be returned by the query
         Cursor cursor;
 
-        switch(sUriMatcher.match(uri)) {
+        switch (sUriMatcher.match(uri)) {
             case RECIPE: {
+                // Querying recipe table
                 cursor = mDbHelper.getReadableDatabase().query(
                         RecipeEntry.TABLE_NAME,
                         projection,
@@ -216,10 +222,12 @@ public class RecipeProvider extends ContentProvider {
                 break;
             }
             case RECIPE_WITH_ID: {
+                // Filter query for a single recipe
                 cursor = getRecipeById(uri, projection, sortOrder);
                 break;
             }
             case INGREDIENT: {
+                // Querying ingredient table
                 cursor = mDbHelper.getReadableDatabase().query(
                         IngredientEntry.TABLE_NAME,
                         projection,
@@ -232,25 +240,31 @@ public class RecipeProvider extends ContentProvider {
                 break;
             }
             case INGREDIENT_WITH_ID: {
+                // Filter query by a single ingredient
                 cursor = getIngredientById(uri, projection, sortOrder);
                 break;
             }
             case RECIPE_AND_INGREDIENT_QUERY: {
+                // Query all tables and filter by specific recipe or ingredient
                 cursor = filterRecipeAndIngredientById(uri, projection, sortOrder);
                 break;
             }
             default:
                 throw new UnsupportedOperationException("Unknown URI: " + uri);
         }
+        // Notify listeners of change in data associated with the URI
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
         return cursor;
     }
 
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
+        // Uri pointing to the row inserted into the database
         Uri returnUri;
-        switch(sUriMatcher.match(uri)) {
+
+        switch (sUriMatcher.match(uri)) {
             case RECIPE: {
+                // Inserting a recipe
                 long _id = mDbHelper.getWritableDatabase().insert(
                         RecipeEntry.TABLE_NAME,
                         null,
@@ -264,6 +278,7 @@ public class RecipeProvider extends ContentProvider {
                 break;
             }
             case INGREDIENT: {
+                // Inserting an ingredient
                 long _id = mDbHelper.getWritableDatabase().insert(
                         IngredientEntry.TABLE_NAME,
                         null,
@@ -277,6 +292,7 @@ public class RecipeProvider extends ContentProvider {
                 break;
             }
             case RECIPE_AND_INGREDIENT: {
+                // Inserting recipe, ingredient, and quantity into link table
                 long _id = mDbHelper.getWritableDatabase().insert(
                         LinkEntry.TABLE_NAME,
                         null,
@@ -285,25 +301,189 @@ public class RecipeProvider extends ContentProvider {
                 if (_id > 0) {
                     returnUri = LinkEntry.buildLinkUri(_id);
                 } else {
-                    throw new SQLException("Error inserting quantity into link table");
+                    throw new SQLException("Error inserting link values into link table");
                 }
                 break;
             }
             default:
                 throw new UnsupportedOperationException("Unknown URI: " + uri);
         }
+        // Notify listeners of change in data associated with the URI
         getContext().getContentResolver().notifyChange(uri, null);
         return returnUri;
     }
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+        /** Constants **/
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Return the number of rows deleted
+        int rowsDeleted;
+
+        switch (sUriMatcher.match(uri)) {
+            case RECIPE: {
+                // Delete from recipe table
+                rowsDeleted = db.delete(
+                        RecipeEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case INGREDIENT: {
+                // Delete from Ingredient Table
+                rowsDeleted = db.delete(
+                        IngredientEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case RECIPE_AND_INGREDIENT: {
+                // Delete from Link Table
+                rowsDeleted = db.delete(
+                        LinkEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            default: throw new UnsupportedOperationException("Unknown URI: " + uri);
+        }
+        // Notify listeners of change in data associated with the URI
+        getContext().getContentResolver().notifyChange(uri, null);
+        return rowsDeleted;
     }
 
     @Override
     public int update(Uri uri, ContentValues contentValues, String selection, String[] selectionArgs) {
-        return 0;
+        /** Constants **/
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Number of rows updated by the operation
+        int rowsUpdated;
+
+        switch (sUriMatcher.match(uri)) {
+            case RECIPE: {
+                // Updating rows in the recipe table
+                 rowsUpdated = db.update(
+                         RecipeEntry.TABLE_NAME,
+                         contentValues,
+                         selection,
+                         selectionArgs
+                 );
+                break;
+            }
+            case INGREDIENT: {
+                // Updating rows in the ingredient table
+                rowsUpdated = db.update(
+                        IngredientEntry.TABLE_NAME,
+                        contentValues,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case RECIPE_AND_INGREDIENT: {
+                // Updating rows in the link table
+                rowsUpdated = db.update(
+                        LinkEntry.TABLE_NAME,
+                        contentValues,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            default: throw new UnsupportedOperationException("Unknown URI:" + uri);
+        }
+        // Notify listeners of change in data associated with the URI
+        getContext().getContentResolver().notifyChange(uri, null);
+        return rowsUpdated;
     }
 
+    @Override
+    public int bulkInsert(Uri uri, ContentValues[] values) {
+        /** Constants **/
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Number of rows inserted
+        int rowsInserted = 0;
+
+        switch(sUriMatcher.match(uri)) {
+            case RECIPE: {
+                // Insert multiple recipes
+                // Prepare database for multiple operations
+                db.beginTransaction();
+                try {
+                    for (ContentValues value : values) {
+                        // Insert each ContentValues into the database
+                        long _id = db.insert(
+                                RecipeEntry.TABLE_NAME,
+                                null,
+                                value
+                        );
+                        if (_id > 0) {
+                            rowsInserted++;
+                        }
+                        // End instructions for this operation
+                        db.setTransactionSuccessful();
+                    }
+                } finally {
+                    // Commit operations to the database
+                    db.endTransaction();
+                }
+                // Notifies content observers that the data at the URI has been updated. Ensures
+                // references to the data are always up-to-date
+                getContext().getContentResolver().notifyChange(uri, null);
+                return rowsInserted;
+            }
+            case INGREDIENT: {
+                // Insert multiple ingredients
+                /** See above comments for details **/
+                db.beginTransaction();
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(
+                                IngredientEntry.TABLE_NAME,
+                                null,
+                                value
+                        );
+                        if (_id > 0) {
+                            rowsInserted++;
+                        }
+                        db.setTransactionSuccessful();
+                    }
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return rowsInserted;
+            }
+            case RECIPE_AND_INGREDIENT: {
+                // Insert multiple rows into the link table
+                /** See above comments for details **/
+                db.beginTransaction();
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(
+                                LinkEntry.TABLE_NAME,
+                                null,
+                                value
+                        );
+                        if (_id > 0) {
+                            rowsInserted++;
+                        }
+                        db.setTransactionSuccessful();
+                    }
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return rowsInserted;
+            }
+            default: return super.bulkInsert(uri, values);
+        }
+
+    }
 }

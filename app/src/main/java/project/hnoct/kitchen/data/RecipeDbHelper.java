@@ -14,7 +14,7 @@ import project.hnoct.kitchen.data.RecipeContract.LinkEntry;
 public class RecipeDbHelper extends SQLiteOpenHelper {
     // Constants
     private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME = "recipe.db";
+    static final String DATABASE_NAME = "recipe.db";
 
     public RecipeDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
