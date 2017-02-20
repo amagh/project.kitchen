@@ -33,7 +33,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 RecipeEntry.COLUMN_REVIEWS + " REAL, " +
                 RecipeEntry.COLUMN_SHORT_DESC + " TEXT, " +
                 RecipeEntry.COLUMN_DIRECTIONS + " TEXT NOT NULL, " +
-                RecipeEntry.COLUMN_DATE_ADDED + " REAL NOT NULL, " +
+                RecipeEntry.COLUMN_DATE_ADDED + " TEXT NOT NULL, " +
                 // Links to the relational table to reference the quantity of each ingredient
                 "FOREIGN KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ") REFERENCES " +
                 LinkEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_RECIPE_ID + "));";

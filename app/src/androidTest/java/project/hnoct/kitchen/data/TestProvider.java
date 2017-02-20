@@ -8,11 +8,14 @@ import android.net.Uri;
 import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+import android.support.v4.util.Pair;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.File;
 
 import static org.junit.Assert.*;
 
@@ -22,16 +25,16 @@ public class TestProvider {
     Context mContext;
 
     @Before
-    public void createDatabase() {
-        mContext = InstrumentationRegistry.getContext();
-        System.out.println("Current number of databases: " + mContext.databaseList().length);
+    public void deleteDatabase() {
+        // Instantiate the application context
+        mContext = InstrumentationRegistry.getTargetContext();
+
+        // Clean the database
         mContext.deleteDatabase(RecipeDbHelper.DATABASE_NAME);
     }
 
     @Test
     public void testInsertion() {
-        System.out.println("Test");
-        assertTrue("Database not properly cleaned prior to test. " + mContext.databaseList().length, mContext.databaseList().length == 0);
         // Set the URI for the recipe insertion
         Uri recipeUri = RecipeContract.RecipeEntry.CONTENT_URI;
 
@@ -46,7 +49,6 @@ public class TestProvider {
 
         // Check to make sure that a URI was returned with the insertion
         assertTrue("Error inserting recipe into database!", recipeInsertionUri != null);
-//        assertTrue("Database not properly created!. " + mContext.databaseList().length, mContext.databaseList().length == 1);
 
         /** Repeat above steps for ingredient table **/
         Uri ingredientUri = RecipeContract.IngredientEntry.CONTENT_URI;
@@ -69,9 +71,18 @@ public class TestProvider {
 
     @Test
     public void testQuery() {
-        assertTrue("Database not properly cleaned prior to test.", mContext.databaseList().length == 0);
+        // Get the values that were inserted to test against the read values from the Cursor
+        ContentValues recipeValues = TestUtilities.createTestRecipeValues();
+        ContentValues ingredientValues = TestUtilities.createTestIngredientValues();
+        ContentValues linkValues = TestUtilities.createTestLinkValues();
+
+        // Insert the values to query
         testInsertion();
+
+        // Get the URI for the Recipe Table
         Uri recipeUri = RecipeContract.RecipeEntry.CONTENT_URI;
+
+        // Query the database
         Cursor cursor = mContext.getContentResolver().query(
                 recipeUri,
                 null,
@@ -80,7 +91,45 @@ public class TestProvider {
                 null
         );
 
-        assertTrue("Error querying recipe database. No cursor returned", cursor.moveToFirst());
+        // Ensure the returned Cursor is pointing to at least one row
+        assertTrue("Error querying recipe table. Cursor returned empty rows.", cursor.moveToFirst());
+
+        // TODO: Check the contents of the cursor match the inserted values
+        assertTrue("Recipe values in database do not match inserted values!",
+                TestUtilities.testCursorValues(cursor, recipeValues));
+
+        // Close the cursor
+        cursor.close();
+
+        /** Repeat steps for ingredient query **/
+        Uri ingredientUri = RecipeContract.IngredientEntry.CONTENT_URI;
+        cursor = mContext.getContentResolver().query(
+                ingredientUri,
+                null,
+                null,
+                null,
+                null
+        );
+
+        assertTrue("Error querying ingredient table. Cursor returned empty rows.", cursor.moveToFirst());
+        assertTrue("Ingredient values in database do not match inserted values!",
+                TestUtilities.testCursorValues(cursor, ingredientValues));
+
+        cursor.close();
+
+        /** Repeat steps for link query **/
+        Uri linkUri = RecipeContract.LinkEntry.CONTENT_URI;
+        cursor = mContext.getContentResolver().query(
+                linkUri,
+                null,
+                null,
+                null,
+                null
+        );
+        assertTrue("Error querying link table. Cursor returned empty rows.", cursor.moveToFirst());
+        assertTrue("Link values in database do not match inserted values!",
+                TestUtilities.testCursorValues(cursor, linkValues));
+        cursor.close();
     }
 
 }

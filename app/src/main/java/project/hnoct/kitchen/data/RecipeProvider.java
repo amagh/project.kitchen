@@ -244,6 +244,18 @@ public class RecipeProvider extends ContentProvider {
                 cursor = getIngredientById(uri, projection, sortOrder);
                 break;
             }
+            case RECIPE_AND_INGREDIENT: {
+                cursor = sRecipeAndIngredientQueryBuilder.query(
+                        mDbHelper.getReadableDatabase(),
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
             case RECIPE_AND_INGREDIENT_QUERY: {
                 // Query all tables and filter by specific recipe or ingredient
                 cursor = filterRecipeAndIngredientById(uri, projection, sortOrder);
