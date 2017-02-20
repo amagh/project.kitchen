@@ -438,9 +438,9 @@ public class RecipeProvider extends ContentProvider {
                         if (_id > 0) {
                             rowsInserted++;
                         }
-                        // End instructions for this operation
-                        db.setTransactionSuccessful();
                     }
+                    // End instructions for this operation
+                    db.setTransactionSuccessful();
                 } finally {
                     // Commit operations to the database
                     db.endTransaction();
@@ -464,8 +464,8 @@ public class RecipeProvider extends ContentProvider {
                         if (_id > 0) {
                             rowsInserted++;
                         }
-                        db.setTransactionSuccessful();
                     }
+                    db.setTransactionSuccessful();
                 } finally {
                     db.endTransaction();
                 }
@@ -486,8 +486,8 @@ public class RecipeProvider extends ContentProvider {
                         if (_id > 0) {
                             rowsInserted++;
                         }
-                        db.setTransactionSuccessful();
                     }
+                    db.setTransactionSuccessful();
                 } finally {
                     db.endTransaction();
                 }
