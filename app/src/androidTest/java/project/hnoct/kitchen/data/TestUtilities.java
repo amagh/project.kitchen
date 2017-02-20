@@ -9,6 +9,8 @@ import static org.junit.Assert.*;
 
 import java.util.Set;
 
+import javax.crypto.spec.RC2ParameterSpec;
+
 /**
  * Created by hnoct on 2/17/2017.
  */
@@ -17,7 +19,9 @@ public class TestUtilities {
     /** Constants **/
     private static final long TEST_RECIPE_ID = 000001;
     private static final long TEST_INGREDIENT_ID = 123;
+    private static final long TEST_TIME = 1234567890L;
     static ContentValues createTestRecipeValues() {
+
         ContentValues recipeValues = new ContentValues();
         recipeValues.put(RecipeContract.RecipeEntry.COLUMN_RECIPE_ID, TEST_RECIPE_ID);
         recipeValues.put(RecipeContract.RecipeEntry.COLUMN_RECIPE_NAME, "TestRecipe");
@@ -28,7 +32,7 @@ public class TestUtilities {
         recipeValues.put(RecipeContract.RecipeEntry.COLUMN_REVIEWS, "100");
         recipeValues.put(RecipeContract.RecipeEntry.COLUMN_SHORT_DESC, "This is the test recipe description");
         recipeValues.put(RecipeContract.RecipeEntry.COLUMN_DIRECTIONS, "These are the directions for the test recipe");
-        recipeValues.put(RecipeContract.RecipeEntry.COLUMN_DATE_ADDED, RecipeContract.getCurrentTime());
+        recipeValues.put(RecipeContract.RecipeEntry.COLUMN_DATE_ADDED, TEST_TIME);
 
         return recipeValues;
     }
@@ -50,14 +54,14 @@ public class TestUtilities {
         return linkValues;
     }
 
-    static boolean testCursorValues(Cursor cursor, ContentValues values) {
+    static Pair<String, String> testCursorValues(Cursor cursor, ContentValues values) {
         for (String key : values.keySet()) {
             String cursorValue = cursor.getString(cursor.getColumnIndex(key));
             if (!cursorValue.equals(values.get(key).toString())) {
-                Log.e("TEST", "Cursor value: " + cursorValue + " | Inserted value: " + values.get(key).toString());
-                return false;
+                Log.d("TEST", "Cursor value: " + cursorValue + " | Inserted value: " + values.get(key).toString());
+                return new Pair<> (cursorValue, values.get(key).toString());
             }
         }
-        return true;
+        return null;
     }
 }
