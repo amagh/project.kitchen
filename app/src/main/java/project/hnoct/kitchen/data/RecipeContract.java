@@ -58,6 +58,35 @@ public class RecipeContract {
         public static final String COLUMN_REVIEWS = "reviews";                  // REAL
         public static final String COLUMN_DIRECTIONS = "directions";            // TEXT NOT NULL
         public static final String COLUMN_DATE_ADDED = "date_added";            // REAL NOT NULL
+        public static final String COLUMN_FAVORITED = "favorited";              // TEXT
+
+        // Column Projection and index
+        public static final String[] RECIPE_PROJECTION = new String[] {
+            COLUMN_RECIPE_ID,
+            COLUMN_RECIPE_NAME,
+            COLUMN_THUMBNAIL_URL,
+            COLUMN_IMG_URL,
+            COLUMN_RECIPE_URL,
+            COLUMN_SHORT_DESC,
+            COLUMN_RATING,
+            COLUMN_REVIEWS,
+            COLUMN_DIRECTIONS,
+            COLUMN_DATE_ADDED,
+            COLUMN_FAVORITED
+        };
+
+        public static final int IDX_RECIPE_ID = 0;
+        public static final int IDX_RECIPE_NAME = 1;
+        public static final int IDX_THUMBNAIL_URL = 2;
+        public static final int IDX_IMG_URL = 3;
+        public static final int IDX_RECIPE_URL = 4;
+        public static final int IDX_SHORT_DESCRIPTION = 5;
+        public static final int IDX_RECIPE_RATING = 6;
+        public static final int IDX_RECIPE_REVIEWS = 7;
+        public static final int IDX_RECIPE_DIRECTIONS = 8;
+        public static final int IDX_DATE_ADDED = 9;
+        public static final int IDX_FAVORITED = 10;
+
 
         /**
          * Builds URI for a specific row in the database

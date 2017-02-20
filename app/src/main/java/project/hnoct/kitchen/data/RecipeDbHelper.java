@@ -3,6 +3,8 @@ package project.hnoct.kitchen.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
 import project.hnoct.kitchen.data.RecipeContract.RecipeEntry;
 import project.hnoct.kitchen.data.RecipeContract.IngredientEntry;
 import project.hnoct.kitchen.data.RecipeContract.LinkEntry;
@@ -13,7 +15,8 @@ import project.hnoct.kitchen.data.RecipeContract.LinkEntry;
 
 public class RecipeDbHelper extends SQLiteOpenHelper {
     // Constants
-    private static final int DATABASE_VERSION = 1;
+    private static final String LOG_TAG = RecipeDbHelper.class.getSimpleName();
+    private static final int DATABASE_VERSION = 4;
     static final String DATABASE_NAME = "recipe.db";
 
     public RecipeDbHelper(Context context) {
@@ -34,6 +37,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 RecipeEntry.COLUMN_SHORT_DESC + " TEXT, " +
                 RecipeEntry.COLUMN_DIRECTIONS + " TEXT, " +
                 RecipeEntry.COLUMN_DATE_ADDED + " TEXT NOT NULL, " +
+                RecipeEntry.COLUMN_FAVORITED + " TEXT, " +
                 // Links to the relational table to reference the quantity of each ingredient
                 "FOREIGN KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ") REFERENCES " +
                 LinkEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_RECIPE_ID + "));";
@@ -61,13 +65,16 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
         // Since this only caches weather data from online, there is no need to preserve the data
         // when changing version numbers, so they are merely discarded and tables are created using
         // the updated schema
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RecipeEntry.TABLE_NAME);
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + IngredientEntry.TABLE_NAME);
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LinkEntry.TABLE_NAME);
-        onCreate(sqLiteDatabase);
+        if (newVersion != oldVersion) {
+            Log.v(LOG_TAG, "onUpgrade: ");
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RecipeEntry.TABLE_NAME);
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + IngredientEntry.TABLE_NAME);
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LinkEntry.TABLE_NAME);
+            onCreate(sqLiteDatabase);
+        }
     }
 }

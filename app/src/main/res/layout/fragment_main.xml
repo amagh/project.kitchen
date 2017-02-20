@@ -11,9 +11,10 @@
     tools:context="project.hnoct.kitchen.ui.RecipeListFragment"
     tools:showIn="@layout/activity_main">
 
-    <TextView
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recipe_recycler_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        />
 
 </RelativeLayout>
