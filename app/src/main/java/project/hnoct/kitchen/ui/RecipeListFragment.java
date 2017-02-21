@@ -30,10 +30,11 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
     private final int RECIPE_LOADER = 0;
 
     /** Member Variables **/
-    Context mContext;
+    Context mContext;                   // Interface for global context
     Cursor mCursor;
-    ContentResolver mResolver;
+    ContentResolver mResolver;          // Reference to ContentResolver
     RecipeAdapter mRecipeAdapter;
+    int mPosition;                      // Position of mCursor
 
     // Views bound by ButterKnife
     @BindView(R.id.recipe_recycler_view) RecyclerView mRecipeRecyclerView;
@@ -50,7 +51,17 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         ButterKnife.bind(this, rootView);
 
         // Instantiate the Adapter for the RecyclerView
-        mRecipeAdapter = new RecipeAdapter(getActivity());
+        mRecipeAdapter = new RecipeAdapter(getActivity(), new RecipeAdapter.RecipeAdapterOnClickHandler() {
+            @Override
+            public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
+                // Initiate Callback to Activity which will initiate launch of new Details Activity
+                Uri recipeUri = LinkEntry.buildIngredientUriFromRecipe(recipeId);
+                ((RecipeCallBack) getActivity()).onItemSelected(recipeUri, viewHolder);
+
+                // Set position to the position of the clicked item
+                mPosition = viewHolder.getAdapterPosition();
+            }
+        });
 
         // Set LayoutManager
         LinearLayoutManager llm = new LinearLayoutManager(mContext);
@@ -101,5 +112,9 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         mContext = getActivity();
         mResolver = mContext.getContentResolver();
         getLoaderManager().initLoader(RECIPE_LOADER, null, this);
+    }
+
+    public interface RecipeCallBack {
+        void onItemSelected(Uri recipeUri, RecipeAdapter.RecipeViewHolder viewHolder);
     }
 }

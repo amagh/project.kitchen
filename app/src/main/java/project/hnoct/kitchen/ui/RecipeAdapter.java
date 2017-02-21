@@ -30,14 +30,17 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
     /** Member Variables **/
     Context mContext;
     Cursor mCursor;
+    RecipeAdapterOnClickHandler mClickHandler;
 
     /**
      * Public constructor for RecipeAdapter. Used to inflate view used for Recycle View in the
      * {@link RecipeListFragment}
      * @param context interface for global context
+     * @param clickHandler interface for passing information to the UI from the Adapter
      */
-    public RecipeAdapter(Context context) {
+    public RecipeAdapter(Context context, RecipeAdapterOnClickHandler clickHandler) {
         mContext = context;
+        mClickHandler = clickHandler;
     }
 
     public Cursor swapCursor(Cursor newCursor) {
@@ -64,7 +67,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
 
     @Override
     public void onBindViewHolder(RecipeViewHolder holder, int position) {
-        // Return the data located at the correct row (position) of the view
+        // Return the data located at the correct row (position of the view)
         mCursor.moveToPosition(position);
         String recipeTitle = mCursor.getString(RecipeEntry.IDX_RECIPE_NAME);
         String recipeDescription = mCursor.getString(RecipeEntry.IDX_SHORT_DESCRIPTION);
@@ -73,11 +76,13 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
         Double recipeRating = mCursor.getDouble(RecipeEntry.IDX_RECIPE_RATING);
 
         if (recipeThumbnailUrl != null) {
+            // Use Glide to load image into view
             Glide.with(mContext)
                     .load(recipeThumbnailUrl)
                     .into(holder.recipe_thumb);
         }
 
+        // Populate the rest of the views
         holder.recipe_title.setText(recipeTitle);
         holder.recipe_description.setText(recipeDescription);
         holder.recipe_review_count.setText(Utilities.formatReviews(recipeReviews));
@@ -92,7 +97,14 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
         return 0;
     }
 
-    public class RecipeViewHolder extends RecyclerView.ViewHolder {
+    /**
+     * Callback interface for passing information to the UI Activity
+     */
+    public interface RecipeAdapterOnClickHandler {
+        void onClick(long recipeId, RecipeViewHolder viewHolder);
+    }
+
+    public class RecipeViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         @BindView(R.id.list_title) TextView recipe_title;
         @BindView(R.id.list_description) TextView recipe_description;
         @BindView(R.id.list_thumbnail) ImageView recipe_thumb;
@@ -102,6 +114,19 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
         public RecipeViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
+
+            // Set the onClickListener to the ViewHolder
+            view.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            // Get the recipeId of the RecipeViewHolder just clicked
+            mCursor.moveToPosition(getAdapterPosition());
+            long recipeId = mCursor.getLong(RecipeEntry.IDX_RECIPE_ID);
+
+            // Utilize the interface to pass information to the UI thread
+            mClickHandler.onClick(recipeId, this);
         }
     }
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="project.hnoct.kitchen">
+
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -19,12 +20,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <provider
-            android:authorities="project.hnoct.kitchen"
-            android:name=".data.RecipeProvider"
-            android:exported="false"
-            android:enabled="true" />
 
+        <provider
+            android:name=".data.RecipeProvider"
+            android:authorities="project.hnoct.kitchen"
+            android:enabled="true"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.RecipeDetailsActivity"
+            android:label="@string/title_activity_recipe_details"
+            android:parentActivityName=".ui.RecipeListActivity"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="project.hnoct.kitchen.ui.RecipeListActivity" />
+        </activity>
     </application>
 
 </manifest>

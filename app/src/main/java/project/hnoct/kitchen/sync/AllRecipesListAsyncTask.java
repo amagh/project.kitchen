@@ -116,6 +116,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                 recipeValues.put(RecipeEntry.COLUMN_RATING, rating);
                 recipeValues.put(RecipeEntry.COLUMN_REVIEWS, reviews);
                 recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, RecipeContract.getCurrentTime());
+                recipeValues.put(RecipeEntry.COLUMN_FAVORITED, 0);
                 recipeValues.put(RecipeEntry.COLUMN_SOURCE, ALL_RECIPES_ATTRIBUTION);
 
                 recipeCVList.add(recipeValues);

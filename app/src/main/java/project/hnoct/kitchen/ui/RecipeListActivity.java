@@ -1,5 +1,7 @@
 package project.hnoct.kitchen.ui;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -13,7 +15,7 @@ import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.sync.AllRecipeAsyncTask;
 import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
 
-public class RecipeListActivity extends AppCompatActivity {
+public class RecipeListActivity extends AppCompatActivity implements RecipeListFragment.RecipeCallBack {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,4 +59,12 @@ public class RecipeListActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onItemSelected(Uri recipeUri, RecipeAdapter.RecipeViewHolder viewHolder) {
+        Intent intent = new Intent(this, RecipeDetailsActivity.class);
+        intent.setData(recipeUri);
+        startActivity(intent);
+    }
+
 }

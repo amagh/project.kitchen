@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import project.hnoct.kitchen.data.Utilities;
@@ -26,7 +27,7 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
     /** Constants **/
 
     /** Member Variables **/
-    Context mContext;           // interface for global context
+    private Context mContext;           // interface for global context
 
     public AllRecipeAsyncTask(Context context) {
         mContext = context;
@@ -38,7 +39,7 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
         long recipeId = Long.parseLong(params[1]);
 
         List<ContentValues> ingredientCVList = new ArrayList<>();
-        List<ContentValues> linkCVList = new ArrayList<>();
+        List<ContentValues> linkCVList = new LinkedList<>();
 
         try {
             // Connect to the recipe URL and get the document
@@ -66,10 +67,14 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
                 ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
                 ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_NAME, ingredient);
 
+                ingredientCVList.add(ingredientValue);
+
                 ContentValues linkValue = new ContentValues();
                 linkValue.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
                 linkValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
                 linkValue.put(LinkEntry.COLUMN_QUANTITY, quantity);
+
+                linkCVList.add(linkValue);
 
 //                System.out.println("Ingredient: " + ingredient + " (" +ingredientId + ") | Quantity: " + quantity);
             }
@@ -87,8 +92,8 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
                 // Retrieve text from Element
                 String direction = directionElement.text();
 
-                // Use StringBuilder to build direction String
-                builder.append(direction + "\n");
+                // Use StringBuilder to build direction String and append new line ('\n')
+                builder.append(direction).append("\n");
             }
 
             // Create String from StringBuilder and trim the final appended new line ('\n')
@@ -124,7 +129,7 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
         return null;
     }
 
-    public void insertAndUpdateIngredientValues(List<ContentValues> ingredientCVList) {
+    private void insertAndUpdateIngredientValues(List<ContentValues> ingredientCVList) {
         // Bulk insert ingredient and link information
         for (ContentValues ingredientValue : ingredientCVList) {
             // Check if ingredient is already in the database, if so, skip it
