@@ -4,56 +4,83 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <ImageView
-        android:id="@+id/list_thumbnail"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/activity_vertical_margin"
+    app:contentPaddingBottom="@dimen/card_vertical_padding"
+    app:cardCornerRadius="4dp"
+    >
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/list_thumbnail_height_single"
-        tools:src="@android:drawable/star_on"
-        />
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/list_thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/list_thumbnail_height_single"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            tools:src="@android:drawable/star_on"
+            />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_alignBottom="@id/list_thumbnail"
+            android:src="@drawable/list_title_gradient"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/list_thumbnail"
+            android:id="@+id/list_title"
+            android:paddingLeft="@dimen/text_horizontal_margin"
+            android:paddingRight="@dimen/text_horizontal_margin"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            style="@style/titleText"
+            tools:text="Fried Chicken"/>
+
+    </RelativeLayout>
+
 
     <android.support.v7.widget.GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/list_thumbnail_height_single"
+        android:layout_marginLeft="@dimen/text_horizontal_margin"
+        android:layout_marginRight="@dimen/text_horizontal_margin"
         app:columnCount="3">
 
         <TextView
-            android:id="@+id/list_title"
-            app:layout_columnSpan="3"
-            app:layout_gravity="fill_horizontal"
-            tools:text="Fried Chicken"/>
-
-        <TextView
             android:id="@+id/list_description"
+            android:paddingBottom="@dimen/card_vertical_padding"
             app:layout_columnSpan="3"
             app:layout_gravity="fill_horizontal"
-            tools:text="Simple fried chicken from Kentucky"
-            />
+            tools:text="Simple fried chicken from Kentucky" />
 
         <TextView
             android:id="@+id/list_reviews_count"
             app:layout_columnSpan="2"
             app:layout_columnWeight="1"
-            tools:text="25 reviews"
-            />
+            tools:text="25 reviews" />
 
         <ImageView
             android:src="@drawable/simple_star"
-            app:layout_gravity="fill_vertical"
-            app:layout_rowSpan="2"/>
+            android:scaleType="fitCenter"
+            app:layout_rowSpan="2"
+            app:layout_gravity="fill_vertical" />
+
+        <TextView
+            android:id="@+id/list_avg_rating"
+            tools:text="4.99" />
 
         <ImageView
             android:src="@drawable/simple_star"
             android:tint="@android:color/primary_text_light"
-            app:paddingEnd="0dp"
-            app:paddingStart="0dp"
             android:layout_height="18dp"
+            app:layout_columnWeight="1"
+            app:layout_gravity="start|center_vertical"
             />
-        <TextView
-            android:id="@+id/list_avg_rating"
-            tools:text="4.99"
-            />
+
 
     </android.support.v7.widget.GridLayout>
 

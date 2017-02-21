@@ -3,6 +3,7 @@ package project.hnoct.kitchen.ui;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 
 import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.data.Utilities;
 
 /**
  * Created by hnoct on 2/20/2017.
@@ -23,6 +25,7 @@ import project.hnoct.kitchen.data.RecipeContract.*;
 
 public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
     /** Constants **/
+    public static final String LOG_TAG = RecipeAdapter.class.getSimpleName();
 
     /** Member Variables **/
     Context mContext;
@@ -40,6 +43,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
     public Cursor swapCursor(Cursor newCursor) {
         if (mCursor != newCursor) {
             mCursor = newCursor;
+            notifyDataSetChanged();
         }
         return mCursor;
     }
@@ -76,8 +80,8 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
 
         holder.recipe_title.setText(recipeTitle);
         holder.recipe_description.setText(recipeDescription);
-        holder.recipe_review_count.setText(Long.toString(recipeReviews));
-        holder.recipe_rating.setText(Double.toString(recipeRating));
+        holder.recipe_review_count.setText(Utilities.formatReviews(recipeReviews));
+        holder.recipe_rating.setText(Utilities.formatRating(recipeRating));
     }
 
     @Override

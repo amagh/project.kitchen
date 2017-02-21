@@ -3,5 +3,7 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="list_thumbnail_height_single">240dp</dimen>
+    <dimen name="text_horizontal_margin">8dp</dimen>
+    <dimen name="card_vertical_padding">8dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
 </resources>

@@ -50,7 +50,7 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         ButterKnife.bind(this, rootView);
 
         // Instantiate the Adapter for the RecyclerView
-        mRecipeAdapter = new RecipeAdapter(mContext);
+        mRecipeAdapter = new RecipeAdapter(getActivity());
 
         // Set LayoutManager
         LinearLayoutManager llm = new LinearLayoutManager(mContext);

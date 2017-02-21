@@ -30,8 +30,8 @@ public class RecipeListActivity extends AppCompatActivity {
             }
         });
 
-        AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(this);
-        syncTask.execute();
+//        AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(this);
+//        syncTask.execute();
     }
 
     @Override

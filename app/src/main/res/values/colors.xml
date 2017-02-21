@@ -5,4 +5,8 @@
     <color name="colorPrimaryLight">#AED581</color>
     <color name="colorAccent">#FF4081</color>
     <color name="grey_300">#E0E0E0</color>
+    <color name="primary_text_black">#212121</color>
+
+    <color name="transparent_white">#00FFFFFF</color>
+    <color name="opaque_white">#FFFFFFFF</color>
 </resources>
