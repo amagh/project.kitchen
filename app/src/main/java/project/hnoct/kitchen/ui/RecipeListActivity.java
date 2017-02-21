@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.sync.AllRecipeAsyncTask;
 import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
 
 public class RecipeListActivity extends AppCompatActivity {
@@ -30,8 +31,9 @@ public class RecipeListActivity extends AppCompatActivity {
             }
         });
 
-//        AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(this);
-//        syncTask.execute();
+        AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(this);
+        syncTask.execute();
+
     }
 
     @Override

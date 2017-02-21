@@ -50,7 +50,7 @@ public class RecipeContract {
         // Columns
         public static final String COLUMN_RECIPE_ID = "recipe_id";              // REAL NOT NULL
         public static final String COLUMN_RECIPE_NAME = "recipe_name";          // TEXT NOT NULL
-//        public static final String COLUMN_RECIPE_AUTHOR = "author";             // TEXT NOT NULL
+        public static final String COLUMN_RECIPE_AUTHOR = "author";             // TEXT NOT NULL
         public static final String COLUMN_THUMBNAIL_URL = "thumbnail_url";      // TEXT
         public static final String COLUMN_IMG_URL = "image_url";                // TEXT
         public static final String COLUMN_RECIPE_URL = "recipe_url";            // TEXT NOT NULL
@@ -60,13 +60,13 @@ public class RecipeContract {
         public static final String COLUMN_DIRECTIONS = "directions";            // TEXT
         public static final String COLUMN_DATE_ADDED = "date_added";            // REAL NOT NULL
         public static final String COLUMN_FAVORITED = "favorited";              // TEXT
-//        public static final String COLUMN_SOURCE = "source";                    // TEXT NOT NULL
+        public static final String COLUMN_SOURCE = "source";                    // TEXT NOT NULL
 
         // Column Projection and index
         public static final String[] RECIPE_PROJECTION = new String[] {
                 COLUMN_RECIPE_ID,
                 COLUMN_RECIPE_NAME,
-//                COLUMN_RECIPE_AUTHOR,
+                COLUMN_RECIPE_AUTHOR,
                 COLUMN_THUMBNAIL_URL,
                 COLUMN_IMG_URL,
                 COLUMN_RECIPE_URL,
@@ -75,22 +75,23 @@ public class RecipeContract {
                 COLUMN_REVIEWS,
                 COLUMN_DIRECTIONS,
                 COLUMN_DATE_ADDED,
-                COLUMN_FAVORITED
+                COLUMN_FAVORITED,
+                COLUMN_SOURCE
         };
 
         public static final int IDX_RECIPE_ID = 0;
         public static final int IDX_RECIPE_NAME = 1;
         public static final int IDX_RECIPE_AUTHOR = 2;
-        public static final int IDX_THUMBNAIL_URL = 2;
-        public static final int IDX_IMG_URL = 3;
-        public static final int IDX_RECIPE_URL = 4;
-        public static final int IDX_SHORT_DESCRIPTION = 5;
-        public static final int IDX_RECIPE_RATING = 6;
-        public static final int IDX_RECIPE_REVIEWS = 7;
-        public static final int IDX_RECIPE_DIRECTIONS = 8;
-        public static final int IDX_DATE_ADDED = 9;
-        public static final int IDX_FAVORITED = 10;
-//        public static final int IDX_RECIPE_SOURCE = 12;
+        public static final int IDX_THUMBNAIL_URL = 3;
+        public static final int IDX_IMG_URL = 4;
+        public static final int IDX_RECIPE_URL = 5;
+        public static final int IDX_SHORT_DESCRIPTION = 6;
+        public static final int IDX_RECIPE_RATING = 7;
+        public static final int IDX_RECIPE_REVIEWS = 8;
+        public static final int IDX_RECIPE_DIRECTIONS = 9;
+        public static final int IDX_DATE_ADDED = 10;
+        public static final int IDX_FAVORITED = 11;
+        public static final int IDX_RECIPE_SOURCE = 12;
 
 
         /**
@@ -144,6 +145,11 @@ public class RecipeContract {
         // Columns
         public static final String COLUMN_INGREDIENT_ID = "ingredient_id";  // REAL NOT NULL
         public static final String COLUMN_INGREDIENT_NAME = "ingredient";   // TEXT NOT NULL
+
+        public static final String[] quantities = new String[] {
+                "mL", "loaf", "can", "package", "tablespoon", "teaspoon", "clove", "cup", "pint",
+                "quart", "gallon", "ounce", "fluid ounce", "jar", "dash", "pinch", "slice", "pound"
+        };
 
         /** See RecipeEntry for comments on following methods **/
 

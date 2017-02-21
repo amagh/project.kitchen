@@ -16,7 +16,7 @@ import project.hnoct.kitchen.data.RecipeContract.LinkEntry;
 public class RecipeDbHelper extends SQLiteOpenHelper {
     // Constants
     private static final String LOG_TAG = RecipeDbHelper.class.getSimpleName();
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 1;
     static final String DATABASE_NAME = "recipe.db";
 
     public RecipeDbHelper(Context context) {
@@ -29,6 +29,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 RecipeEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 RecipeEntry.COLUMN_RECIPE_ID + " REAL NOT NULL, " +
                 RecipeEntry.COLUMN_RECIPE_NAME + " TEXT NOT NULL, " +
+                RecipeEntry.COLUMN_RECIPE_AUTHOR + " TEXT NOT NULL, " +
                 RecipeEntry.COLUMN_THUMBNAIL_URL + " TEXT, " +
                 RecipeEntry.COLUMN_IMG_URL + " TEXT, " +
                 RecipeEntry.COLUMN_RECIPE_URL + " TEXT NOT NULL, " +
@@ -38,6 +39,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 RecipeEntry.COLUMN_DIRECTIONS + " TEXT, " +
                 RecipeEntry.COLUMN_DATE_ADDED + " TEXT NOT NULL, " +
                 RecipeEntry.COLUMN_FAVORITED + " TEXT, " +
+                RecipeEntry.COLUMN_SOURCE + " TEXT NOT NULL, " +
                 // Links to the relational table to reference the quantity of each ingredient
                 "FOREIGN KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ") REFERENCES " +
                 LinkEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_RECIPE_ID + "));";

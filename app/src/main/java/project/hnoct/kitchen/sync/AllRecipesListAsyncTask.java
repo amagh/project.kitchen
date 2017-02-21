@@ -15,10 +15,10 @@ import org.jsoup.select.Elements;
 
 import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.data.Utilities;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -27,8 +27,9 @@ import java.util.List;
 
 public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
     /** Constants **/
-    final String ALL_RECIPES_BASE_URL = "http://www.allrecipes.com";
     private final String LOG_TAG = AllRecipesListAsyncTask.class.getSimpleName();
+    private final String ALL_RECIPES_BASE_URL = "http://www.allrecipes.com";
+    private final String ALL_RECIPES_ATTRIBUTION = "Allrecipes.com";
 
     /** Member Variables **/
     Context mContext;       // Interface to global context
@@ -79,6 +80,10 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
                 String recipeThumbnailUrl = recipeElement.attr("data-original-src");
 
+                // Convert the thumbnail URL to the imageURL
+                /** @see Utilities#getImageUrlFromThumbnailUrl(String) **/
+                String recipeImageUrl = Utilities.getImageUrlFromThumbnailUrl(recipeThumbnailUrl);
+
                 // Recipe description contains name of recipe, so it is removed
                 String recipeDescription = recipeElement.attr("alt");
                 recipeDescription = recipeDescription.substring(recipeTitle.length() + 3);
@@ -95,16 +100,23 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                 Element reviewElement = recipe.getElementsByTag("format-large-number").first();
                 long reviews = Long.parseLong(reviewElement.attr("number"));
 
+                // Retrieve the author of the recipe
+                Element authorElement = recipe.select("ul.cook-details").first().select("h4").first();
+                String recipeAuthor = authorElement.text().replace("Recipe by ", "").trim();
+
                 // Create ContentValues from values
                 ContentValues recipeValues = new ContentValues();
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, recipeAuthor);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);
                 recipeValues.put(RecipeEntry.COLUMN_THUMBNAIL_URL, recipeThumbnailUrl);
+                recipeValues.put(RecipeEntry.COLUMN_IMG_URL, recipeImageUrl);
                 recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, recipeDescription);
                 recipeValues.put(RecipeEntry.COLUMN_RATING, rating);
                 recipeValues.put(RecipeEntry.COLUMN_REVIEWS, reviews);
                 recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, RecipeContract.getCurrentTime());
+                recipeValues.put(RecipeEntry.COLUMN_SOURCE, ALL_RECIPES_ATTRIBUTION);
 
                 recipeCVList.add(recipeValues);
             }
@@ -150,7 +162,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
                 if (recipeValue.getAsDouble(RecipeEntry.COLUMN_RATING) != dbRating ||
                         recipeValue.getAsLong(RecipeEntry.COLUMN_REVIEWS) != dbReviews) {
-                    // Values do match database values. Update
+                    // Values do match database values. Update database.
                     mContentResolver.update(
                             recipeUri,
                             recipeValue,
@@ -160,16 +172,15 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                     recipesUpdated++;
                 }
 
-                // Close the cursor
-                cursor.close();
-
                 // Remove the recipeValues from the list
                 recipeCVList.remove(recipeValue);
             }
+            // Close the cursor
+            cursor.close();
         }
 
 
-        // Create an ContentValues[] from the remaining values in the list
+        // Create a ContentValues[] from the remaining values in the list
         ContentValues[] recipeValues = new ContentValues[recipeCVList.size()];
 
         // Add values of list to the array
