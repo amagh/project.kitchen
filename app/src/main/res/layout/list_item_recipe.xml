@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/activity_vertical_margin"
+    android:layout_marginTop="@dimen/list_recipe_vertical_padding"
     app:contentPaddingBottom="@dimen/card_vertical_padding"
     app:cardCornerRadius="4dp"
     >
@@ -16,10 +16,10 @@
         <ImageView
             android:id="@+id/list_thumbnail"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/list_thumbnail_height_single"
+            android:layout_height="@dimen/list_recipe_thumbnail_height_single"
             android:scaleType="centerCrop"
             android:adjustViewBounds="true"
-            tools:src="@android:drawable/star_on"
+            tools:src="@drawable/placeholder"
             />
 
         <ImageView
@@ -45,7 +45,7 @@
     <android.support.v7.widget.GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/list_thumbnail_height_single"
+        android:layout_marginTop="@dimen/list_recipe_thumbnail_height_single"
         android:layout_marginLeft="@dimen/text_horizontal_margin"
         android:layout_marginRight="@dimen/text_horizontal_margin"
         app:columnCount="3">
@@ -64,19 +64,25 @@
             tools:text="25 reviews" />
 
         <ImageView
-            android:src="@drawable/simple_star"
+            android:src="@drawable/favorite_star_disabled"
+            android:tint="@color/review_star_grey"
             android:scaleType="fitCenter"
+            android:layout_height="0dp"
             app:layout_rowSpan="2"
-            app:layout_gravity="fill_vertical" />
+            app:layout_gravity="fill_vertical"
+            android:layout_width="wrap_content" />
 
         <TextView
             android:id="@+id/list_avg_rating"
-            tools:text="4.99" />
+            android:gravity="center_vertical"
+            app:layout_gravity="fill_vertical"
+            tools:text="4.9" />
 
         <ImageView
-            android:src="@drawable/simple_star"
-            android:tint="@android:color/primary_text_light"
+            android:src="@drawable/favorite_star_disabled"
+            android:tint="@color/primary_text_black"
             android:layout_height="18dp"
+            android:layout_width="18dp"
             app:layout_columnWeight="1"
             app:layout_gravity="start|center_vertical"
             />

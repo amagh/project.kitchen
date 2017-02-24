@@ -2,8 +2,27 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="list_thumbnail_height_single">240dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <!-- General use -->
+    <dimen name="default_list_item_vertical_padding">8dp</dimen>
+    <dimen name="default_text_vertical_padding">16dp</dimen>
+
+    <!-- Recipe list item -->
+    <dimen name="list_recipe_thumbnail_height_single">240dp</dimen>
+    <dimen name="list_recipe_vertical_padding">@dimen/activity_vertical_margin</dimen>
     <dimen name="text_horizontal_margin">8dp</dimen>
     <dimen name="card_vertical_padding">8dp</dimen>
-    <dimen name="fab_margin">16dp</dimen>
+
+    <!-- Ingredient list item -->
+    <dimen name="list_ingredient_keyline">64dp</dimen>
+    <dimen name="list_ingredient_height">24dp</dimen>
+
+    <!-- Direction list item -->
+    <dimen name="list_direction_keyline">64dp</dimen>
+    <dimen name="list_direction_vertical_padding">@dimen/default_list_item_vertical_padding</dimen>
+
+    <!-- Recipe Details Activity -->
+    <dimen name="details_line_separator_padding">48dp</dimen>
+    <dimen name="details_description_text_padding">12dp</dimen>
 </resources>

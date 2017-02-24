@@ -4,9 +4,22 @@
     <color name="colorPrimaryDark">#689F38</color>
     <color name="colorPrimaryLight">#AED581</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="grey_300">#E0E0E0</color>
+
     <color name="primary_text_black">#212121</color>
+    <color name="review_star_grey">@color/tertiary_grey_text</color>
 
     <color name="transparent_white">#00FFFFFF</color>
     <color name="opaque_white">#FFFFFFFF</color>
+
+    <color name="favorite_enabled">@color/yellow_500</color>
+    <color name="favorite_disabled">@color/grey_300</color>
+
+    <!-- Generic Colors -->
+    <color name="tertiary_grey_text">#808080</color>
+    <color name="grey_300">#E0E0E0</color>
+    <color name="grey_500">#9E9E9E</color>
+    <color name="yellow_300">#FFF176</color>
+    <color name="yellow_500">#FFEB3B</color>
+
+
 </resources>

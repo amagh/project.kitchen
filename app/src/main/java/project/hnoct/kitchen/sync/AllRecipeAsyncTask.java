@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.support.v4.util.Pair;
+import android.util.Log;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -12,10 +13,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.data.RecipeContract.*;
 
@@ -25,19 +28,25 @@ import project.hnoct.kitchen.data.RecipeContract.*;
 
 public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
     /** Constants **/
+    private static final String LOG_TAG = AllRecipeAsyncTask.class.getSimpleName();
 
     /** Member Variables **/
-    private Context mContext;           // interface for global context
+    private Context mContext;                       // interface for global context
+    private RecipeSyncCallback mSyncCallback;       // For letting the UI thread know finished loading
 
-    public AllRecipeAsyncTask(Context context) {
+    public AllRecipeAsyncTask(Context context, RecipeSyncCallback syncCallback) {
         mContext = context;
+        mSyncCallback = syncCallback;
     }
 
     @Override
     protected Void doInBackground(String... params) {
+        /** Variables **/
         String recipeUrl = params[0];
         long recipeId = Long.parseLong(params[1]);
+        int ingredientOrder = 0;        // Used to ensure ingredient order is kept the same when added to db
 
+        List<Long> ingredientIdList = new ArrayList<>();        // Hack for duplicate ingredients. See below.
         List<ContentValues> ingredientCVList = new ArrayList<>();
         List<ContentValues> linkCVList = new LinkedList<>();
 
@@ -57,10 +66,31 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
 
                 // Separate the Pair into two Strings
                 String ingredient = ingredientQuantityPair.first;
-                String quantity = ingredientQuantityPair.second;
+
+                // Convert fractions to Unicode equivalents if they exist
+                String quantity = Utilities.convertToUnicodeFraction(mContext, ingredientQuantityPair.second);
 
                 // Retrieve the ingredientId from the Element
-                Long ingredientId = Long.parseLong(ingredientElement.attr("data-id"));
+                long ingredientId = Long.parseLong(ingredientElement.attr("data-id"));
+
+                // Generate a new ingredientId if needed
+                String databaseIngredientName = Utilities.getIngredientNameFromId(mContext, ingredientId);
+                while (databaseIngredientName != null && !ingredient.equals(databaseIngredientName)) {
+                    ingredientId = Utilities.generateNewId(mContext, ingredientId, Utilities.INGREDIENT_TYPE);
+                    databaseIngredientName = Utilities.getIngredientNameFromId(mContext, ingredientId);
+                }
+
+                /**
+                 * ** Hack for duplicate ingredients in a single recipe **
+                 * Increment the ingredientId until there are no more instances of it in the
+                 * ingredientIdList used to hold all ingredientIds in this recipe
+                 */
+                while (ingredientIdList.contains(ingredientId)) {
+                    // If ingredientId exists in List, then generate new ID that does not already exist in database
+                    ingredientId = Utilities.generateNewId(mContext, ++ingredientId, Utilities.INGREDIENT_TYPE);
+                    Log.d(LOG_TAG, "Ingredient ID (" + ingredientId + ") already exists!");
+                }
+                ingredientIdList.add(ingredientId);
 
                 // Create ContentValues from data
                 ContentValues ingredientValue = new ContentValues();
@@ -73,10 +103,12 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
                 linkValue.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
                 linkValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
                 linkValue.put(LinkEntry.COLUMN_QUANTITY, quantity);
+                linkValue.put(LinkEntry.COLUMN_INGREDIENT_ORDER, ingredientOrder);
 
                 linkCVList.add(linkValue);
 
-//                System.out.println("Ingredient: " + ingredient + " (" +ingredientId + ") | Quantity: " + quantity);
+                // Increment the ingredient order
+                ingredientOrder++;
             }
 
             // Instantiate StringBuilder that will be used to combine all directions into single
@@ -96,8 +128,10 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
                 builder.append(direction).append("\n");
             }
 
-            // Create String from StringBuilder and trim the final appended new line ('\n')
-            String directions = builder.toString().trim();
+            // Create String from StringBuilder and trim the final appended new line ('\n') and
+            // convert fractions to Unicode equivalent
+            String directions = Utilities.convertToUnicodeFraction(mContext, builder.toString()
+                    .trim());
 
             // Create ContentValues from directions
             ContentValues recipeValue = new ContentValues();
@@ -120,6 +154,7 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
                     linkValues
             );
 
+            // Bulk insert ingredient values
             insertAndUpdateIngredientValues(ingredientCVList);
 
         } catch (IOException e) {
@@ -129,14 +164,23 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
         return null;
     }
 
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        mSyncCallback.onFinishLoad();
+    }
+
     private void insertAndUpdateIngredientValues(List<ContentValues> ingredientCVList) {
+        // Duplicate the list as to avoid ConcurrentModificationError
+        List<ContentValues> workingList = new LinkedList<>(ingredientCVList);
+
         // Bulk insert ingredient and link information
-        for (ContentValues ingredientValue : ingredientCVList) {
+        for (ContentValues ingredientValue : workingList) {
             // Check if ingredient is already in the database, if so, skip it
             long ingredientId = ingredientValue.getAsLong(IngredientEntry.COLUMN_INGREDIENT_ID);
 
             Cursor cursor = mContext.getContentResolver().query(
-                    RecipeEntry.CONTENT_URI,
+                    IngredientEntry.CONTENT_URI,
                     null,
                     IngredientEntry.COLUMN_INGREDIENT_ID + " = ?",
                     new String[] {Long.toString(ingredientId)},
@@ -146,10 +190,9 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
             if (cursor.moveToFirst()) {
                 // Remove the ContentValues from the list to be bulk inserted
                 ingredientCVList.remove(ingredientValue);
-
-                // Close the Cursor
-                cursor.close();
             }
+            // Close the Cursor
+            cursor.close();
         }
         ContentValues[] ingredientValues = new ContentValues[ingredientCVList.size()];
         ingredientCVList.toArray(ingredientValues);
@@ -158,6 +201,10 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
                 IngredientEntry.CONTENT_URI,
                 ingredientValues
         );
+    }
+
+    public interface RecipeSyncCallback {
+        public void onFinishLoad();
     }
 
 }

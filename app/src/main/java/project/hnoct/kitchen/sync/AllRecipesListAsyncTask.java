@@ -42,6 +42,10 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
+        // Instantiate variable to hold time recipes were added. Will subtract one to the time to
+        // each subsequent recipe added as to preserve order
+        long timeAdded = RecipeContract.getCurrentTime();
+
         try {
             List<ContentValues> recipeCVList = new ArrayList<>();
             // Connect and downloading the HTML document
@@ -58,14 +62,17 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                     continue;
                 }
                 String recipeUrl = recipeLinkElement.attr("href");
+
                 if (!recipeUrl.contains("recipe")) {
                     // Skip any links that don't direct to a recipe
                     continue;
                 }
 
+                // Prepend Allrecipes base URL to the recipe URL to get the full length URL
+                recipeUrl = ALL_RECIPES_BASE_URL + recipeUrl;
+
                 // Get the recipe Id by converting the link to a URI and selecting the 2nd segment
-                Uri recipeUri = Uri.parse(recipeUrl);
-                long recipeId = Long.parseLong(recipeUri.getPathSegments().get(1));
+                long recipeId = Utilities.getRecipeIdFromAllRecipesUrl(recipeUrl);
 
                 // Retrieve the recipe name, thumbnail URL, and description
                 Element recipeElement = recipe.getElementsByClass("grid-col__rec-image").first();
@@ -78,6 +85,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                 String recipeTitle = recipeElement.attr("title");
                 String recipeName = recipeTitle.replace(" Recipe", "").replace(" and Video", "");
 
+                // Retrieve the thumbnail URL
                 String recipeThumbnailUrl = recipeElement.attr("data-original-src");
 
                 // Convert the thumbnail URL to the imageURL
@@ -115,11 +123,13 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                 recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, recipeDescription);
                 recipeValues.put(RecipeEntry.COLUMN_RATING, rating);
                 recipeValues.put(RecipeEntry.COLUMN_REVIEWS, reviews);
-                recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, RecipeContract.getCurrentTime());
-                recipeValues.put(RecipeEntry.COLUMN_FAVORITED, 0);
+                recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, timeAdded);
+                recipeValues.put(RecipeEntry.COLUMN_FAVORITE, 0);
                 recipeValues.put(RecipeEntry.COLUMN_SOURCE, ALL_RECIPES_ATTRIBUTION);
 
                 recipeCVList.add(recipeValues);
+
+                timeAdded--;
             }
 
             insertAndUpdateValues(recipeCVList);
@@ -133,9 +143,13 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
         return null;
     }
 
+    /**
+     * Checks to make sure the recipe doesn't already exist in the database prior to bulk-insertion
+     * @param recipeCVList List containing recipes to be bulk-inserted
+     */
     private void insertAndUpdateValues(List<ContentValues> recipeCVList) {
         /** Variables **/
-        int recipesInserted = 0;
+        int recipesInserted;
         int recipesUpdated = 0;
         List<ContentValues> workingList = new ArrayList<>(recipeCVList);    // To prevent ConcurrentModificationError
 
@@ -148,7 +162,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
             Cursor cursor = mContext.getContentResolver().query(
                     recipeUri,
-                    null,
+                    RecipeEntry.RECIPE_PROJECTION,
                     RecipeEntry.COLUMN_RECIPE_ID + " = ?",
                     new String[] {Long.toString(recipeId)},
                     null
@@ -156,14 +170,28 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
             // Update appropriate recipes
             if (cursor.moveToFirst()) {
+                if (!recipeValue.get(RecipeEntry.COLUMN_RECIPE_NAME).equals(cursor.getString(RecipeEntry.IDX_RECIPE_NAME))) {
+                    // Recipe ID exists, but for with a different recipe name. generate new recipeID
+                    long newRecipeId = Utilities.generateNewId(mContext, recipeId, Utilities.RECIPE_TYPE);
+
+                    // Replace the recipeId in the ContentValues
+                    recipeValue.put(RecipeEntry.COLUMN_RECIPE_ID, newRecipeId);
+
+                    // Skip this entry
+                    continue;
+                }
                 // If cursor returns a row, then update the values if they have changed
                 // Get the review and rating values from the ContentValues to be updated
-                double dbRating = cursor.getDouble(cursor.getColumnIndex(RecipeEntry.COLUMN_RATING));
-                long dbReviews = cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_REVIEWS));
+                double dbRating = cursor.getDouble(RecipeEntry.IDX_RECIPE_RATING);
+                long dbReviews = cursor.getLong(RecipeEntry.IDX_RECIPE_REVIEWS);
 
                 if (recipeValue.getAsDouble(RecipeEntry.COLUMN_RATING) != dbRating ||
                         recipeValue.getAsLong(RecipeEntry.COLUMN_REVIEWS) != dbReviews) {
                     // Values do match database values. Update database.
+                    // Remove date from ContentValues so that the update doesn't push the recipe to
+                    // the top
+                    recipeValue.remove(RecipeEntry.COLUMN_DATE_ADDED);
+
                     mContentResolver.update(
                             recipeUri,
                             recipeValue,
@@ -173,7 +201,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                     recipesUpdated++;
                 }
 
-                // Remove the recipeValues from the list
+                // Remove the recipeValues from the list to be bulk-inserted
                 recipeCVList.remove(recipeValue);
             }
             // Close the cursor

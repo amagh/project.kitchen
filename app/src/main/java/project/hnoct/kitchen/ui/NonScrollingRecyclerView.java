@@ -3,6 +3,7 @@ package project.hnoct.kitchen.ui;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.ViewGroup;
 
 /**
@@ -37,5 +38,14 @@ public class NonScrollingRecyclerView extends RecyclerView {
         super.onMeasure(widthSpec, customHeightSpec);
         ViewGroup.LayoutParams params = getLayoutParams();
         params.height = getMeasuredHeight();
+    }
+
+    /**
+     * Overridden to always return false to prevent interception of scrolling. If not overridden,
+     * there is not scroll inertia when initiating a scroll while touching this view.
+     */
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        return false;
     }
 }

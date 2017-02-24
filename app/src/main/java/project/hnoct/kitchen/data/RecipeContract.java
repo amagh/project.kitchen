@@ -59,7 +59,7 @@ public class RecipeContract {
         public static final String COLUMN_REVIEWS = "reviews";                  // REAL
         public static final String COLUMN_DIRECTIONS = "directions";            // TEXT
         public static final String COLUMN_DATE_ADDED = "date_added";            // REAL NOT NULL
-        public static final String COLUMN_FAVORITED = "favorited";              // TEXT
+        public static final String COLUMN_FAVORITE = "favorite";                // INTEGER NOT NULL
         public static final String COLUMN_SOURCE = "source";                    // TEXT NOT NULL
 
         // Column Projection and index
@@ -75,7 +75,7 @@ public class RecipeContract {
                 COLUMN_REVIEWS,
                 COLUMN_DIRECTIONS,
                 COLUMN_DATE_ADDED,
-                COLUMN_FAVORITED,
+                COLUMN_FAVORITE,
                 COLUMN_SOURCE
         };
 
@@ -90,7 +90,7 @@ public class RecipeContract {
         public static final int IDX_RECIPE_REVIEWS = 8;
         public static final int IDX_RECIPE_DIRECTIONS = 9;
         public static final int IDX_DATE_ADDED = 10;
-        public static final int IDX_FAVORITED = 11;
+        public static final int IDX_FAVORITE = 11;
         public static final int IDX_RECIPE_SOURCE = 12;
 
 
@@ -146,9 +146,10 @@ public class RecipeContract {
         public static final String COLUMN_INGREDIENT_ID = "ingredient_id";  // REAL NOT NULL
         public static final String COLUMN_INGREDIENT_NAME = "ingredient";   // TEXT NOT NULL
 
-        public static final String[] quantities = new String[] {
+        public static final String[] measurements = new String[] {
                 "mL", "loaf", "can", "package", "tablespoon", "teaspoon", "clove", "cup", "pint",
-                "quart", "gallon", "ounce", "fluid ounce", "jar", "dash", "pinch", "slice", "pound"
+                "quart", "gallon", "ounce", "fluid ounce", "jar", "dashes", "dash", "pinch", "slice",
+                "pound", "container", "package"
         };
 
         /** See RecipeEntry for comments on following methods **/
@@ -174,7 +175,7 @@ public class RecipeContract {
      * databases are not set up for lists.
      */
     public static class LinkEntry implements BaseColumns {
-        // URI for linking the two tables with their quantities
+        // URI for linking the two tables with their measurements
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_LINK).build();
 
         // Since this table will not be directly selected for, only the item type is used for
@@ -187,7 +188,8 @@ public class RecipeContract {
 
         // Columns (Only the quantity column is required because all other columns will be
         // foreign keys)
-        public static final String COLUMN_QUANTITY = "quantity";    // TEXT NOT NULL
+        public static final String COLUMN_QUANTITY = "quantity";                    // TEXT NOT NULL
+        public static final String COLUMN_INGREDIENT_ORDER = "ingredient_order";    // INTEGER NOT NULL
 
         /** See RecipeEntry for comments on following methods **/
 

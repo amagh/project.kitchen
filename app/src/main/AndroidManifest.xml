@@ -31,7 +31,7 @@
             android:name=".ui.RecipeDetailsActivity"
             android:label="@string/title_activity_recipe_details"
             android:parentActivityName=".ui.RecipeListActivity"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme.TransparentToolbar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="project.hnoct.kitchen.ui.RecipeListActivity" />

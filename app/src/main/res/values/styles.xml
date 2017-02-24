@@ -13,14 +13,42 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="AppTheme.TransparentToolbar" parent="AppTheme.NoActionBar">
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="windowActionBarOverlay">true</item>
+        <item name="android:actionBarStyle">@style/TransparentToolbar</item>
+    </style>
+
+    <style name="TransparentToolbar" parent="Widget.AppCompat.Light.ActionBar.Solid">
+        <item name="android:background">@null</item>
+
+        <item name="android:colorPrimary">@color/transparent_white</item>
+        <!-- Support library compatibility -->
+        <item name="background">@null</item>
+
+        <item name="colorPrimary">@color/transparent_white</item>
+    </style>
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="titleText">
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:textColor">@color/primary_text_black</item>
-        <item name="android:textSize">20sp</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+
+    <style name="descriptionText">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/primary_text_black</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="subtitleText">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/primary_text_black</item>
+        <item name="android:textSize">16sp</item>
     </style>
 
 </resources>

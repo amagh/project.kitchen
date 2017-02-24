@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/list_direction_vertical_padding">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/list_direction_step_text"
+            android:layout_width="@dimen/list_direction_keyline"
+            android:layout_height="wrap_content"
+            tools:text="Step 1" />
+
+        <TextView
+            android:id="@+id/list_direction_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            tools:text="This is the first direction that will be replaced when a real direction is added. Placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder" />
+    </LinearLayout>
+
+    <!-- Used to shade the direction when finished if users chooses to allow it -->
+    <ImageView
+        android:id="@+id/list_direction_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</FrameLayout>

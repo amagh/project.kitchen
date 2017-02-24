@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeDbHelper;
 import project.hnoct.kitchen.sync.AllRecipeAsyncTask;
 import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
 
@@ -28,8 +29,9 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                deleteDatabase(RecipeDbHelper.DATABASE_NAME);
+                AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(RecipeListActivity.this);
+                syncTask.execute();
             }
         });
 

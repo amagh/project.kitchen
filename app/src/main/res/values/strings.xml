@@ -1,5 +1,38 @@
 <resources>
     <string name="app_name">kitchen</string>
     <string name="action_settings">Settings</string>
+    <string name="favorite_title">Favorite</string>
     <string name="title_activity_recipe_details">RecipeDetailsActivity</string>
+
+    <!-- Common key Strings -->
+    <string name="ingredient_key" translatable="false">ingredient</string>
+    <string name="recipe_key" translatable="false">recipe</string>
+    <string name="quantity_key" translatable="false">quantity</string>
+    <string name="favorite_key" translatable="false">favorite</string>
+
+    <!-- Fractions -->
+    <string name="one_quarter_fraction">\u00BC</string>
+    <string name="one_half_fraction">\u00BD</string>
+    <string name="three_quarter_fraction">\u00BE</string>
+    <string name="one_eighth_fraction">\u215B</string>
+    <string name="three_eighth_fraction">\u215C</string>
+    <string name="five_eighth_fraction">\u215D</string>
+    <string name="one_third_fraction">\u2153</string>
+    <string name="two_third_fraction">\u2154</string>
+    <string name="one_fifth_fraction">\u2155</string>
+    <string name="two_fifth_fraction">\u2156</string>
+    <string name="three_fifth_fraction">\u2157</string>
+    <string name="four_fifth_fraction">\u2158</string>
+
+    <!-- RecipesDetails Layouts -->
+    <string name="list_ingredient_title">Ingredients</string>
+    <string name="list_direction_title">Directions</string>
+
+    <!-- List Item Direction -->
+    <string name="direction_step">Step %d</string>
+
+    <!-- Formatting -->
+    <string name="format_reviews">%d reviews</string>
+    <string name="format_reviews_single">%d review</string>
+    <string name="format_author">Recipe by %s</string>
 </resources>

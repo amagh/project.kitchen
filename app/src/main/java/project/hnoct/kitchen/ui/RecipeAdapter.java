@@ -59,7 +59,12 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
             view.setFocusable(true);
 
             // Set as the view in ViewHolder and return
-            return new RecipeViewHolder(view);
+            try {
+                return new RecipeViewHolder(view);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
         } else {
             throw new RuntimeException("Not bound to RecyclerViewSelection");
         }
@@ -85,7 +90,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
         // Populate the rest of the views
         holder.recipe_title.setText(recipeTitle);
         holder.recipe_description.setText(recipeDescription);
-        holder.recipe_review_count.setText(Utilities.formatReviews(recipeReviews));
+        holder.recipe_review_count.setText(Utilities.formatReviews(mContext, recipeReviews));
         holder.recipe_rating.setText(Utilities.formatRating(recipeRating));
     }
 

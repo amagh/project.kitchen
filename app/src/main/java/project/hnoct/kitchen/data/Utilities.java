@@ -1,16 +1,19 @@
 package project.hnoct.kitchen.data;
 
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.support.v4.util.Pair;
+import android.util.Log;
 
-import com.annimon.stream.Stream;
-
+import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +23,9 @@ import java.util.regex.Pattern;
 
 public class Utilities {
     /** Constants **/
+    private static final String LOG_TAG = Utilities.class.getSimpleName();
+    public static final int RECIPE_TYPE = 0;
+    public static final int INGREDIENT_TYPE = 1;
 
     /** Member Variables **/
 
@@ -28,12 +34,12 @@ public class Utilities {
      * @param reviews
      * @return
      */
-    public static String formatReviews(long reviews) {
+    public static String formatReviews(Context context, long reviews) {
         // Append 'review(s)' to the number of reviews
-        if (reviews > 1) {
-            return String.format("%s reviews", reviews);
+        if (reviews != 1) {
+            return context.getString(R.string.format_reviews, reviews);
         } else {
-            return String.format("%s review", reviews);
+            return context.getString(R.string.format_reviews_single, reviews);
         }
     }
 
@@ -45,17 +51,18 @@ public class Utilities {
     public static String formatRating(double rating) {
         // Truncate rating to a single decimal point
         DecimalFormat df = new DecimalFormat("#.#");
-        return df.format(rating);
+        return df.format(rating) + "\u2605";
     }
 
     /**
      * Helper method for splitting quantity and ingredient from a single String that contains both
      * @param ingredientAndQuantity String containing quantity and a single ingredient
      * @return Pair with ingredient as First and quantity as Second
+     * TODO: Move measurements within parentheses to end
      */
     public static Pair<String,String> getIngredientQuantity(String ingredientAndQuantity) {
         // Retrieve array of measurements from RecipeContract
-        String[] measurements = IngredientEntry.quantities;
+        String[] measurements = IngredientEntry.measurements;
 
         for (String measurement : measurements) {
             // Check to see if any measurement is used in the input String
@@ -71,9 +78,16 @@ public class Utilities {
                 // Get the last index of the measurement in the input String
                 int lastCharIdx = ingredientAndQuantity.indexOf(measurement) + measurement.length();
 
-                if (ingredientAndQuantity.charAt(lastCharIdx) == 's') {
-                    // Check to see if next character is an 's'. If so, include it
+                if (ingredientAndQuantity.charAt(lastCharIdx) == 's' ||
+                        ingredientAndQuantity.charAt(lastCharIdx) == ')') {
+                    // Check to see if next character is an 's' or end parenthesis ')'. If so, include it
                     lastCharIdx++;
+                }
+
+                if (ingredientAndQuantity.length() == lastCharIdx || ingredientAndQuantity.charAt(lastCharIdx) != ' ') {
+                    // If the index of the last character of the quantity is the length of the
+                    // String or part of another word then skip
+                    continue;
                 }
 
                 // Create two strings as substrings of the inputString
@@ -111,8 +125,8 @@ public class Utilities {
         // Convert URL to URI
         Uri recipeLinkUri = Uri.parse(recipeUrl);
 
-        // Return 3rd segment of the URI as the recipeId
-        return Long.parseLong(recipeLinkUri.getPathSegments().get(2));
+        // Return 2nd segment of the URI as the recipeId
+        return Long.parseLong(recipeLinkUri.getPathSegments().get(1));
     }
 
     /**
@@ -135,5 +149,287 @@ public class Utilities {
         return Uri.parse(ALL_RECIPES_IMAGE_URL_BASE).buildUpon()
                 .appendPath(photoId)
                 .toString();
+    }
+
+    /**
+     * Generates the Allrecipes URL for a recipe given its recipeId
+     * @param recipeId Allrecipes recipeId
+     * @return String URL for link to recipe on AllRecipes website
+     */
+    public static String generateAllRecipesUrlFromRecipeId(long recipeId) {
+        final String ALL_RECIPES_BASE_URL = "http://www.allrecipes.com";
+        Uri recipeUri = Uri.parse(ALL_RECIPES_BASE_URL).buildUpon()
+                .appendPath("recipe")
+                .appendPath(Long.toString(recipeId))
+                .build();
+
+        return recipeUri.toString();
+    }
+
+    /**
+     * Replaces the fraction in a String with its Unicode equivalent
+     * @param context Interface to global context
+     * @param quantity String containing a fraction
+     * @return String containing unicode fraction
+     */
+    public static String convertToUnicodeFraction(Context context, String quantity) {
+        // Find and replace all fractions with their Unicode equivalent
+        if (quantity.contains("1/4")) {
+            quantity = quantity.replaceAll(" {0,1}1/4", context.getString(R.string.one_quarter_fraction));
+        }
+        if (quantity.contains("1/2")) {
+            quantity = quantity.replaceAll(" {0,1}1/2", context.getString(R.string.one_half_fraction));
+        }
+        if (quantity.contains("3/4")) {
+            quantity = quantity.replaceAll(" {0,1}3/4", context.getString(R.string.three_quarter_fraction));
+        }
+        if (quantity.contains("1/8")) {
+            quantity = quantity.replaceAll(" {0,1}1/8", context.getString(R.string.one_eighth_fraction));
+        }
+        if (quantity.contains("3/8")) {
+            quantity = quantity.replaceAll(" {0,1}3/8", context.getString(R.string.three_eighth_fraction));
+        }
+        if (quantity.contains("5/8")) {
+            quantity = quantity.replaceAll(" {0,1}5/8", context.getString(R.string.five_eighth_fraction));
+        }
+        if (quantity.contains("1/3")) {
+            quantity = quantity.replaceAll(" {0,1}1/3", context.getString(R.string.one_third_fraction));
+        }
+        if (quantity.contains("2/3")) {
+            quantity = quantity.replaceAll(" {0,1}2/3", context.getString(R.string.two_third_fraction));
+        }
+        if (quantity.contains("1/5")) {
+            quantity = quantity.replaceAll(" {0,1}1/5", context.getString(R.string.one_fifth_fraction));
+        }
+        if (quantity.contains("2/5")) {
+            quantity = quantity.replaceAll(" {0,1}2/5", context.getString(R.string.two_fifth_fraction));
+        }
+        if (quantity.contains("3/5")) {
+            quantity = quantity.replaceAll(" {0,1}3/5", context.getString(R.string.three_fifth_fraction));
+        }
+        if (quantity.contains("4/5")) {
+            quantity = quantity.replaceAll(" {0,1}4/5", context.getString(R.string.four_fifth_fraction));
+        }
+
+        // Return the modified String
+        return quantity;
+    }
+
+    /**
+     * Toggles the favorite status of the recipe
+     * @param context Interface for global Context
+     * @param recipeId Id of the recipe to be toggle favorite status
+     * @return boolean status of whether the recipe is favorite after the click
+     */
+    public static boolean setRecipeFavorite(Context context, long recipeId) {
+        /** Constants **/
+        String selection = RecipeEntry.COLUMN_RECIPE_ID + " = ?";
+        String[] selectionArgs = new String[] {Long.toString(recipeId)};
+
+        // Query the database to get current favorite status of the recipe
+        Cursor cursor = context.getContentResolver().query(
+                RecipeEntry.CONTENT_URI,
+                RecipeEntry.RECIPE_PROJECTION,
+                selection,
+                selectionArgs,
+                null
+        );
+        cursor.moveToFirst();
+
+        // Favorite is set to true if 1, else false
+        boolean favorite = (cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1);
+        Log.d(LOG_TAG, "Favorite query: " + favorite);
+
+        // Close the cursor so the new status can be written to the database
+        cursor.close();
+
+        // Instantiate the ContentValues that will contain the new favorite value
+        ContentValues favoriteValue = new ContentValues();
+        if (favorite) {
+            // If true, set the favorite value to false (0)
+            favoriteValue.put(RecipeEntry.COLUMN_FAVORITE, 0);
+
+            // Update the database with the new value
+            int rows = context.getContentResolver().update(
+                    RecipeEntry.CONTENT_URI,
+                    favoriteValue,
+                    selection,
+                    selectionArgs
+            );
+
+        } else {
+            /** See above **/
+            favoriteValue.put(RecipeEntry.COLUMN_FAVORITE, 1);
+            int rows = context.getContentResolver().update(
+                    RecipeEntry.CONTENT_URI,
+                    favoriteValue,
+                    selection,
+                    selectionArgs
+            );
+        }
+
+        // Close the cursor so the new status can be written to the database
+        cursor.close();
+
+        // Return the new favorite value
+        return !favorite;
+    }
+
+    /**
+     * Splits the directions up into individual Strings containing one step each
+     * @param directions String containing all directions for a recipe
+     * @return LinkedList containing each step of the recipe
+     */
+    public static List<String> getDirectionList(String directions) {
+        // Split the directions into individual Strings containing one step each
+        String[] directionArray = directions.split("\n");
+
+        // Create LinkedList that will hold all the directions. Since order is imperative, the List
+        // must be Linked
+        List<String> directionList = new LinkedList<>();
+
+        for (String direction : directionArray) {
+            // For each direction in the array, add it to the list
+            directionList.add(direction.trim());
+        }
+
+        return directionList;
+    }
+
+    /**
+     * Extracts the height of the statusbar from system resources
+     * @param context Interface for global context
+     * @return height of the statusbar
+     */
+    public static int getStatusBarHeight(Context context) {
+        int result = 0;
+        int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = context.getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
+    /**
+     * Abbreviates the measurements as to better fit small form-factor screens
+     * @param quantity String containing the quantity and measurement of an ingredient
+     * @return String containing the quantity and abbreviated measurement of an ingredient
+     */
+    public static String abbreviateMeasurements(String quantity) {
+        if (quantity.contains("teaspoon")) {
+            quantity = quantity.replaceAll("teaspoons{0,1}", "tsp");
+        }
+        if (quantity.contains("tablespoon")) {
+            quantity = quantity.replaceAll("tablespoons{0,1}", "tbsp");
+        }
+        if (quantity.contains("pound")) {
+            quantity = quantity.replaceAll("pound", "lb");
+        }
+        if (quantity.contains("fluid ounce")) {
+            quantity = quantity.replaceAll("fluid ounces{0,1}", "fl oz");
+        }
+        if (quantity.contains("ounce")) {
+            quantity = quantity.replaceAll("ounces{0,1}", "oz");
+        }
+
+        return quantity;
+    }
+
+    /**
+     * Prepends the by-line to the name of the author
+     * @param context Interface to global context
+     * @param author Author of the recipe
+     * @return Author of recipe prepended with by-line (e.g. Recipe by hnocturna)
+     */
+    public static String formatAuthor(Context context, String author) {
+        return context.getString(R.string.format_author, author);
+    }
+
+    /**
+     * Generates a new ID given that there are conflicting IDs that already exist in the database
+     * @param context
+     * @param id
+     * @param type
+     * @return
+     */
+    public static long generateNewId(Context context, long id, int type) {
+        switch (type) {
+            case RECIPE_TYPE: {
+                // Instantiate a new List that will hold all the recipeIds that already exist
+                List<Long> recipeIdList = new ArrayList<>();
+
+                // Query the database for recipeIds
+                Cursor cursor = context.getContentResolver().query(
+                        RecipeEntry.CONTENT_URI,
+                        new String[] {RecipeEntry.COLUMN_RECIPE_ID},
+                        null,
+                        null,
+                        null
+                );
+
+                // Add all recipeIds to the List
+                if (cursor.moveToFirst()) do {
+                    recipeIdList.add(cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_RECIPE_ID)));
+                } while (cursor.moveToNext());
+
+                // Close the cursor
+                cursor.close();
+
+                // Increment the ID until an unused ID is found
+                while (recipeIdList.contains(id)) {
+                    id++;
+                    Log.d(LOG_TAG, "Generating new ID: " + id);
+                }
+
+                // Return the new ID
+                return id;
+            }
+
+            case INGREDIENT_TYPE: {
+                // See above for explanation
+                List<Long> ingredientIdList = new ArrayList<>();
+
+                Cursor cursor = context.getContentResolver().query(
+                        IngredientEntry.CONTENT_URI,
+                        new String[] {IngredientEntry.COLUMN_INGREDIENT_ID},
+                        null,
+                        null,
+                        null
+                );
+
+
+                if (cursor.moveToFirst()) do {
+                    ingredientIdList.add(cursor.getLong(cursor.getColumnIndex(IngredientEntry.COLUMN_INGREDIENT_ID)));
+                } while (cursor.moveToNext());
+
+                cursor.close();
+
+                while (ingredientIdList.contains(id)) {
+                    id++;
+                    Log.d(LOG_TAG, "Generating new ID: " + id);
+                }
+
+                return id;
+            }
+
+            default: throw new UnsupportedOperationException("Unknown type: " + type);
+        }
+    }
+
+    public static String getIngredientNameFromId(Context context, long ingredientId) {
+        String ingredientName = null;
+        Cursor cursor = context.getContentResolver().query(
+                IngredientEntry.CONTENT_URI,
+                null,
+                IngredientEntry.COLUMN_INGREDIENT_ID + " = ?",
+                new String[] {Long.toString(ingredientId)},
+                null
+        );
+
+        if (cursor.moveToFirst()) {
+            ingredientName = cursor.getString(cursor.getColumnIndex(IngredientEntry.COLUMN_INGREDIENT_NAME));
+        }
+        cursor.close();
+        return ingredientName;
     }
 }
