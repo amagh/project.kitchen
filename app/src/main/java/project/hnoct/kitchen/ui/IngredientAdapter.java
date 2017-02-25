@@ -4,6 +4,7 @@ package project.hnoct.kitchen.ui;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,8 @@ import android.widget.TextView;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -54,10 +57,20 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
         // Retrieve ingredient information
         String quantity = mCursor.getString(RecipeDetailsFragment.IDX_LINK_QUANTITY);
         String ingredient = mCursor.getString(RecipeDetailsFragment.IDX_INGREDIENT_NAME);
+        Pattern pattern = Pattern.compile("[A-Z].*:");
+        Matcher match = pattern.matcher(ingredient);
+
+        if (match.matches()) {
+            ingredient = ingredient.substring(0, ingredient.length() -1);
+            holder.ingredientNameText.setText(ingredient);
+            holder.ingredientNameText.setTypeface(holder.ingredientNameText.getTypeface(), Typeface.BOLD);
+        } else {
+            holder.ingredientNameText.setText(ingredient);
+        }
 
         // Set the view parameters
         holder.quantityText.setText(Utilities.abbreviateMeasurements(quantity));
-        holder.ingredientNameText.setText(ingredient);
+        holder.addIngredientButton.setVisibility(View.INVISIBLE);
     }
 
     @Override

@@ -3,7 +3,6 @@ package project.hnoct.kitchen.ui;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +13,7 @@ import com.bumptech.glide.Glide;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import project.hnoct.kitchen.R;
 
 import project.hnoct.kitchen.data.RecipeContract.*;
@@ -75,23 +75,36 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
         // Return the data located at the correct row (position of the view)
         mCursor.moveToPosition(position);
         String recipeTitle = mCursor.getString(RecipeEntry.IDX_RECIPE_NAME);
+        String recipeAuthor = mCursor.getString(RecipeEntry.IDX_RECIPE_AUTHOR);
+        String recipeAttribution = mCursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
         String recipeDescription = mCursor.getString(RecipeEntry.IDX_SHORT_DESCRIPTION);
         String recipeThumbnailUrl = mCursor.getString(RecipeEntry.IDX_THUMBNAIL_URL);
+        String recipeImgUrl = mCursor.getString(RecipeEntry.IDX_IMG_URL);
         Long recipeReviews = mCursor.getLong(RecipeEntry.IDX_RECIPE_REVIEWS);
         Double recipeRating = mCursor.getDouble(RecipeEntry.IDX_RECIPE_RATING);
+        boolean favorite = mCursor.getInt(RecipeEntry.IDX_FAVORITE) == 1;
 
-        if (recipeThumbnailUrl != null) {
+        if (recipeImgUrl != null) {
             // Use Glide to load image into view
             Glide.with(mContext)
-                    .load(recipeThumbnailUrl)
-                    .into(holder.recipe_thumb);
+                    .load(recipeImgUrl)
+                    .into(holder.recipeImage);
         }
 
         // Populate the rest of the views
-        holder.recipe_title.setText(recipeTitle);
-        holder.recipe_description.setText(recipeDescription);
-        holder.recipe_review_count.setText(Utilities.formatReviews(mContext, recipeReviews));
-        holder.recipe_rating.setText(Utilities.formatRating(recipeRating));
+        holder.recipeTitle.setText(recipeTitle);
+        holder.recipeAuthor.setText(Utilities.formatAuthor(mContext, recipeAuthor));
+        holder.recipeAttribution.setText(recipeAttribution);
+        holder.recipeDescription.setText(recipeDescription);
+        holder.recipeReviews.setText(Utilities.formatReviews(mContext, recipeReviews));
+        holder.recipeRating.setText(Utilities.formatRating(recipeRating));
+
+        // Set the icon of the favorite button depending on its favorite status
+        if (favorite) {
+            holder.favoriteButton.setColorFilter(mContext.getResources().getColor(R.color.favorite_enabled));
+        } else {
+            holder.favoriteButton.setColorFilter(mContext.getResources().getColor(R.color.favorite_disabled));
+        }
     }
 
     @Override
@@ -110,11 +123,27 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
     }
 
     public class RecipeViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-        @BindView(R.id.list_title) TextView recipe_title;
-        @BindView(R.id.list_description) TextView recipe_description;
-        @BindView(R.id.list_thumbnail) ImageView recipe_thumb;
-        @BindView(R.id.list_reviews_count) TextView recipe_review_count;
-        @BindView(R.id.list_avg_rating) TextView recipe_rating;
+        @BindView(R.id.list_title) TextView recipeTitle;
+        @BindView(R.id.list_recipe_author_text) TextView recipeAuthor;
+        @BindView(R.id.list_recipe_attribution_text) TextView recipeAttribution;
+        @BindView(R.id.list_recipe_description_text) TextView recipeDescription;
+        @BindView(R.id.list_recipe_reviews_text) TextView recipeReviews;
+        @BindView(R.id.list_recipe_rating_text) TextView recipeRating;
+        @BindView(R.id.list_thumbnail) ImageView recipeImage;
+        @BindView(R.id.list_recipe_favorite_button) ImageView favoriteButton;
+
+        @OnClick(R.id.list_recipe_favorite_button)
+        public void favorite(ImageView view) {
+            mCursor.moveToPosition(getAdapterPosition());
+            long recipeId = mCursor.getLong(RecipeEntry.IDX_RECIPE_ID);
+            boolean favorite = Utilities.setRecipeFavorite(mContext, recipeId);
+            if (favorite) {
+                view.setColorFilter(mContext.getResources().getColor(R.color.favorite_enabled));
+            } else {
+                view.setColorFilter(mContext.getResources().getColor(R.color.favorite_disabled));
+            }
+            notifyItemChanged(getAdapterPosition());
+        }
 
         public RecipeViewHolder(View view) {
             super(view);

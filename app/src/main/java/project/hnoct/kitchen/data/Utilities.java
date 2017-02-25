@@ -216,6 +216,55 @@ public class Utilities {
     }
 
     /**
+     * @see #convertToUnicodeFraction(Context, String) but doesn't remove the preceeding space for
+     * direction formatting
+     * @param context Interface to global context
+     * @param direction Directions for a recipe
+     * @return Directions for a recipe with fractions replaced with their Unicode equivalent
+     */
+    public static String convertToUnicodeFractionForDirections(Context context, String direction) {
+        // Find and replace all fractions with their Unicode equivalent
+        if (direction.contains("1/4")) {
+            direction = direction.replaceAll("1/4", context.getString(R.string.one_quarter_fraction));
+        }
+        if (direction.contains("1/2")) {
+            direction = direction.replaceAll("1/2", context.getString(R.string.one_half_fraction));
+        }
+        if (direction.contains("3/4")) {
+            direction = direction.replaceAll("3/4", context.getString(R.string.three_quarter_fraction));
+        }
+        if (direction.contains("1/8")) {
+            direction = direction.replaceAll("1/8", context.getString(R.string.one_eighth_fraction));
+        }
+        if (direction.contains("3/8")) {
+            direction = direction.replaceAll("3/8", context.getString(R.string.three_eighth_fraction));
+        }
+        if (direction.contains("5/8")) {
+            direction = direction.replaceAll("5/8", context.getString(R.string.five_eighth_fraction));
+        }
+        if (direction.contains("1/3")) {
+            direction = direction.replaceAll("1/3", context.getString(R.string.one_third_fraction));
+        }
+        if (direction.contains("2/3")) {
+            direction = direction.replaceAll("2/3", context.getString(R.string.two_third_fraction));
+        }
+        if (direction.contains("1/5")) {
+            direction = direction.replaceAll("1/5", context.getString(R.string.one_fifth_fraction));
+        }
+        if (direction.contains("2/5")) {
+            direction = direction.replaceAll("2/5", context.getString(R.string.two_fifth_fraction));
+        }
+        if (direction.contains("3/5")) {
+            direction = direction.replaceAll("3/5", context.getString(R.string.three_fifth_fraction));
+        }
+        if (direction.contains("4/5")) {
+            direction = direction.replaceAll("4/5", context.getString(R.string.four_fifth_fraction));
+        }
+
+        return direction;
+    }
+
+    /**
      * Toggles the favorite status of the recipe
      * @param context Interface for global Context
      * @param recipeId Id of the recipe to be toggle favorite status
@@ -238,7 +287,6 @@ public class Utilities {
 
         // Favorite is set to true if 1, else false
         boolean favorite = (cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1);
-        Log.d(LOG_TAG, "Favorite query: " + favorite);
 
         // Close the cursor so the new status can be written to the database
         cursor.close();
@@ -250,7 +298,7 @@ public class Utilities {
             favoriteValue.put(RecipeEntry.COLUMN_FAVORITE, 0);
 
             // Update the database with the new value
-            int rows = context.getContentResolver().update(
+            context.getContentResolver().update(
                     RecipeEntry.CONTENT_URI,
                     favoriteValue,
                     selection,
@@ -260,7 +308,7 @@ public class Utilities {
         } else {
             /** See above **/
             favoriteValue.put(RecipeEntry.COLUMN_FAVORITE, 1);
-            int rows = context.getContentResolver().update(
+            context.getContentResolver().update(
                     RecipeEntry.CONTENT_URI,
                     favoriteValue,
                     selection,

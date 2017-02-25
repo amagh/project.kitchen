@@ -1,6 +1,7 @@
 package project.hnoct.kitchen.ui;
 
 import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.Utilities;
 
 /**
  * Created by hnoct on 2/21/2017.
@@ -40,7 +42,10 @@ public class DirectionAdapter extends RecyclerView.Adapter<DirectionAdapter.Dire
 
     @Override
     public void onBindViewHolder(DirectionAdapter.DirectionViewHolder holder, int position) {
-        String direction = mDirectionList.get(position);
+        String direction = Utilities.convertToUnicodeFractionForDirections(
+                mContext,
+                mDirectionList.get(position)
+        );
         holder.directionStepText.setText(mContext.getString(R.string.direction_step, position + 1));
         holder.directionText.setText(direction);
     }
@@ -68,12 +73,30 @@ public class DirectionAdapter extends RecyclerView.Adapter<DirectionAdapter.Dire
         @BindView(R.id.list_direction_step_text) TextView directionStepText;
         @BindView(R.id.list_direction_text) TextView directionText;
         @BindView(R.id.list_direction_overlay) ImageView directionOverlay;
+        boolean overlayEnabled = false;
 
         /** Might be able to do this with touch selector instead **/
         @Override
         public void onClick(View view) {
-//            if (directionOverlay.getDrawable() == mContext.getDrawable(R.drawable.)
-//            directionOverlay.setImageDrawable(R.drawable);
+//            int colorEnabled = mContext.getResources().getColor(R.color.direction_overlay_enabled);
+//            int colorDisabled = mContext.getResources().getColor(R.color.direction_overlay_disabled);
+//
+//            if (!overlayEnabled) {
+//                GradientDrawable gd = new GradientDrawable(
+//                        GradientDrawable.Orientation.TOP_BOTTOM,
+//                        new int[] {colorEnabled, colorEnabled}
+//                );
+//                directionOverlay.setBackground(gd);
+//                overlayEnabled = true;
+//            } else {
+//                GradientDrawable gd = new GradientDrawable(
+//                        GradientDrawable.Orientation.TOP_BOTTOM,
+//                        new int[] {colorDisabled, colorDisabled}
+//                );
+//                directionOverlay.setBackground(gd);
+//                overlayEnabled = false;
+//            }
+//            notifyItemChanged(getAdapterPosition());
         }
 
         public DirectionViewHolder(View itemView) {

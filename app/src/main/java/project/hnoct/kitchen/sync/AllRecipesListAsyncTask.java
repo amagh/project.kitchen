@@ -29,7 +29,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
     /** Constants **/
     private final String LOG_TAG = AllRecipesListAsyncTask.class.getSimpleName();
     private final String ALL_RECIPES_BASE_URL = "http://www.allrecipes.com";
-    private final String ALL_RECIPES_ATTRIBUTION = "Allrecipes.com";
+    public static final String ALL_RECIPES_ATTRIBUTION = "Allrecipes.com";
 
     /** Member Variables **/
     Context mContext;       // Interface to global context
@@ -170,16 +170,6 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
             // Update appropriate recipes
             if (cursor.moveToFirst()) {
-                if (!recipeValue.get(RecipeEntry.COLUMN_RECIPE_NAME).equals(cursor.getString(RecipeEntry.IDX_RECIPE_NAME))) {
-                    // Recipe ID exists, but for with a different recipe name. generate new recipeID
-                    long newRecipeId = Utilities.generateNewId(mContext, recipeId, Utilities.RECIPE_TYPE);
-
-                    // Replace the recipeId in the ContentValues
-                    recipeValue.put(RecipeEntry.COLUMN_RECIPE_ID, newRecipeId);
-
-                    // Skip this entry
-                    continue;
-                }
                 // If cursor returns a row, then update the values if they have changed
                 // Get the review and rating values from the ContentValues to be updated
                 double dbRating = cursor.getDouble(RecipeEntry.IDX_RECIPE_RATING);

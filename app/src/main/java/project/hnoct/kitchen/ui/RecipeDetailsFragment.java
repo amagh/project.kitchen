@@ -54,7 +54,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
             RecipeEntry.COLUMN_REVIEWS,
             RecipeEntry.COLUMN_DIRECTIONS,
             RecipeEntry.COLUMN_FAVORITE,
-            RecipeEntry.COLUMN_SOURCE,
+            RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE,
             IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID,
             IngredientEntry.COLUMN_INGREDIENT_NAME,
             LinkEntry.COLUMN_QUANTITY,

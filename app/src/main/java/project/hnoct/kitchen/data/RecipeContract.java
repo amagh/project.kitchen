@@ -147,9 +147,9 @@ public class RecipeContract {
         public static final String COLUMN_INGREDIENT_NAME = "ingredient";   // TEXT NOT NULL
 
         public static final String[] measurements = new String[] {
-                "mL", "loaf", "can", "package", "tablespoon", "teaspoon", "clove", "cup", "pint",
+                "mL", "loaf", "can", "package", "container", "tablespoon", "teaspoon", "clove", "cup", "pint",
                 "quart", "gallon", "ounce", "fluid ounce", "jar", "dashes", "dash", "pinch", "slice",
-                "pound", "container", "package"
+                "pound"
         };
 
         /** See RecipeEntry for comments on following methods **/

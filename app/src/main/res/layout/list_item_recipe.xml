@@ -48,45 +48,50 @@
         android:layout_marginTop="@dimen/list_recipe_thumbnail_height_single"
         android:layout_marginLeft="@dimen/text_horizontal_margin"
         android:layout_marginRight="@dimen/text_horizontal_margin"
-        app:columnCount="3">
+        app:columnCount="2">
 
         <TextView
-            android:id="@+id/list_description"
+            android:id="@+id/list_recipe_description_text"
             android:paddingBottom="@dimen/card_vertical_padding"
-            app:layout_columnSpan="3"
-            app:layout_gravity="fill_horizontal"
+            app:layout_columnSpan="2"
             tools:text="Simple fried chicken from Kentucky" />
 
         <TextView
-            android:id="@+id/list_reviews_count"
-            app:layout_columnSpan="2"
+            android:id="@+id/list_recipe_author_text"
             app:layout_columnWeight="1"
+            tools:text="Recipe by hnocturna" />
+
+        <TextView
+            android:id="@+id/list_recipe_attribution_text"
+            android:gravity="end"
+            app:layout_columnWeight="1"
+            app:layout_gravity="fill_horizontal"
+            tools:text="Allrecipes"
+            />
+
+        <TextView
+            android:id="@+id/list_recipe_reviews_text"
+            app:layout_columnSpan="1"
+            app:layout_columnWeight="1"
+            app:layout_gravity="fill_vertical"
             tools:text="25 reviews" />
 
         <ImageView
-            android:src="@drawable/favorite_star_disabled"
+            android:id="@+id/list_recipe_favorite_button"
             android:tint="@color/review_star_grey"
             android:scaleType="fitCenter"
             android:layout_height="0dp"
             app:layout_rowSpan="2"
-            app:layout_gravity="fill_vertical"
-            android:layout_width="wrap_content" />
+            app:layout_gravity="end|fill_vertical"
+            android:src="@drawable/favorite_star_disabled"
+             />
 
         <TextView
-            android:id="@+id/list_avg_rating"
+            android:id="@+id/list_recipe_rating_text"
             android:gravity="center_vertical"
-            app:layout_gravity="fill_vertical"
-            tools:text="4.9" />
-
-        <ImageView
-            android:src="@drawable/favorite_star_disabled"
-            android:tint="@color/primary_text_black"
-            android:layout_height="18dp"
-            android:layout_width="18dp"
             app:layout_columnWeight="1"
-            app:layout_gravity="start|center_vertical"
-            />
-
+            app:layout_gravity="center_vertical|fill_vertical"
+            tools:text="4.9\u2605" />
 
     </android.support.v7.widget.GridLayout>
 

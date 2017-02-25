@@ -72,6 +72,11 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
 
                 // Retrieve the ingredientId from the Element
                 long ingredientId = Long.parseLong(ingredientElement.attr("data-id"));
+                if (ingredientId == 0) {
+                    // Ingredients without ingredientIds are section headings and should be relegated
+                    // to an unused spot in the ingredient table
+                    ingredientId = 1000000;
+                }
 
                 // Generate a new ingredientId if needed
                 String databaseIngredientName = Utilities.getIngredientNameFromId(mContext, ingredientId);
@@ -102,6 +107,7 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
                 ContentValues linkValue = new ContentValues();
                 linkValue.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
                 linkValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
+                linkValue.put(RecipeEntry.COLUMN_SOURCE, AllRecipesListAsyncTask.ALL_RECIPES_ATTRIBUTION);
                 linkValue.put(LinkEntry.COLUMN_QUANTITY, quantity);
                 linkValue.put(LinkEntry.COLUMN_INGREDIENT_ORDER, ingredientOrder);
 
@@ -128,10 +134,8 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
                 builder.append(direction).append("\n");
             }
 
-            // Create String from StringBuilder and trim the final appended new line ('\n') and
-            // convert fractions to Unicode equivalent
-            String directions = Utilities.convertToUnicodeFraction(mContext, builder.toString()
-                    .trim());
+            // Create String from StringBuilder and trim the final appended new line ('\n')
+            String directions = builder.toString().trim();
 
             // Create ContentValues from directions
             ContentValues recipeValue = new ContentValues();

@@ -37,7 +37,9 @@ public class RecipeProvider extends ContentProvider {
                 RecipeEntry.TABLE_NAME + " INNER JOIN " +
                         LinkEntry.TABLE_NAME + " ON " +
                         RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = " +
-                        LinkEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " INNER JOIN " +
+                        LinkEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " AND " +
+                        RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = " +
+                        LinkEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " INNER JOIN " +
                         IngredientEntry.TABLE_NAME + " ON " +
                         LinkEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID + " = " +
                         IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID
@@ -104,7 +106,7 @@ public class RecipeProvider extends ContentProvider {
         );
     }
 
-    /** See {@link #getRecipeById(Uri, String[], String)} **/
+    /** @see #getRecipeById(Uri, String[], String) **/
     private Cursor getIngredientById(Uri uri, String[] projection, String sortOrder) {
         long ingredientId = IngredientEntry.getIngredientIdFromUri(uri);
 

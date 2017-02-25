@@ -42,7 +42,9 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 RecipeEntry.COLUMN_SOURCE + " TEXT NOT NULL, " +
                 // Links to the relational table to reference the quantity of each ingredient
                 "FOREIGN KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ") REFERENCES " +
-                LinkEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_RECIPE_ID + "));";
+                LinkEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_RECIPE_ID + ")" +
+                "FOREIGN KEY (" + RecipeEntry.COLUMN_SOURCE + ") REFERENCES " +
+                LinkEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_SOURCE + "));";
 
         // Table storing ingredients
         final String SQL_CREATE_INGREDIENT_TABLE = "CREATE TABLE " + IngredientEntry.TABLE_NAME + " (" +
@@ -56,11 +58,12 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
         // Table for relating the amount of ingredients in each recipe
         final String SQL_CRATE_LINK_TABLE = "CREATE TABLE " + LinkEntry.TABLE_NAME + " (" +
                 RecipeEntry.COLUMN_RECIPE_ID + " REAL NOT NULL, " +
+                RecipeEntry.COLUMN_SOURCE + " TEXT NOT NULL, " +
                 IngredientEntry.COLUMN_INGREDIENT_ID + " REAL NOT NULL, " +
                 LinkEntry.COLUMN_QUANTITY + " TEXT NOT NULL, " +
                 LinkEntry.COLUMN_INGREDIENT_ORDER + " INTEGER NOT NULL, " +
                 // Utilize the combination of recipe and ingredient as the primary key
-                "PRIMARY KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ", " + IngredientEntry.COLUMN_INGREDIENT_ID + "));";
+                "PRIMARY KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ", " + RecipeEntry.COLUMN_SOURCE + ", " + IngredientEntry.COLUMN_INGREDIENT_ID + "));";
 
         sqLiteDatabase.execSQL(SQL_CREATE_RECIPE_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_INGREDIENT_TABLE);
