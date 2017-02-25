@@ -61,6 +61,14 @@ public class RecipeContract {
         public static final String COLUMN_DATE_ADDED = "date_added";            // REAL NOT NULL
         public static final String COLUMN_FAVORITE = "favorite";                // INTEGER NOT NULL
         public static final String COLUMN_SOURCE = "source";                    // TEXT NOT NULL
+        // Nutrition Info
+        public static final String COLUMN_CALORIES = "calories";                // REAL
+        public static final String COLUMN_FAT = "fat";                          // REAL
+        public static final String COLUMN_CARBS = "carbs";                      // REAL
+        public static final String COLUMN_PROTEIN = "protein";                  // REAL
+        public static final String COLUMN_CHOLESTEROL = "cholesterol";          // REAL
+        public static final String COLUMN_SODIUM = "sodium";                    // REAL
+        public static final String COLUMN_UNIQUE_IDX = "unique_id_source";      // UNIQUE (combination of recipe_id & source) - FOREIGN KEY
 
         // Column Projection and index
         public static final String[] RECIPE_PROJECTION = new String[] {
@@ -76,7 +84,14 @@ public class RecipeContract {
                 COLUMN_DIRECTIONS,
                 COLUMN_DATE_ADDED,
                 COLUMN_FAVORITE,
-                COLUMN_SOURCE
+                COLUMN_SOURCE,
+                COLUMN_CALORIES,
+                COLUMN_FAT,
+                COLUMN_CARBS,
+                COLUMN_PROTEIN,
+                COLUMN_CHOLESTEROL,
+                COLUMN_SODIUM,
+                COLUMN_UNIQUE_IDX
         };
 
         public static final int IDX_RECIPE_ID = 0;
@@ -92,7 +107,13 @@ public class RecipeContract {
         public static final int IDX_DATE_ADDED = 10;
         public static final int IDX_FAVORITE = 11;
         public static final int IDX_RECIPE_SOURCE = 12;
-
+        public static final int IDX_CALORIES = 13;
+        public static final int IDX_FAT = 14;
+        public static final int IDX_CARBS = 15;
+        public static final int IDX_PROTEIN = 16;
+        public static final int IDX_CHOLESTEROL = 17;
+        public static final int IDX_SODIUM = 18;
+        public static final int IDX_UNIQUE = 19;
 
         /**
          * Builds URI for a specific row in the database

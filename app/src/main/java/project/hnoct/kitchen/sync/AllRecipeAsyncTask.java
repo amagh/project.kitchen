@@ -49,6 +49,7 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
         List<Long> ingredientIdList = new ArrayList<>();        // Hack for duplicate ingredients. See below.
         List<ContentValues> ingredientCVList = new ArrayList<>();
         List<ContentValues> linkCVList = new LinkedList<>();
+        List<ContentValues> nutritionValues = new LinkedList<>();
 
         try {
             // Connect to the recipe URL and get the document
