@@ -20,6 +20,7 @@
         tools:text="286 kcal"/>
 
     <FrameLayout
+        android:id="@+id/list_nutrient_percentage_background"
         android:layout_width="@dimen/list_nutrient_percent_keyline"
         android:background="@color/grey_300"
         android:layout_margin="3dp"

@@ -2,9 +2,11 @@ package project.hnoct.kitchen.data;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.v4.util.Pair;
+import android.util.DisplayMetrics;
 import android.util.Log;
 
 import project.hnoct.kitchen.R;
@@ -479,5 +481,25 @@ public class Utilities {
         }
         cursor.close();
         return ingredientName;
+    }
+
+    public static float convertPixelsToDp(float pixels) {
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+        return pixels / ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+    }
+
+    public static float convertDpToPixels(float dips) {
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+        return dips * ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+    }
+
+    /**
+     * TODO: Finish this stub!
+     * @param nutrientType
+     * @param nutrientValue
+     * @return
+     */
+    public static double getDailyValues(int nutrientType, double nutrientValue) {
+        return 0;
     }
 }
