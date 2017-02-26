@@ -103,6 +103,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     @BindView(R.id.details_direction_title_text) TextView mDirectionTitleText;
     @BindView(R.id.details_line_separator_top) View mLineSeparatorTop;
     @BindView(R.id.details_line_separator_bottom) View mLineSeparatorBottom;
+    @BindView(R.id.details_nutrient_drawer) RecyclerView mNutrientRecyclerView;
 
     public RecipeDetailsFragment() {
     }

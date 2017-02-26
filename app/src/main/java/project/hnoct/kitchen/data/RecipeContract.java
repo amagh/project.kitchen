@@ -68,7 +68,7 @@ public class RecipeContract {
         public static final String COLUMN_PROTEIN = "protein";                  // REAL
         public static final String COLUMN_CHOLESTEROL = "cholesterol";          // REAL
         public static final String COLUMN_SODIUM = "sodium";                    // REAL
-        public static final String COLUMN_UNIQUE_IDX = "unique_id_source";      // UNIQUE (combination of recipe_id & source) - FOREIGN KEY
+        public static final String COLUMN_SERVINGS = "servings";                // INTEGER
 
         // Column Projection and index
         public static final String[] RECIPE_PROJECTION = new String[] {
@@ -91,7 +91,7 @@ public class RecipeContract {
                 COLUMN_PROTEIN,
                 COLUMN_CHOLESTEROL,
                 COLUMN_SODIUM,
-                COLUMN_UNIQUE_IDX
+//                COLUMN_UNIQUE_IDX
         };
 
         public static final int IDX_RECIPE_ID = 0;
@@ -113,7 +113,7 @@ public class RecipeContract {
         public static final int IDX_PROTEIN = 16;
         public static final int IDX_CHOLESTEROL = 17;
         public static final int IDX_SODIUM = 18;
-        public static final int IDX_UNIQUE = 19;
+//        public static final int IDX_UNIQUE = 19;
 
         /**
          * Builds URI for a specific row in the database

@@ -49,11 +49,51 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
         List<Long> ingredientIdList = new ArrayList<>();        // Hack for duplicate ingredients. See below.
         List<ContentValues> ingredientCVList = new ArrayList<>();
         List<ContentValues> linkCVList = new LinkedList<>();
-        List<ContentValues> nutritionValues = new LinkedList<>();
 
         try {
             // Connect to the recipe URL and get the document
             Document recipeDoc = Jsoup.connect(recipeUrl).get();
+
+            // Instantiate ContentValues to hold nutrient information and direction information
+            ContentValues recipeValues = new ContentValues();
+
+            // Retrieve the serving count for the recipe
+            Element servingElement = recipeDoc.select("span.servings-count").first();
+            int servings = Integer.parseInt(servingElement.text());
+
+            // Select all Elements containing nutrition information
+            Elements nutritionElements = recipeDoc.select("div.recipe-nutrition__form");
+            for (Element nutrientElement : nutritionElements) {
+                // Retrieve the nutrient type and value
+                Element nutrientTypeElement = nutrientElement.select("ul.nutrientLine")
+                        .select("li.nutrientLine__item--amount").first();
+                String nutrientType = nutrientTypeElement.attr("itemprop");
+                long nutrientValue = Long.parseLong(
+                        nutrientTypeElement.select("span").first().text()
+                );
+
+                // Add a ContentValues pair based on nutrient type
+                switch (nutrientType) {
+                    case "calories": {
+                        recipeValues.put(RecipeEntry.COLUMN_CALORIES, nutrientValue);
+                    }
+                    case "fatContent": {
+                        recipeValues.put(RecipeEntry.COLUMN_FAT, nutrientValue);
+                    }
+                    case "carbohydrateContent": {
+                        recipeValues.put(RecipeEntry.COLUMN_CARBS, nutrientValue);
+                    }
+                    case "proteinContent": {
+                        recipeValues.put(RecipeEntry.COLUMN_PROTEIN, nutrientValue);
+                    }
+                    case "cholesterolContent": {
+                        recipeValues.put(RecipeEntry.COLUMN_CHOLESTEROL, nutrientValue);
+                    }
+                    case "sodiumContent": {
+                        recipeValues.put(RecipeEntry.COLUMN_SODIUM, nutrientValue);
+                    }
+                }
+            }
 
             // Select all Elements containing ingredient information
             Elements ingredientElements = recipeDoc.select("span.recipe-ingred_txt").select("[itemprop='ingredients'");
@@ -139,13 +179,12 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
             String directions = builder.toString().trim();
 
             // Create ContentValues from directions
-            ContentValues recipeValue = new ContentValues();
-            recipeValue.put(RecipeEntry.COLUMN_DIRECTIONS, directions);
+            recipeValues.put(RecipeEntry.COLUMN_DIRECTIONS, directions);
 
             // Update the database with new recipe directions
             mContext.getContentResolver().update(
                     RecipeEntry.CONTENT_URI,
-                    recipeValue,
+                    recipeValues,
                     RecipeEntry.COLUMN_RECIPE_ID + " = ?",
                     new String[] {Long.toString(recipeId)}
             );

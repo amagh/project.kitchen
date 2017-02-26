@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">kitchen</string>
     <string name="action_settings">Settings</string>
     <string name="favorite_title">Favorite</string>
@@ -9,6 +9,7 @@
     <string name="recipe_key" translatable="false">recipe</string>
     <string name="quantity_key" translatable="false">quantity</string>
     <string name="favorite_key" translatable="false">favorite</string>
+    <string name="calorie_key" translatable="false">calories</string>
 
     <!-- Fractions -->
     <string name="one_quarter_fraction">\u00BC</string>
@@ -34,5 +35,24 @@
     <!-- Formatting -->
     <string name="format_reviews">%d reviews</string>
     <string name="format_reviews_single">%d review</string>
-    <string name="format_author">Recipe by %s</string>
+    <string name="format_author">Recipe by <xliff:g id="author">%s</xliff:g></string>
+    
+    <!-- Nutrition Info -->
+    <string name="nutrient_calories">Calories</string>
+    <string name="nutrient_fat">Fat</string>
+    <string name="nutrient_carbs">Carbs</string>
+    <string name="nutrient_protein">Protein</string>
+    <string name="nutrient_cholesterol">Cholesterol</string>
+    <string name="nutrient_sodium">Sodium</string>
+
+    <string name="format_nutrient_calories">%f <xliff:g id="calorie_measurement">kcal</xliff:g></string>
+    <string name="format_nutrient_fat">%f <xliff:g id="fat_measurement">g</xliff:g></string>
+    <string name="format_nutrient_carbs">%f <xliff:g id="carbs_measurement">g</xliff:g></string>
+    <string name="format_nutrient_cholesterol">%f <xliff:g id="cholesterol_measurement">mg</xliff:g></string>
+    <string name="format_nutrient_sodium">%f <xliff:g id="sodium_measurement">mg</xliff:g></string>
+
+    <string name="nutrition_info_serving_disclosure">Amount per serving (%d total)</string>
+    <string name="nutrition_info_disclosure">Percentage values are based on %s calorie diet</string>
+    <string name="set_user_calories_prompt">How many calories should the nutrition information be calculated for?</string>
+    <string name="calories_default">2000</string>
 </resources>

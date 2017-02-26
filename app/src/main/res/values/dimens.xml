@@ -16,7 +16,7 @@
 
     <!-- Ingredient list item -->
     <dimen name="list_ingredient_keyline">64dp</dimen>
-    <dimen name="list_ingredient_height">24dp</dimen>
+    <dimen name="list_ingredient_min_height">24dp</dimen>
 
     <!-- Direction list item -->
     <dimen name="list_direction_keyline">64dp</dimen>
@@ -25,4 +25,11 @@
     <!-- Recipe Details Activity -->
     <dimen name="details_line_separator_padding">48dp</dimen>
     <dimen name="details_description_text_padding">12dp</dimen>
+    <dimen name="details_nutrient_drawer_width">280dp</dimen>
+
+    <!-- Nutrient Drawer list item-->
+    <dimen name="list_nutrient_keyline">85dp</dimen>
+    <dimen name="list_nutrient_value_keyline">60dp</dimen>
+    <dimen name="list_nutrient_percent_keyline">100dp</dimen>
+    <dimen name="list_nutrient_min_height">24dp</dimen>
 </resources>

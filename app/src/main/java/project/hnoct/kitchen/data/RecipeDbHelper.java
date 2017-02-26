@@ -45,17 +45,19 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 RecipeEntry.COLUMN_CARBS + " REAL, " +
                 RecipeEntry.COLUMN_PROTEIN + " REAL, " +
                 RecipeEntry.COLUMN_CHOLESTEROL + " REAL, " +
-                RecipeEntry.COLUMN_SODIUM + " REAL);";
+                RecipeEntry.COLUMN_SODIUM + " REAL, " +
+                RecipeEntry.COLUMN_SERVINGS+ " INTEGER, " +
+                "UNIQUE (" + RecipeEntry.COLUMN_RECIPE_ID + ", " + RecipeEntry.COLUMN_SOURCE + "));";
 //                // Links to the relational table to reference the quantity of each ingredient
 //                "FOREIGN KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ") REFERENCES " +
 //                LinkEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_RECIPE_ID + ")" +
 //                "FOREIGN KEY (" + RecipeEntry.COLUMN_SOURCE + ") REFERENCES " +
 //                LinkEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_SOURCE + "));";
 
-        final String SQL_CREATE_UNIQUE_INDEX = "CREATE UNIQUE INDEX " + RecipeEntry.COLUMN_UNIQUE_IDX +
-                " ON " + RecipeEntry.TABLE_NAME + "(" +
-                RecipeEntry.COLUMN_RECIPE_ID + ", " +
-                RecipeEntry.COLUMN_SOURCE + ")";
+//        final String SQL_CREATE_UNIQUE_INDEX = "CREATE UNIQUE INDEX " + RecipeEntry.COLUMN_UNIQUE_IDX +
+//                " ON " + RecipeEntry.TABLE_NAME + "(" +
+//                RecipeEntry.COLUMN_RECIPE_ID + ", " +
+//                RecipeEntry.COLUMN_SOURCE + ");";
 
         // Table storing ingredients
         final String SQL_CREATE_INGREDIENT_TABLE = "CREATE TABLE " + IngredientEntry.TABLE_NAME + " (" +
@@ -67,23 +69,28 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
 //                LinkEntry.TABLE_NAME + " (" + IngredientEntry.COLUMN_INGREDIENT_ID + "));";
 
         // Table for relating the amount of ingredients in each recipe
-        final String SQL_CRATE_LINK_TABLE = "CREATE TABLE " + LinkEntry.TABLE_NAME + " (" +
-                RecipeEntry.COLUMN_UNIQUE_IDX + " NOT NULL," +
+        final String SQL_CREATE_LINK_TABLE = "CREATE TABLE " + LinkEntry.TABLE_NAME + " (" +
+                RecipeEntry.COLUMN_RECIPE_ID + " REAL NOT NULL, " +
+                RecipeEntry.COLUMN_SOURCE + " TEXT NOT NULL, " +
                 IngredientEntry.COLUMN_INGREDIENT_ID + " REAL NOT NULL, " +
                 LinkEntry.COLUMN_QUANTITY + " TEXT NOT NULL, " +
                 LinkEntry.COLUMN_INGREDIENT_ORDER + " INTEGER NOT NULL, " +
                 // Utilize the combination of unique index and ingredient as the primary key
-                "PRIMARY KEY (" + RecipeEntry.COLUMN_UNIQUE_IDX  + ", " + IngredientEntry.COLUMN_INGREDIENT_ID + ") " +
+                "PRIMARY KEY (" + RecipeEntry.COLUMN_RECIPE_ID + "," +
+                RecipeEntry.COLUMN_SOURCE + ", " +
+                IngredientEntry.COLUMN_INGREDIENT_ID + ") " +
                 // Foreign keys to recipes.unique_id_source & ingredients.ingredient_id
-                "FOREIGN KEY (" + RecipeEntry.COLUMN_UNIQUE_IDX + ") REFERENCES " +
-                RecipeEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_UNIQUE_IDX + ") " +
+                "FOREIGN KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ") REFERENCES " +
+                RecipeEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_RECIPE_ID + ") " +
+                "FOREIGN KEY (" + RecipeEntry.COLUMN_SOURCE + ") REFERENCES " +
+                RecipeEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_SOURCE + ") " +
                 "FOREIGN KEY (" + IngredientEntry.COLUMN_INGREDIENT_ID + ") REFERENCES " +
                 IngredientEntry.TABLE_NAME + " (" + IngredientEntry.COLUMN_INGREDIENT_ID + "));";
 
         sqLiteDatabase.execSQL(SQL_CREATE_RECIPE_TABLE);
-        sqLiteDatabase.execSQL(SQL_CREATE_UNIQUE_INDEX);
+//        sqLiteDatabase.execSQL(SQL_CREATE_UNIQUE_INDEX);
         sqLiteDatabase.execSQL(SQL_CREATE_INGREDIENT_TABLE);
-        sqLiteDatabase.execSQL(SQL_CRATE_LINK_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_LINK_TABLE);
     }
 
     @Override
