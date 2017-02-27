@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/content_recipe_details"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     tools:context="project.hnoct.kitchen.ui.RecipeDetailsFragment">
     <ScrollView
         android:layout_width="match_parent"
@@ -151,11 +151,14 @@
 
     </ScrollView>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/details_nutrient_drawer"
-        android:layout_width="@dimen/details_nutrient_drawer_width"
-        android:layout_height="match_parent"
-        android:layout_gravity="end|right" />
+    <include layout="@layout/nutrition_drawer" />
+
+    <!--<android.support.v7.widget.RecyclerView-->
+        <!--android:id="@+id/nutrition_drawer"-->
+        <!--android:background="?attr/colorBackgroundFloating"-->
+        <!--android:layout_width="@dimen/details_nutrient_drawer_width"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_gravity="end|right" />-->
 
 </android.support.v4.widget.DrawerLayout>
 

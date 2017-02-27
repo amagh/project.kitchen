@@ -4,8 +4,12 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.support.annotation.IntDef;
 
+import java.lang.annotation.Retention;
 import java.util.GregorianCalendar;
+
+import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
  * Created by hnoct on 2/16/2017.
@@ -114,6 +118,17 @@ public class RecipeContract {
         public static final int IDX_CHOLESTEROL = 17;
         public static final int IDX_SODIUM = 18;
 //        public static final int IDX_UNIQUE = 19;
+
+        /** Integer definition for nutrient types **/
+        @Retention(SOURCE)
+        @IntDef({NUTRIENT_CALORIE, NUTRIENT_FAT, NUTRIENT_CARB, NUTRIENT_PROTEIN, NUTRIENT_CHOLESTEROL, NUTRIENT_SODIUM})
+        public @interface NutrientType{}
+        public static final int NUTRIENT_CALORIE = 0;
+        public static final int NUTRIENT_FAT = 1;
+        public static final int NUTRIENT_CARB = 2;
+        public static final int NUTRIENT_PROTEIN = 3;
+        public static final int NUTRIENT_CHOLESTEROL = 4;
+        public static final int NUTRIENT_SODIUM = 5;
 
         /**
          * Builds URI for a specific row in the database

@@ -1,10 +1,9 @@
 package project.hnoct.kitchen.ui;
 
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,7 +12,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract;
-import project.hnoct.kitchen.data.Utilities;
 
 public class RecipeDetailsActivity extends AppCompatActivity {
     /** Constants **/
@@ -24,7 +22,8 @@ public class RecipeDetailsActivity extends AppCompatActivity {
     RecipeDetailsFragment mDetailsFragment;
 
     // Views bound by ButterKnife
-    @BindView(R.id.toolbar) Toolbar toolbar;
+    @BindView(R.id.toolbar) Toolbar mToolbar;
+//    @BindView(R.id.details_nutrient_drawer) RecyclerView mNutrientDrawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +32,7 @@ public class RecipeDetailsActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         // Set Toolbar parameters
-        setSupportActionBar(toolbar);
+        setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 

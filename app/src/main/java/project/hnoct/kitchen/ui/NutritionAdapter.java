@@ -3,18 +3,24 @@ package project.hnoct.kitchen.ui;
 import android.content.Context;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.data.Utilities;
+
 
 /**
  * Created by hnoct on 2/26/2017.
@@ -22,10 +28,12 @@ import project.hnoct.kitchen.R;
 
 public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.NutritionViewHolder> {
     /** Constants **/
+    private static final String LOG_TAG = NutritionAdapter.class.getSimpleName();
 
     /** Member Variables **/
     private static Context mContext;
-    private static List<Pair<String, Double>> mNutritionList;
+    private static List<Pair<Integer, Double>> mNutritionList;
+    private int mNutritionBarWidthTotal;
 
     public NutritionAdapter(Context context) {
         mContext = context;
@@ -39,8 +47,25 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.Nutr
 
     @Override
     public void onBindViewHolder(NutritionViewHolder holder, int position) {
-        String nutrientType = mNutritionList.get(position).first;
+        if (mNutritionBarWidthTotal == 0) {
+            mNutritionBarWidthTotal = holder.nutrientPercentageBackground.getWidth();
+        }
+
+        @RecipeEntry.NutrientType int nutrientType = mNutritionList.get(position).first;
         double nutrientValue = mNutritionList.get(position).second;
+        double nutrientPercentage = Utilities.getDailyValues(mContext, nutrientType, nutrientValue);
+        String nutrientValueString = Utilities.formatNutrient(mContext, nutrientType, nutrientValue);
+
+        DecimalFormat df = new DecimalFormat("#0%");
+        String nutrientPercentageString = df.format(nutrientPercentage);
+        int percentageBarWidth = (int) (mNutritionBarWidthTotal * nutrientPercentage);
+
+        holder.nutrientText.setText(Utilities.getNutrientType(mContext, nutrientType));
+        holder.nutrientValueText.setText(nutrientValueString);
+        holder.nutrientPercentageText.setText(nutrientPercentageString);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(percentageBarWidth, holder.nutrientPercentageBar.getHeight());
+        holder.nutrientPercentageBar.setMinimumWidth(percentageBarWidth);
+        holder.nutrientPercentageBar.requestLayout();
     }
 
     @Override
@@ -51,7 +76,7 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.Nutr
         return 0;
     }
 
-    public void setNutritionList(List<Pair> nutritionList) {
+    public void setNutritionList(List<Pair<Integer, Double>> nutritionList) {
         mNutritionList = nutritionList;
         notifyDataSetChanged();
     }

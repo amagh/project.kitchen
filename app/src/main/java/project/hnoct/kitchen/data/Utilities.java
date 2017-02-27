@@ -2,9 +2,11 @@ package project.hnoct.kitchen.data;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v4.util.Pair;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -483,23 +485,150 @@ public class Utilities {
         return ingredientName;
     }
 
+    /**
+     * Converts pixels to display independent pixels for sizing views programmatically
+     * @param pixels float value number of pixels
+     * @return float value for display independent pixels
+     */
     public static float convertPixelsToDp(float pixels) {
         DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
         return pixels / ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
+    /**
+     * Converts display independent pixels to pixels for sizing views programmatically
+     * @param dips float value for display independent pixels
+     * @return float value for pixels
+     */
     public static float convertDpToPixels(float dips) {
         DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
         return dips * ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
     /**
-     * TODO: Finish this stub!
-     * @param nutrientType
-     * @param nutrientValue
-     * @return
+     * Calculates the percentage of daily allotment for a specific nutrient type
+     * @param nutrientType  int value for {@link RecipeEntry.NutrientType}
+     * @param nutrientValue double value of a given nutrient in its measurement (g, mg, etc)
+     * @return Percentage of total daily allotment
      */
-    public static double getDailyValues(int nutrientType, double nutrientValue) {
+    public static double getDailyValues(Context context, @RecipeEntry.NutrientType int nutrientType, double nutrientValue) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int dailyCalories = prefs.getInt(
+                context.getString(R.string.calorie_key),
+                Integer.parseInt(context.getString(R.string.calories_default))
+        );
+
+        switch (nutrientType) {
+            case RecipeEntry.NUTRIENT_CALORIE: {
+                double calorieDV = nutrientValue / dailyCalories;
+                return calorieDV;
+            }
+            case RecipeEntry.NUTRIENT_FAT: {
+                double fatPercentage = Double.parseDouble(context.getString(R.string.fat_percent_float_default));
+                double calFromFat = dailyCalories * fatPercentage;
+                double gramsOfFat = calFromFat / Double.parseDouble(context.getString(R.string.fat_cal_per_gram));
+                double fatDV = nutrientValue / gramsOfFat;
+                return fatDV;
+            }
+            case RecipeEntry.NUTRIENT_CARB: {
+                double carbPercentage = Double.parseDouble(context.getString(R.string.carb_percent_float_default));
+                double calFromCarbs = dailyCalories * carbPercentage;
+                double gramsOfCarbs = calFromCarbs / Double.parseDouble(context.getString(R.string.carb_cal_per_gram));
+                double carbsDV = nutrientValue / gramsOfCarbs;
+                return carbsDV;
+            }
+            case RecipeEntry.NUTRIENT_PROTEIN: {
+                double proteinPercentage = Double.parseDouble(context.getString(R.string.protein_percent_float_default));
+                double calFromProtein = dailyCalories * proteinPercentage;
+                double gramsOfProtein = calFromProtein / Double.parseDouble(context.getString(R.string.protein_cal_per_gram));
+                double proteinDV = nutrientValue / gramsOfProtein;
+                return proteinDV;
+            }
+            case RecipeEntry.NUTRIENT_CHOLESTEROL: {
+                double mgOfCholesterol = Double.parseDouble(context.getString(R.string.cholesterol_mg_default));
+                double cholesterolDV = nutrientValue / mgOfCholesterol;
+                return cholesterolDV;
+            }
+            case RecipeEntry.NUTRIENT_SODIUM: {
+                double mgOfSodium = Double.parseDouble(context.getString(R.string.sodium_mg_default));
+                double sodiumDV = nutrientValue / mgOfSodium;
+                return sodiumDV;
+            }
+        }
         return 0;
+    }
+
+    /**
+     * Formats the nutrient value to be displayed by the {@link project.hnoct.kitchen.ui.NutritionAdapter}
+     * @param context Interface to global context
+     * @param nutrientType int value for {@link RecipeEntry.NutrientType}
+     * @param nutrientValue double value for a given nutrient in its measurement
+     * @return Formatted String for displaying the value
+     */
+    public static String formatNutrient(Context context, @RecipeEntry.NutrientType int nutrientType, double nutrientValue) {
+        switch (nutrientType) {
+            case RecipeEntry.NUTRIENT_CALORIE: {
+                return context.getString(R.string.format_nutrient_calories, (int) nutrientValue);
+            }
+            case RecipeEntry.NUTRIENT_FAT: {
+                return context.getString(R.string.format_nutrient_fat, nutrientValue);
+            }
+            case RecipeEntry.NUTRIENT_CARB: {
+                return context.getString(R.string.format_nutrient_carbs, nutrientValue);
+            }
+            case RecipeEntry.NUTRIENT_PROTEIN: {
+                return context.getString(R.string.format_nutrient_protein, nutrientValue);
+            }
+            case RecipeEntry.NUTRIENT_CHOLESTEROL: {
+                return context.getString(R.string.format_nutrient_cholesterol, (int) nutrientValue);
+            }
+            case RecipeEntry.NUTRIENT_SODIUM: {
+                return context.getString(R.string.format_nutrient_sodium, (int) nutrientValue);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Matches the {@link RecipeEntry.NutrientType} int to the String equivalent
+     * @param context Interface for global context
+     * @param nutrientType {@link RecipeEntry.NutrientType} int value
+     * @return Plain String for NutrientType equivalent
+     */
+    public static String getNutrientType(Context context, @RecipeEntry.NutrientType int nutrientType) {
+        switch (nutrientType) {
+            case RecipeEntry.NUTRIENT_CALORIE: {
+                return context.getString(R.string.nutrient_calories);
+            }
+            case RecipeEntry.NUTRIENT_FAT: {
+                return context.getString(R.string.nutrient_fat);
+            }
+            case RecipeEntry.NUTRIENT_CARB: {
+                return context.getString(R.string.nutrient_carbs);
+            }
+            case RecipeEntry.NUTRIENT_PROTEIN: {
+                return context.getString(R.string.nutrient_protein);
+            }
+            case RecipeEntry.NUTRIENT_CHOLESTEROL: {
+                return context.getString(R.string.nutrient_cholesterol);
+            }
+            case RecipeEntry.NUTRIENT_SODIUM: {
+                return context.getString(R.string.nutrient_sodium);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the user-set daily calorie count
+     * @param context Interface for global context
+     * @return Number of calories per day set by the user, otherwise returns standard 2000kCal
+     */
+    public static int getUserCalories(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getInt(context.getString(R.string.calorie_key),
+                        Integer.parseInt(context.getString(R.string.calories_default))
+                );
     }
 }

@@ -8,6 +8,9 @@
     <dimen name="default_list_item_vertical_padding">8dp</dimen>
     <dimen name="default_text_vertical_padding">16dp</dimen>
 
+    <!-- Navigation Drawer -->
+    <dimen name="navigation_drawer_width">200dp</dimen>
+
     <!-- Recipe list item -->
     <dimen name="list_recipe_thumbnail_height_single">240dp</dimen>
     <dimen name="list_recipe_vertical_padding">@dimen/activity_vertical_margin</dimen>
@@ -25,11 +28,15 @@
     <!-- Recipe Details Activity -->
     <dimen name="details_line_separator_padding">48dp</dimen>
     <dimen name="details_description_text_padding">12dp</dimen>
-    <dimen name="details_nutrient_drawer_width">280dp</dimen>
+
+    <!-- Nutrition Drawer -->
+    <dimen name="details_nutrient_drawer_width">300dp</dimen>
+    <dimen name="nutrient_drawer_header_height">200dp</dimen>
 
     <!-- Nutrient Drawer list item-->
     <dimen name="list_nutrient_keyline">85dp</dimen>
-    <dimen name="list_nutrient_value_keyline">60dp</dimen>
-    <dimen name="list_nutrient_percent_keyline">100dp</dimen>
+    <dimen name="list_nutrient_value_keyline">65dp</dimen>
+    <dimen name="list_nutrient_percent_keyline">70dp</dimen>
     <dimen name="list_nutrient_min_height">24dp</dimen>
+    <dimen name="list_nutrient_padding">8dp</dimen>
 </resources>

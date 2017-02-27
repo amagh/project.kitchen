@@ -25,13 +25,13 @@
         android:background="@color/grey_300"
         android:layout_margin="3dp"
         app:layout_gravity="fill_vertical">
+
         <ImageView
             android:id="@+id/list_nutrient_percentage_bar"
             android:layout_height="match_parent"
             android:layout_width="wrap_content"
             android:src="@color/colorPrimary"
-            tools:layout_width="14dp"
-            />
+            tools:layout_width="14dp" />
     </FrameLayout>
 
     <TextView

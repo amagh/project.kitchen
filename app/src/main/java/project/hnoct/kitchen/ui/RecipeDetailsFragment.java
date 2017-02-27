@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -21,10 +22,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.util.Util;
+
+import java.util.LinkedList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -54,6 +56,13 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
             RecipeEntry.COLUMN_REVIEWS,
             RecipeEntry.COLUMN_DIRECTIONS,
             RecipeEntry.COLUMN_FAVORITE,
+            RecipeEntry.COLUMN_SERVINGS,
+            RecipeEntry.COLUMN_CALORIES,
+            RecipeEntry.COLUMN_FAT,
+            RecipeEntry.COLUMN_CARBS,
+            RecipeEntry.COLUMN_PROTEIN,
+            RecipeEntry.COLUMN_CHOLESTEROL,
+            RecipeEntry.COLUMN_SODIUM,
             RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE,
             IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID,
             IngredientEntry.COLUMN_INGREDIENT_NAME,
@@ -72,11 +81,18 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     static final int IDX_RECIPE_REVIEWS = 7;
     static final int IDX_RECIPE_DIRECTIONS = 8;
     static final int IDX_RECIPE_FAVORITE = 9;
-    static final int IDX_RECIPE_SOURCE = 10;
-    static final int IDX_INGREDIENT_ID = 11;
-    static final int IDX_INGREDIENT_NAME = 12;
-    static final int IDX_LINK_QUANTITY = 13;
-    static final int IDX_LINK_INGREDIENT_ORDER = 14;
+    static final int IDX_RECIPE_SERVINGS = 10;
+    static final int IDX_RECIPE_CALORIES = 11;
+    static final int IDX_RECIPE_FAT = 12;
+    static final int IDX_RECIPE_CARBS = 13;
+    static final int IDX_RECIPE_PROTEIN = 14;
+    static final int IDX_RECIPE_CHOLESTEROL = 15;
+    static final int IDX_RECIPE_SODIUM = 16;
+    static final int IDX_RECIPE_SOURCE = 17;
+    static final int IDX_INGREDIENT_ID = 18;
+    static final int IDX_INGREDIENT_NAME = 19;
+    static final int IDX_LINK_QUANTITY = 20;
+    static final int IDX_LINK_INGREDIENT_ORDER = 21;
 
     /** Member Variables **/
     Uri mRecipeUri;
@@ -87,6 +103,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     ContentResolver mContentResolver;
     IngredientAdapter mIngredientAdapter;
     DirectionAdapter mDirectionAdapter;
+    NutritionAdapter mNutritionAdapter;
     boolean mSyncing = false;
 
     // Views bound by ButterKnife
@@ -103,7 +120,9 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     @BindView(R.id.details_direction_title_text) TextView mDirectionTitleText;
     @BindView(R.id.details_line_separator_top) View mLineSeparatorTop;
     @BindView(R.id.details_line_separator_bottom) View mLineSeparatorBottom;
-    @BindView(R.id.details_nutrient_drawer) RecyclerView mNutrientRecyclerView;
+    @BindView(R.id.nutrition_drawer_serving_disclosure_text) TextView mNutritionServingDisclosureText;
+    @BindView(R.id.nutrition_drawer_calorie_disclosure_text) TextView mNutritionCalorieDiscloureText;
+    @BindView(R.id.nutrition_drawer_recycler_view) RecyclerView mNutrientRecyclerView;
 
     public RecipeDetailsFragment() {
     }
@@ -127,16 +146,20 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         // Initialize the IngredientAdapter and DirectionAdapter
         mIngredientAdapter = new IngredientAdapter(getActivity());
         mDirectionAdapter = new DirectionAdapter(getActivity());
+        mNutritionAdapter = new NutritionAdapter(getActivity());
 
         // Initialize and set the LayoutManagers
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         LinearLayoutManager llm2 = new LinearLayoutManager(getActivity());
+        LinearLayoutManager llm3 = new LinearLayoutManager(getActivity());
         mIngredientsRecyclerView.setLayoutManager(llm);
         mDirectionsRecyclerView.setLayoutManager(llm2);
+        mNutrientRecyclerView.setLayoutManager(llm3);
 
         // Set the IngredientAdapter for the ingredient's RecyclerView
         mIngredientsRecyclerView.setAdapter(mIngredientAdapter);
         mDirectionsRecyclerView.setAdapter(mDirectionAdapter);
+        mNutrientRecyclerView.setAdapter(mNutritionAdapter);
 
         return rootView;
     }
@@ -196,6 +219,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         String recipeDirections = mCursor.getString(IDX_RECIPE_DIRECTIONS);
         boolean recipeFavorite = mCursor.getInt(IDX_RECIPE_FAVORITE) == 1;
         String recipeSource = mCursor.getString(IDX_RECIPE_SOURCE);
+        int recipeServings = mCursor.getInt(IDX_RECIPE_SERVINGS);
 
         // Populate the views with the data
         Glide.with(mContext)
@@ -207,6 +231,12 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         mRecipeRatingText.setText(Utilities.formatRating(recipeRating));
         mRecipeReviewsText.setText(Utilities.formatReviews(mContext, recipeReviews));
         mRecipeShortDescriptionText.setText(recipeDescription);
+        mNutritionServingDisclosureText.setText(
+                mContext.getString(R.string.nutrition_info_serving_disclosure, recipeServings)
+        );
+        mNutritionCalorieDiscloureText.setText(
+                mContext.getString(R.string.nutrition_info_disclosure, Utilities.getUserCalories(mContext))
+        );
 
         // Set the visibility of the ingredient and direction section titles to VISIBLE
         mIngredientTitleText.setVisibility(View.VISIBLE);
@@ -221,6 +251,9 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
 
         // Set the direction list for the DirectionAdapter so steps can be displayed
         mDirectionAdapter.setDirectionList(Utilities.getDirectionList(recipeDirections));
+
+        // Set the nutrition list for the NutritionAdapter for the slide out drawer
+        mNutritionAdapter.setNutritionList(getNutritionList());
     }
 
     @Override
@@ -256,7 +289,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         cursor.moveToFirst();
 
         // Instantiate the menu-item associated with favorites
-        MenuItem menuFavorite = menu.findItem(R.id.action_favorite);
+        MenuItem menuFavorite = menu.findItem(R.id.detail_favorites);
 
         // Set the icon for the favorites action depending on the favorite status of the recipe
         menuFavorite.setIcon(cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1 ?
@@ -270,7 +303,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.action_favorite: {
+            case R.id.detail_favorites: {
                 // Update the favorite status of the recipe when selected and change the icon accordingly
                 boolean favorite = Utilities.setRecipeFavorite(mContext, mRecipeId);
                 if (favorite) {
@@ -283,5 +316,34 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private List<Pair<Integer, Double>> getNutritionList() {
+        // Use linked list to hold nutrition information to keep order the same
+        List<Pair<Integer, Double>> nutritionList = new LinkedList<>();
+
+        // Retrieve nutrition information from database utilizing Cursor from CursorLoader
+        double calories = mCursor.getDouble(IDX_RECIPE_CALORIES);
+        double fatGrams = mCursor.getDouble(IDX_RECIPE_FAT);
+        double carbGrams = mCursor.getDouble(IDX_RECIPE_CARBS);
+        double proteinGrams = mCursor.getDouble(IDX_RECIPE_PROTEIN);
+        double cholesterolMg = mCursor.getDouble(IDX_RECIPE_CHOLESTEROL);
+        double sodiumMg = mCursor.getDouble(IDX_RECIPE_SODIUM);
+
+        @RecipeEntry.NutrientType int calorieType = RecipeEntry.NUTRIENT_CALORIE;
+        @RecipeEntry.NutrientType int fatType = RecipeEntry.NUTRIENT_FAT;
+        @RecipeEntry.NutrientType int carbType = RecipeEntry.NUTRIENT_CARB;
+        @RecipeEntry.NutrientType int proteinType = RecipeEntry.NUTRIENT_PROTEIN;
+        @RecipeEntry.NutrientType int cholesterolType = RecipeEntry.NUTRIENT_CHOLESTEROL;
+        @RecipeEntry.NutrientType int sodiumType = RecipeEntry.NUTRIENT_SODIUM;
+
+        nutritionList.add(new Pair<Integer, Double>(calorieType, calories));
+        nutritionList.add(new Pair<Integer, Double>(fatType, fatGrams));
+        nutritionList.add(new Pair<Integer, Double>(carbType, carbGrams));
+        nutritionList.add(new Pair<Integer, Double>(proteinType, proteinGrams));
+        nutritionList.add(new Pair<Integer, Double>(cholesterolType, cholesterolMg));
+        nutritionList.add(new Pair<Integer, Double>(sodiumType, sodiumMg));
+
+        return nutritionList;
     }
 }

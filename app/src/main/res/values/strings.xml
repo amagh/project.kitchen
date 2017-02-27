@@ -1,7 +1,8 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">kitchen</string>
     <string name="action_settings">Settings</string>
-    <string name="favorite_title">Favorite</string>
+    <string name="favorite_title">Favorites</string>
+    <string name="my_recipes_title">My Recipes</string>
     <string name="title_activity_recipe_details">RecipeDetailsActivity</string>
 
     <!-- Common key Strings -->
@@ -10,6 +11,7 @@
     <string name="quantity_key" translatable="false">quantity</string>
     <string name="favorite_key" translatable="false">favorite</string>
     <string name="calorie_key" translatable="false">calories</string>
+    <string name="my_recipes_key">my_recipes</string>
 
     <!-- Fractions -->
     <string name="one_quarter_fraction">\u00BC</string>
@@ -36,7 +38,7 @@
     <string name="format_reviews">%d reviews</string>
     <string name="format_reviews_single">%d review</string>
     <string name="format_author">Recipe by <xliff:g id="author">%s</xliff:g></string>
-    
+
     <!-- Nutrition Info -->
     <string name="nutrient_calories">Calories</string>
     <string name="nutrient_fat">Fat</string>
@@ -45,14 +47,98 @@
     <string name="nutrient_cholesterol">Cholesterol</string>
     <string name="nutrient_sodium">Sodium</string>
 
-    <string name="format_nutrient_calories">%f <xliff:g id="calorie_measurement">kcal</xliff:g></string>
-    <string name="format_nutrient_fat">%f <xliff:g id="fat_measurement">g</xliff:g></string>
-    <string name="format_nutrient_carbs">%f <xliff:g id="carbs_measurement">g</xliff:g></string>
-    <string name="format_nutrient_cholesterol">%f <xliff:g id="cholesterol_measurement">mg</xliff:g></string>
-    <string name="format_nutrient_sodium">%f <xliff:g id="sodium_measurement">mg</xliff:g></string>
+    <string name="format_nutrient_calories">%d <xliff:g id="calorie_measurement">kcal</xliff:g></string>
+    <string name="format_nutrient_fat">%.1f <xliff:g id="fat_measurement">g</xliff:g></string>
+    <string name="format_nutrient_carbs">%.1f <xliff:g id="carbs_measurement">g</xliff:g></string>
+    <string name="format_nutrient_protein">%.1f <xliff:g id="protein_measurement">g</xliff:g></string>
+    <string name="format_nutrient_cholesterol">%d <xliff:g id="cholesterol_measurement">mg</xliff:g></string>
+    <string name="format_nutrient_sodium">%d <xliff:g id="sodium_measurement">mg</xliff:g></string>
 
     <string name="nutrition_info_serving_disclosure">Amount per serving (%d total)</string>
-    <string name="nutrition_info_disclosure">Percentage values are based on %s calorie diet</string>
+    <string name="nutrition_info_disclosure">Percentage values are based on %d calorie diet</string>
     <string name="set_user_calories_prompt">How many calories should the nutrition information be calculated for?</string>
+
     <string name="calories_default">2000</string>
+    <string name="fat_percent_float_default">0.25</string>
+    <string name="carb_percent_float_default">0.50</string>
+    <string name="protein_percent_float_default">0.25</string>
+    <string name="cholesterol_mg_default">200</string>
+    <string name="sodium_mg_default">1500</string>
+
+    <string name="fat_cal_per_gram">9</string>
+    <string name="carb_cal_per_gram">4</string>
+    <string name="protein_cal_per_gram">4</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Always</item>
+        <item>When possible</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_example_list_values">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+
+    <string-array name="list_preference_entries">
+        <item>Entry 1</item>
+        <item>Entry 2</item>
+        <item>Entry 3</item>
+    </string-array>
+
+    <string-array name="list_preference_entry_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="multi_select_list_preference_default_value" />
+
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">Notifications</string>
+
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <string name="pref_title_vibrate">Vibrate</string>
 </resources>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:background="@android:color/background_light"
+
+    android:layout_width="@dimen/details_nutrient_drawer_width"
+    android:layout_height="match_parent"
+    android:layout_gravity="end|right">
+
+    <RelativeLayout
+        android:background="@color/colorPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/nutrient_drawer_header_height"
+        android:gravity="bottom">
+        <TextView
+            android:id="@+id/nutrition_drawer_header_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:textColor="@color/opaque_white"
+            android:text="Nutrition Information"
+            android:layout_marginBottom="@dimen/default_text_vertical_padding"
+            style="@style/titleText"
+            tools:text="Nutrition Information"
+            />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/nutrition_drawer_serving_disclosure_text"
+        android:layout_marginTop="@dimen/default_list_item_vertical_padding"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/list_nutrient_padding"
+        android:paddingRight="@dimen/list_nutrient_padding"
+        style="@style/bodyDarkText"
+        tools:text="Amount per serving (40 total)"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/nutrition_drawer_recycler_view"
+        android:layout_marginTop="@dimen/default_text_vertical_padding"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/list_nutrient_padding"
+        android:paddingRight="@dimen/list_nutrient_padding"/>
+
+    <TextView
+        android:id="@+id/nutrition_drawer_calorie_disclosure_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/list_nutrient_padding"
+        android:paddingRight="@dimen/list_nutrient_padding"
+        android:layout_marginTop="@dimen/default_list_item_vertical_padding"
+        style="@style/bodyDarkText"
+        tools:text="Based on 2000 calorie diet"/>
+
+</LinearLayout>

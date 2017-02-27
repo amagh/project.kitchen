@@ -58,17 +58,18 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
             ContentValues recipeValues = new ContentValues();
 
             // Retrieve the serving count for the recipe
-            Element servingElement = recipeDoc.select("span.servings-count").first();
-            int servings = Integer.parseInt(servingElement.text());
+            Element servingElement = recipeDoc.select("meta[id=metaRecipeServings]").first();
+            int recipeServings = Integer.parseInt(servingElement.attr("content"));
+            recipeValues.put(RecipeEntry.COLUMN_SERVINGS, recipeServings);
 
             // Select all Elements containing nutrition information
-            Elements nutritionElements = recipeDoc.select("div.recipe-nutrition__form");
+            Elements nutritionElements = recipeDoc.select("div.recipe-nutrition__form")
+                    .select("ul.nutrientLine");
             for (Element nutrientElement : nutritionElements) {
                 // Retrieve the nutrient type and value
-                Element nutrientTypeElement = nutrientElement.select("ul.nutrientLine")
-                        .select("li.nutrientLine__item--amount").first();
+                Element nutrientTypeElement = nutrientElement.select("li.nutrientLine__item--amount").first();
                 String nutrientType = nutrientTypeElement.attr("itemprop");
-                long nutrientValue = Long.parseLong(
+                double nutrientValue = Double.parseDouble(
                         nutrientTypeElement.select("span").first().text()
                 );
 
