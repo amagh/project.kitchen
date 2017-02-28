@@ -39,4 +39,7 @@
     <dimen name="list_nutrient_percent_keyline">70dp</dimen>
     <dimen name="list_nutrient_min_height">24dp</dimen>
     <dimen name="list_nutrient_padding">8dp</dimen>
+
+    <!-- Nutrient DialogPreference -->
+    <dimen name="pref_dialog_nutrient_width">200dp</dimen>
 </resources>

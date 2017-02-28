@@ -514,7 +514,7 @@ public class Utilities {
     public static double getDailyValues(Context context, @RecipeEntry.NutrientType int nutrientType, double nutrientValue) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int dailyCalories = prefs.getInt(
-                context.getString(R.string.calorie_key),
+                context.getString(R.string.pref_calorie_key),
                 Integer.parseInt(context.getString(R.string.calories_default))
         );
 
@@ -598,22 +598,22 @@ public class Utilities {
     public static String getNutrientType(Context context, @RecipeEntry.NutrientType int nutrientType) {
         switch (nutrientType) {
             case RecipeEntry.NUTRIENT_CALORIE: {
-                return context.getString(R.string.nutrient_calories);
+                return context.getString(R.string.nutrient_calories_title);
             }
             case RecipeEntry.NUTRIENT_FAT: {
-                return context.getString(R.string.nutrient_fat);
+                return context.getString(R.string.nutrient_fat_title);
             }
             case RecipeEntry.NUTRIENT_CARB: {
-                return context.getString(R.string.nutrient_carbs);
+                return context.getString(R.string.nutrient_carbs_title);
             }
             case RecipeEntry.NUTRIENT_PROTEIN: {
-                return context.getString(R.string.nutrient_protein);
+                return context.getString(R.string.nutrient_protein_title);
             }
             case RecipeEntry.NUTRIENT_CHOLESTEROL: {
-                return context.getString(R.string.nutrient_cholesterol);
+                return context.getString(R.string.nutrient_cholesterol_title);
             }
             case RecipeEntry.NUTRIENT_SODIUM: {
-                return context.getString(R.string.nutrient_sodium);
+                return context.getString(R.string.nutrient_sodium_title);
             }
         }
 
@@ -627,7 +627,7 @@ public class Utilities {
      */
     public static int getUserCalories(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt(context.getString(R.string.calorie_key),
+                .getInt(context.getString(R.string.pref_calorie_key),
                         Integer.parseInt(context.getString(R.string.calories_default))
                 );
     }

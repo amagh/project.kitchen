@@ -16,6 +16,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeDbHelper;
+import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
 
 public class RecipeListActivity extends AppCompatActivity implements RecipeListFragment.RecipeCallBack {
