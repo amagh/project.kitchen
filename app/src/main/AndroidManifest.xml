@@ -45,14 +45,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="project.hnoct.kitchen.ui.RecipeListActivity" />
         </activity>
-        <activity
-            android:name=".ui.SettingsActivity2"
-            android:label="@string/title_activity_settings2"
-            android:parentActivityName=".ui.RecipeListActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="project.hnoct.kitchen.ui.RecipeListActivity" />
-        </activity>
     </application>
 
 </manifest>

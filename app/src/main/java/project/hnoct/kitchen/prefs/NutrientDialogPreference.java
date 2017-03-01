@@ -21,9 +21,9 @@ public class NutrientDialogPreference extends DialogPreference {
     /** Constants **/
 
     /** Member Variables **/
-    Context mContext;
-    String[] mDisplayValues;
-    @RecipeEntry.NutrientType int mNutrientType;
+    Context mContext;                               // Interface for global context
+    String[] mDisplayValues;                        // Values to display in NumberPicker
+    @RecipeEntry.NutrientType int mNutrientType;    // Used for getting information from SharedPrefs
 
     // Views bound by ButterKnife
     @BindView(R.id.pref_dialog_nutrient_picker) NumberPicker mNumberPicker;
@@ -36,48 +36,110 @@ public class NutrientDialogPreference extends DialogPreference {
         setDialogLayoutResource(R.layout.pref_nutrient_dialog);
 
         // Get the nutrient being selected based on title
-        String nutrientType = getTitle().toString();
+        int nutrientTitleRes = getTitleRes();
 
-        // Instantiate the different nutrient types for the switch statement
-        String calorieType = mContext.getString(R.string.nutrient_calories_title);
-        String fatType = mContext.getString(R.string.nutrient_fat_title);
-        String carbType = mContext.getString(R.string.nutrient_carbs_title);
-        String proteinType = mContext.getString(R.string.nutrient_protein_title);
-        String cholesterolType = mContext.getString(R.string.nutrient_cholesterol_title);
-        String sodiumType = mContext.getString(R.string.nutrient_sodium_title);
-
-        switch (nutrientType) {
-            case calorieType: {
+        // Switch on nutrient String resource to set mNutrientType
+        switch (nutrientTitleRes) {
+            case R.string.nutrient_calories_title:
                 mNutrientType = RecipeEntry.NUTRIENT_CALORIE;
                 break;
-            }
-            case mContext.getString(R.string.nutrient_fat_title) {
 
-            }
+            case R.string.nutrient_fat_title:
+                mNutrientType = RecipeEntry.NUTRIENT_FAT;
+                break;
+
+            case R.string.nutrient_carbs_title:
+                mNutrientType = RecipeEntry.NUTRIENT_CARB;
+                break;
+
+            case R.string.nutrient_protein_title:
+                mNutrientType = RecipeEntry.NUTRIENT_PROTEIN;
+                break;
+
+            case R.string.nutrient_cholesterol_title:
+                mNutrientType = RecipeEntry.NUTRIENT_CHOLESTEROL;
+                break;
+
+            case R.string.nutrient_sodium_title:
+                mNutrientType = RecipeEntry.NUTRIENT_SODIUM;
+                break;
+
+            default:
+                throw new UnsupportedOperationException("Unknown nutrient type: " + mContext.getString(nutrientTitleRes));
         }
     }
 
     @Override
     protected void onBindDialogView(View view) {
-        ButterKnife.bind(this, view);
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        final int userCalories = prefs.getInt(
-                mContext.getString(R.string.pref_calorie_key),
-                Integer.parseInt(mContext.getString(R.string.calories_default))
-        );
-//        mNumberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-//            @Override
-//            public void onValueChange(NumberPicker numberPicker, int oldValue, int newValue) {
-//
-//            }
-//        });
+        /** Variables **/
+        int nutrientInt = -1;
+        float nutrientFloat = -1;
 
-        mDisplayValues = createCalorieDisplayValues();
+        // Binds Views with ButterKnife
+        ButterKnife.bind(this, view);
+
+        // Initialize SharedPreferences
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+        // Get nutrient value based on mNutrientType and create DisplayValues for NumberPicker
+        switch (mNutrientType) {
+            case RecipeEntry.NUTRIENT_CALORIE: {
+                nutrientInt = prefs.getInt(
+                        mContext.getString(R.string.pref_calorie_key),
+                        Integer.parseInt(mContext.getString(R.string.calories_default))
+                );
+                mDisplayValues = createCalorieDisplayValues();
+                break;
+            }
+            case RecipeEntry.NUTRIENT_FAT: {
+                nutrientFloat = prefs.getFloat(
+                        mContext.getString(R.string.pref_fat_key),
+                        Float.parseFloat(mContext.getString(R.string.fat_percent_float_default))
+                );
+                break;
+            }
+            case RecipeEntry.NUTRIENT_CARB: {
+                nutrientFloat = prefs.getFloat(
+                        mContext.getString(R.string.pref_carb_key),
+                        Float.parseFloat(mContext.getString(R.string.carb_percent_float_default))
+                );
+                break;
+            }
+            case RecipeEntry.NUTRIENT_PROTEIN: {
+                nutrientFloat = prefs.getFloat(
+                        mContext.getString(R.string.pref_protein_key),
+                        Float.parseFloat(mContext.getString(R.string.protein_percent_float_default))
+                );
+                break;
+            }
+            case RecipeEntry.NUTRIENT_CHOLESTEROL: {
+                nutrientInt = prefs.getInt(
+                        mContext.getString(R.string.pref_cholesterol_key),
+                        Integer.parseInt(mContext.getString(R.string.cholesterol_mg_default))
+                );
+                break;
+            }
+            case RecipeEntry.NUTRIENT_SODIUM:
+                nutrientInt = prefs.getInt(
+                        mContext.getString(R.string.pref_sodium_key),
+                        Integer.parseInt(mContext.getString(R.string.sodium_mg_default))
+                );
+                break;
+        }
+
+        int setValue = -1;
+
+        // Generate the value to set the NumberPicker utilizing the retrieved nutrient value
+        if (nutrientFloat > -1) {
+            setValue = getSetValueFromDisplay(nutrientFloat);
+        } else if (nutrientInt > -1) {
+            setValue = getSetValueFromDisplay(nutrientInt);
+        }
+
+        // Set the  min/max and the DisplayValues for the NumberPicker
         mNumberPicker.setMaxValue(mDisplayValues.length - 1);
         mNumberPicker.setMinValue(0);
         mNumberPicker.setDisplayedValues(mDisplayValues);
-
-        int setValue = getSetValueFromDisplay(userCalories);
 
         mNumberPicker.setValue(setValue);
 
@@ -104,18 +166,22 @@ public class NutrientDialogPreference extends DialogPreference {
                 return i;
             }
         }
-        return 0;
+        return -1;
     }
 
-    private int getSetValueFromDisplay(double displayValue) {
+    private int getSetValueFromDisplay(float displayValue) {
         for (int i = 0; i < mDisplayValues.length; i++ ) {
-            if (mDisplayValues[i].equals(String.valueOf(displayValue))) {
+            if (mDisplayValues[i].equals(String.valueOf(displayValue * 100))) {
                 return i;
             }
         }
-        return 0;
+        return -1;
     }
 
+    /**
+     *
+     * @return
+     */
     private String[] createCalorieDisplayValues(){
         int calorieMax = 5000;
         int calorieMin = 1000;
@@ -129,5 +195,27 @@ public class NutrientDialogPreference extends DialogPreference {
         return calorieDisplayValues;
     }
 
+    private String[] createPercentageDisplayValues() {
+        int percentMax = 100;
+        int percentMin = 0;
+        int increment = 5;
+
+        // Create the length of the String[] by casting the float to an int
+        String[] percentageDisplayValues = new String[(percentMax - percentMin) / increment];
+        for (int i = 0; i < percentageDisplayValues.length; i++) {
+            percentageDisplayValues[i] = String.valueOf(i * 5);
+        }
+
+        return percentageDisplayValues;
+    }
+
+    private String[] createCholesterolDisplayValues() {
+        int cholesterolMax = 300;
+        int cholesterolMin = 0;
+        int increment = 10;
+
+        String[] cholesterolDisplayValues = new String[(cholesterolMax -cholesterolMin) / increment];
+        return cholesterolDisplayValues;
+    }
 
 }
