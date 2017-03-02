@@ -43,7 +43,7 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
     protected Void doInBackground(String... params) {
         /** Variables **/
         String recipeUrl = params[0];
-        long recipeId = Long.parseLong(params[1]);
+        long recipeId = Utilities.getRecipeIdFromAllRecipesUrl(recipeUrl);
         int ingredientOrder = 0;        // Used to ensure ingredient order is kept the same when added to db
 
         List<Long> ingredientIdList = new ArrayList<>();        // Hack for duplicate ingredients. See below.
@@ -56,6 +56,53 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
 
             // Instantiate ContentValues to hold nutrient information and direction information
             ContentValues recipeValues = new ContentValues();
+
+            // Retrieve the recipe name
+            String recipeName = recipeDoc.select("title").first().text();
+
+            Log.d(LOG_TAG, "Recipe name: " + recipeName);
+
+            // Retrieve recipe author
+            String recipeAuthor = recipeDoc.select("span.submitter__name").first().text();
+
+            Log.d(LOG_TAG, "Recipe author: " + recipeAuthor);
+
+            // Retrieve recipe image
+            String recipeImageUrl = recipeDoc.select("img.rec-photo").attr("src");
+
+            Log.d(LOG_TAG, "Recipe image URL: " + recipeImageUrl);
+
+            // Retrieve the thumbnail image
+            String recipeThumbnailUrl = recipeDoc.select("section.hero-photo--downsized")
+                    .select("ar-save-item.favorite")
+                    .attr("data-imageurl");
+
+            Log.d(LOG_TAG, "Recipe thumbnail URL: " + recipeThumbnailUrl);
+
+            // Retrieve the recipe description
+            String recipeDescription = recipeDoc.select("div.submitter__description").text();
+            recipeDescription = recipeDescription.substring(1, recipeDescription.length() - 1);
+            Log.d(LOG_TAG, "Recipe description: " + recipeDescription);
+
+            // Retrieve recipe rating
+            Element recipeRatingReviewElement = recipeDoc.select("section.recipe-summary")
+                    .select("span[itemprop=aggregateRating]")
+                    .first();
+
+            double recipeRating = Double.parseDouble(
+                    recipeRatingReviewElement.select("meta[itemprop=ratingValue]")
+                            .attr("content")
+            );
+
+            Log.d(LOG_TAG, "Recipe rating: " + recipeRating);
+
+            // Retrieve recipe reviews
+            long recipeReviews = Long.parseLong(
+                    recipeRatingReviewElement.select("meta[itemprop=reviewCount]")
+                            .attr("content")
+            );
+
+            Log.d(LOG_TAG, "Recipe reviews: " + recipeReviews);
 
             // Retrieve the serving count for the recipe
             Element servingElement = recipeDoc.select("meta[id=metaRecipeServings]").first();
@@ -109,22 +156,30 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
                 // Separate the Pair into two Strings
                 String ingredient = ingredientQuantityPair.first;
 
-                // Convert fractions to Unicode equivalents if they exist
+                // Convert fractions in the quantity to Unicode equivalents if they exist
                 String quantity = Utilities.convertToUnicodeFraction(mContext, ingredientQuantityPair.second);
 
-                // Retrieve the ingredientId from the Element
-                long ingredientId = Long.parseLong(ingredientElement.attr("data-id"));
-                if (ingredientId == 0) {
-                    // Ingredients without ingredientIds are section headings and should be relegated
-                    // to an unused spot in the ingredient table
-                    ingredientId = 1000000;
+                // Check to see if ingredient already exists in database
+                long ingredientId;
+                if ((ingredientId = Utilities.getIngredientIdFromName(mContext, ingredient)) == -1) {
+                    // Ingredient not found in database. Retrieve the ingredientId from the Element
+                    ingredientId = Long.parseLong(ingredientElement.attr("data-id"));
                 }
 
-                // Generate a new ingredientId if needed
-                String databaseIngredientName = Utilities.getIngredientNameFromId(mContext, ingredientId);
-                while (databaseIngredientName != null && !ingredient.equals(databaseIngredientName)) {
-                    ingredientId = Utilities.generateNewId(mContext, ingredientId, Utilities.INGREDIENT_TYPE);
-                    databaseIngredientName = Utilities.getIngredientNameFromId(mContext, ingredientId);
+                if (ingredientId <= 0) {
+                    // Ingredients without ingredientIds are section headings and should be relegated
+                    // to an unused spot in the ingredient table or new ingredients added by the user
+                    ingredientId = 1000000;
+
+                    // Generate a new ingredientId if needed
+                    // Check to see if ingredientId already matches an ingredient
+                    String databaseIngredientName = Utilities.getIngredientNameFromId(mContext, ingredientId);
+                    while (databaseIngredientName != null && !ingredient.equals(databaseIngredientName)) {
+                        // Keep incrementing to find a new ID if the ingredientName already exists
+                        // and does not match the ingredient being queried
+                        ingredientId = Utilities.generateNewId(mContext, ingredientId, Utilities.INGREDIENT_TYPE);
+                        databaseIngredientName = Utilities.getIngredientNameFromId(mContext, ingredientId);
+                    }
                 }
 
                 /**

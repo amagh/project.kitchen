@@ -468,6 +468,12 @@ public class Utilities {
         }
     }
 
+    /**
+     * Queries the database and returns the name of an ingredient given its ingredientId
+     * @param context Interface for global context
+     * @param ingredientId
+     * @return Name of the matching ingredient in String or null if none found
+     */
     public static String getIngredientNameFromId(Context context, long ingredientId) {
         String ingredientName = null;
         Cursor cursor = context.getContentResolver().query(
@@ -483,6 +489,28 @@ public class Utilities {
         }
         cursor.close();
         return ingredientName;
+    }
+
+    /**
+     * Queries the database and returns the ingredientId of a ingredient given its name
+     * @param context Interface for global context
+     * @param ingredientName
+     * @return long ingredientId or -1 if none found
+     */
+    public static long getIngredientIdFromName(Context context, String ingredientName) {
+        long ingredientId = -1;
+        Cursor cursor = context.getContentResolver().query(
+                IngredientEntry.CONTENT_URI,
+                null,
+                IngredientEntry.COLUMN_INGREDIENT_NAME + " = ?",
+                new String[] {ingredientName.trim()},
+                null
+        );
+        if (cursor.moveToFirst()) {
+            ingredientId = cursor.getLong(cursor.getColumnIndex(IngredientEntry.COLUMN_INGREDIENT_ID));
+        }
+        cursor.close();
+        return ingredientId;
     }
 
     /**
