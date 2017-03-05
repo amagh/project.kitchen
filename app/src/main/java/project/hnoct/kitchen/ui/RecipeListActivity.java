@@ -140,18 +140,14 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     }
 
     @Override
-    public void onItemSelected(Uri recipeUri, RecipeAdapter.RecipeViewHolder viewHolder) {
+    public void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder) {
         Intent intent = new Intent(this, RecipeDetailsActivity.class);
-        Uri recipeUrl = Uri.parse(Utilities.generateAllRecipesUrlFromRecipeId(
-                RecipeContract.LinkEntry.getRecipeIdFromUri(recipeUri)
-        ));
-        intent.setData(recipeUrl);
+        intent.setData(Uri.parse(recipeUrl));
         startActivity(intent);
     }
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, String recipeUrl) {
-        Toast.makeText(this, "Positive button clicked!", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, RecipeDetailsActivity.class);
         intent.setData(Uri.parse(recipeUrl));
         startActivity(intent);

@@ -3,6 +3,7 @@ package project.hnoct.kitchen.data;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.UriMatcher;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
@@ -30,6 +31,7 @@ public class Utilities {
     private static final String LOG_TAG = Utilities.class.getSimpleName();
     public static final int RECIPE_TYPE = 0;
     public static final int INGREDIENT_TYPE = 1;
+    public static final int ALLRECIPES_URI = 1;
 
     /** Member Variables **/
 
@@ -664,4 +666,67 @@ public class Utilities {
                         Integer.parseInt(context.getString(R.string.calories_default))
                 );
     }
+
+    /**
+     * Resolves URL and retrieves recipeId from user input link to recipe
+     * @param context Interface to global Context
+     * @param recipeUrl String form of link to website containing recipe
+     * @return recipeId
+     */
+    public static long getRecipeIdFromUrl(Context context, String recipeUrl) {
+        // Parse the URL into a Uri
+        Uri recipeUri = Uri.parse(recipeUrl);
+
+        // Check to make sure scheme has been included in given URL
+        String recipeScheme = recipeUri.getScheme();
+
+        if (recipeScheme == null) {
+            // Add scheme if missing
+            recipeUri = recipeUri.buildUpon()
+                    .scheme(context.getString(R.string.http_scheme))
+                    .build();
+        }
+
+        // Match the URI and return the recipeId
+        UriMatcher matcher = buildUriMatcher(context);
+        switch (matcher.match(recipeUri)) {
+            case ALLRECIPES_URI: {
+                return getRecipeIdFromAllRecipesUrl(recipeUri.toString());
+            }
+            default: throw new UnsupportedOperationException("Unknown URL: " + recipeUrl);
+        }
+    }
+
+    /**
+     * Builds UriMatcher for identifying URLs input from user
+     * @return UriMatcher
+     */
+    public static UriMatcher buildUriMatcher(Context context) {
+        // Root URI
+        UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+        // Add URIs that need to be matched
+        uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#", ALLRECIPES_URI);
+        uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#", ALLRECIPES_URI);
+
+        // Return UriMatcher
+        return uriMatcher;
+    }
+
+    public static String getRecipeUrlFromRecipeId(Context context, long recipeId) {
+        Cursor cursor = context.getContentResolver().query(
+                RecipeEntry.CONTENT_URI,
+                RecipeEntry.RECIPE_PROJECTION,
+                RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                new String[] {Long.toString(recipeId)},
+                null
+        );
+
+        if (cursor.moveToFirst()) {
+            return cursor.getString(RecipeEntry.IDX_RECIPE_URL);
+        }
+
+        return null;
+    }
+
 }

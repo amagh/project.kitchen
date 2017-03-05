@@ -95,4 +95,9 @@
 
     <!-- Import Dialog -->
     <string name="dialog_import_url_hint">Link to recipe</string>
+
+    <!-- Utility -->
+    <string name="http_scheme">http://</string>
+    <string name="allrecipes_authority">allrecipes.com</string>
+    <string name="allrecipes_www_authority">www.allrecipes.com</string>
 </resources>

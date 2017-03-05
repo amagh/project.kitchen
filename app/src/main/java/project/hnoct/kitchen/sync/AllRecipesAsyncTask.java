@@ -74,7 +74,7 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
                 // Retrieve the recipe name
                 String recipeName = recipeDoc.select("h1.recipe-summary__h1").first().text();
 
-//                Log.d(LOG_TAG, "Recipe name: " + recipeName);
+                Log.d(LOG_TAG, "Recipe name: " + recipeName);
 
                 // Retrieve recipe author
                 String recipeAuthor = recipeDoc.select("span.submitter__name").first().text();

@@ -34,6 +34,7 @@ import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.sync.AllRecipesAsyncTask;
+import project.hnoct.kitchen.sync.RecipeImporter;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -135,21 +136,20 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         ButterKnife.bind(this, rootView);
         setHasOptionsMenu(true);
 
+        // Initialize member variables
+        mContext = getActivity();
+        mContentResolver = mContext.getContentResolver();
+
         if (getArguments() != null) {
-            // Get the URI passed from the RecipeListActivity/RecipeDetailsActivity
+            // Get the URL passed from the RecipeListActivity/RecipeDetailsActivity
             mRecipeUri = getArguments().getParcelable(RECIPE_DETAILS_URI);
             if(getArguments().getParcelable(RECIPE_DETAILS_URL) != null) {
                 mRecipeUrl = getArguments().getParcelable(RECIPE_DETAILS_URL).toString();
-                mRecipeId = Utilities.getRecipeIdFromAllRecipesUrl(mRecipeUrl);
+
+                // Get the recipeId and generate recipeUri for database
+                mRecipeId = Utilities.getRecipeIdFromUrl(mContext, mRecipeUrl);
                 mRecipeUri = LinkEntry.buildIngredientUriFromRecipe(mRecipeId);
             }
-//
-//            if (mRecipeUri != null) {
-//                mRecipeUrl = Utilities.generateAllRecipesUrlFromRecipeId(mRecipeId = LinkEntry.getRecipeIdFromUri(mRecipeUri));
-//            } else {
-//                mRecipeUrl = getArguments().getParcelable(RECIPE_DETAILS_URL);
-//            }
-
         } else {
             Log.d(LOG_TAG, "No bundle found!");
             return rootView;
@@ -207,14 +207,13 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
                 mSyncing = true;
 
                 // If recipe is missing information, then load details from web
-                AllRecipesAsyncTask syncTask = new AllRecipesAsyncTask(getActivity(), new AllRecipesAsyncTask.RecipeSyncCallback() {
+                RecipeImporter.importRecipeFromUrl(mContext, new RecipeImporter.UtilitySyncer() {
                     @Override
                     public void onFinishLoad() {
                         getLoaderManager().restartLoader(DETAILS_LOADER, null, RecipeDetailsFragment.this);
                         mSyncing = false;
                     }
-                });
-                syncTask.execute(mRecipeUrl, Long.toString(mRecipeId));
+                }, mRecipeUrl);
             }
             return;
         }
@@ -276,10 +275,6 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        // Initialize member variables
-        mContext = getActivity();
-        mContentResolver = mContext.getContentResolver();
 
         // Initialize CursorLoader
         getLoaderManager().initLoader(DETAILS_LOADER, null, this);
@@ -349,12 +344,12 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         @RecipeEntry.NutrientType int cholesterolType = RecipeEntry.NUTRIENT_CHOLESTEROL;
         @RecipeEntry.NutrientType int sodiumType = RecipeEntry.NUTRIENT_SODIUM;
 
-        nutritionList.add(new Pair<Integer, Double>(calorieType, calories));
-        nutritionList.add(new Pair<Integer, Double>(fatType, fatGrams));
-        nutritionList.add(new Pair<Integer, Double>(carbType, carbGrams));
-        nutritionList.add(new Pair<Integer, Double>(proteinType, proteinGrams));
-        nutritionList.add(new Pair<Integer, Double>(cholesterolType, cholesterolMg));
-        nutritionList.add(new Pair<Integer, Double>(sodiumType, sodiumMg));
+        nutritionList.add(new Pair<>(calorieType, calories));
+        nutritionList.add(new Pair<>(fatType, fatGrams));
+        nutritionList.add(new Pair<>(carbType, carbGrams));
+        nutritionList.add(new Pair<>(proteinType, proteinGrams));
+        nutritionList.add(new Pair<>(cholesterolType, cholesterolMg));
+        nutritionList.add(new Pair<>(sodiumType, sodiumMg));
 
         return nutritionList;
     }

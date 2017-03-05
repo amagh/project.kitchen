@@ -21,6 +21,7 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 
 import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.data.Utilities;
 
 /**
  * Fragment for the main view displaying all recipes loaded from web
@@ -55,8 +56,10 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
             @Override
             public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
                 // Initiate Callback to Activity which will initiate launch of new Details Activity
-                Uri recipeUri = LinkEntry.buildIngredientUriFromRecipe(recipeId);
-                ((RecipeCallBack) getActivity()).onItemSelected(recipeUri, viewHolder);
+                ((RecipeCallBack) getActivity()).onItemSelected(
+                        Utilities.getRecipeUrlFromRecipeId(mContext, recipeId),
+                        viewHolder
+                );
 
                 // Set position to the position of the clicked item
                 mPosition = viewHolder.getAdapterPosition();
@@ -115,6 +118,6 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
     }
 
     public interface RecipeCallBack {
-        void onItemSelected(Uri recipeUri, RecipeAdapter.RecipeViewHolder viewHolder);
+        void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder);
     }
 }

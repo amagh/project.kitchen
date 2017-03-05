@@ -39,9 +39,6 @@ public class RecipeDetailsActivity extends AppCompatActivity {
         // Retrieve the URI passed from the RecipeListActivity
         Uri recipeUri = getIntent().getData();
 
-        // Instantiate mRecipeId
-        mRecipeId = RecipeContract.LinkEntry.getRecipeIdFromUri(recipeUri);
-
         // Add the URI as part of a Bundle to attach to the RecipeDetailsFragment
         Bundle args = new Bundle();
         args.putParcelable(RecipeDetailsFragment.RECIPE_DETAILS_URL, recipeUri);
