@@ -33,7 +33,7 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
     Context mContext;                   // Interface for global context
     Cursor mCursor;
     ContentResolver mResolver;          // Reference to ContentResolver
-    RecipeAdapter mRecipeAdapter;
+    static RecipeAdapter mRecipeAdapter;
     int mPosition;                      // Position of mCursor
 
     // Views bound by ButterKnife

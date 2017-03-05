@@ -104,7 +104,7 @@ public class Utilities {
         }
         // If the input String does not contain any known measurements, then use Regex to
         // obtain the quantity of the ingredient
-        Pattern pattern = Pattern.compile("([1-9]* *[1-9]*\\/*[1-9])(.*)");
+        Pattern pattern = Pattern.compile("([0-9]* *[1-9]*\\/*[1-9]*) (.*)");
         Matcher matcher = pattern.matcher(ingredientAndQuantity);
 
         if (matcher.find()) {
@@ -126,6 +126,11 @@ public class Utilities {
      * @return recipeId as long
      */
     public static long getRecipeIdFromAllRecipesUrl(String recipeUrl) {
+        // Check to ensure that the URL is prepended with "http://"
+        if (!recipeUrl.contains("http://") && !recipeUrl.substring(0, 7).equals("http://")) {
+            // Correct the URL
+            recipeUrl = "http://" + recipeUrl;
+        }
         // Convert URL to URI
         Uri recipeLinkUri = Uri.parse(recipeUrl);
 

@@ -28,13 +28,69 @@
 
         <include layout="@layout/content_main" />
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
+        <android.support.v7.widget.GridLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_margin="@dimen/fab_margin"
-            app:srcCompat="@android:drawable/ic_input_add" />
+            app:columnCount="2">
+
+            <TextView
+                android:id="@+id/main_add_recipe_text"
+                android:text="@string/fab_add_recipe"
+                android:padding="@dimen/fab_label_padding"
+                android:textColor="@color/opaque_white"
+                android:background="@drawable/fab_label_background"
+                android:visibility="gone"
+                app:layout_gravity="center_vertical|end"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/main_add_recipe_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:layout_gravity="center_horizontal"
+                app:srcCompat="@drawable/ic_menu_edit"
+                app:fabSize="mini"/>
+
+            <TextView
+                android:id="@+id/main_import_recipe_text"
+                android:text="@string/fab_import_recipe"
+                android:padding="@dimen/fab_label_padding"
+                android:textColor="@color/opaque_white"
+                android:background="@drawable/fab_label_background"
+                android:visibility="gone"
+                app:layout_gravity="center_vertical|end"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/main_import_recipe_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_list_item_vertical_padding"
+                android:visibility="gone"
+                app:layout_gravity="center_horizontal"
+                app:srcCompat="@drawable/ic_menu_download_custom"
+                app:fabSize="mini"/>
+
+            <TextView
+                android:id="@+id/main_menu_text"
+                android:text="@string/fab_close"
+                android:padding="@dimen/fab_label_padding"
+                android:textColor="@color/opaque_white"
+                android:background="@drawable/fab_label_background"
+                android:visibility="gone"
+                app:layout_gravity="center_vertical|end"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/main_menu_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/fab_margin"
+                app:layout_gravity="center_horizontal"
+                app:srcCompat="@drawable/ic_menu_add_custom" />
+
+
+
+        </android.support.v7.widget.GridLayout>
 
     </android.support.design.widget.CoordinatorLayout>
 
@@ -42,7 +98,7 @@
         android:id="@+id/navigation_drawer"
         android:layout_width="@dimen/navigation_drawer_width"
         android:layout_height="match_parent"
-        android:layout_gravity="start|left"
+        android:layout_gravity="start"
         android:background="@color/opaque_white"
         app:menu="@menu/menu_main">
 

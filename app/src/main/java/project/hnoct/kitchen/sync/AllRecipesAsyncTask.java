@@ -13,7 +13,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,15 +25,16 @@ import project.hnoct.kitchen.data.RecipeContract.*;
  * Created by hnoct on 2/20/2017.
  */
 
-public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
+public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
     /** Constants **/
-    private static final String LOG_TAG = AllRecipeAsyncTask.class.getSimpleName();
+    private static final String LOG_TAG = AllRecipesAsyncTask.class.getSimpleName();
 
     /** Member Variables **/
-    private Context mContext;                       // interface for global context
+    private Context mContext;                       // Interface for global context
     private RecipeSyncCallback mSyncCallback;       // For letting the UI thread know finished loading
+    private boolean mNewRecipe;                      // For setting whether the data should be inserted or updated
 
-    public AllRecipeAsyncTask(Context context, RecipeSyncCallback syncCallback) {
+    public AllRecipesAsyncTask(Context context, RecipeSyncCallback syncCallback) {
         mContext = context;
         mSyncCallback = syncCallback;
     }
@@ -45,6 +45,18 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
         String recipeUrl = params[0];
         long recipeId = Utilities.getRecipeIdFromAllRecipesUrl(recipeUrl);
         int ingredientOrder = 0;        // Used to ensure ingredient order is kept the same when added to db
+
+        // Check whether recipe exists in table or if it is a new recipe entry to be added
+        Cursor cursor = mContext.getContentResolver().query(
+                RecipeEntry.CONTENT_URI,
+                null,
+                RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " + RecipeEntry.COLUMN_SOURCE + " = ?",
+                new String[] {Long.toString(recipeId), AllRecipesListAsyncTask.ALL_RECIPES_ATTRIBUTION},
+                null
+        );
+
+        // Set the parameter indicating if this is a new recipe
+        mNewRecipe = !cursor.moveToFirst();
 
         List<Long> ingredientIdList = new ArrayList<>();        // Hack for duplicate ingredients. See below.
         List<ContentValues> ingredientCVList = new ArrayList<>();
@@ -57,52 +69,68 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
             // Instantiate ContentValues to hold nutrient information and direction information
             ContentValues recipeValues = new ContentValues();
 
-            // Retrieve the recipe name
-            String recipeName = recipeDoc.select("title").first().text();
+            // New recipes require all values to be populated in database
+            if (mNewRecipe) {
+                // Retrieve the recipe name
+                String recipeName = recipeDoc.select("h1.recipe-summary__h1").first().text();
 
-            Log.d(LOG_TAG, "Recipe name: " + recipeName);
+//                Log.d(LOG_TAG, "Recipe name: " + recipeName);
 
-            // Retrieve recipe author
-            String recipeAuthor = recipeDoc.select("span.submitter__name").first().text();
+                // Retrieve recipe author
+                String recipeAuthor = recipeDoc.select("span.submitter__name").first().text();
 
-            Log.d(LOG_TAG, "Recipe author: " + recipeAuthor);
+//                Log.d(LOG_TAG, "Recipe author: " + recipeAuthor);
 
-            // Retrieve recipe image
-            String recipeImageUrl = recipeDoc.select("img.rec-photo").attr("src");
+                // Retrieve recipe image
+                String recipeImageUrl = recipeDoc.select("img.rec-photo").attr("src");
 
-            Log.d(LOG_TAG, "Recipe image URL: " + recipeImageUrl);
+//                Log.d(LOG_TAG, "Recipe image URL: " + recipeImageUrl);
 
-            // Retrieve the thumbnail image
-            String recipeThumbnailUrl = recipeDoc.select("section.hero-photo--downsized")
-                    .select("ar-save-item.favorite")
-                    .attr("data-imageurl");
+                // Retrieve the thumbnail image
+                String recipeThumbnailUrl = recipeDoc.select("section.hero-photo--downsized")
+                        .select("ar-save-item.favorite")
+                        .attr("data-imageurl");
 
-            Log.d(LOG_TAG, "Recipe thumbnail URL: " + recipeThumbnailUrl);
+//                Log.d(LOG_TAG, "Recipe thumbnail URL: " + recipeThumbnailUrl);
 
-            // Retrieve the recipe description
-            String recipeDescription = recipeDoc.select("div.submitter__description").text();
-            recipeDescription = recipeDescription.substring(1, recipeDescription.length() - 1);
-            Log.d(LOG_TAG, "Recipe description: " + recipeDescription);
+                // Retrieve the recipe description
+                String recipeDescription = recipeDoc.select("div.submitter__description").text();
+                recipeDescription = recipeDescription.substring(1, recipeDescription.length() - 1);
+//                Log.d(LOG_TAG, "Recipe description: " + recipeDescription);
 
-            // Retrieve recipe rating
-            Element recipeRatingReviewElement = recipeDoc.select("section.recipe-summary")
-                    .select("span[itemprop=aggregateRating]")
-                    .first();
+                // Retrieve recipe rating
+                Element recipeRatingReviewElement = recipeDoc.select("section.recipe-summary")
+                        .select("span[itemprop=aggregateRating]")
+                        .first();
 
-            double recipeRating = Double.parseDouble(
-                    recipeRatingReviewElement.select("meta[itemprop=ratingValue]")
-                            .attr("content")
-            );
+                double recipeRating = Double.parseDouble(
+                        recipeRatingReviewElement.select("meta[itemprop=ratingValue]")
+                                .attr("content")
+                );
 
-            Log.d(LOG_TAG, "Recipe rating: " + recipeRating);
+//                Log.d(LOG_TAG, "Recipe rating: " + recipeRating);
 
-            // Retrieve recipe reviews
-            long recipeReviews = Long.parseLong(
-                    recipeRatingReviewElement.select("meta[itemprop=reviewCount]")
-                            .attr("content")
-            );
+                // Retrieve recipe reviews
+                long recipeReviews = Long.parseLong(
+                        recipeRatingReviewElement.select("meta[itemprop=reviewCount]")
+                                .attr("content")
+                );
 
-            Log.d(LOG_TAG, "Recipe reviews: " + recipeReviews);
+                // Add recipe details to ContentValues
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, recipeAuthor);
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);
+                recipeValues.put(RecipeEntry.COLUMN_IMG_URL, recipeImageUrl);
+                recipeValues.put(RecipeEntry.COLUMN_THUMBNAIL_URL, recipeThumbnailUrl);
+                recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, recipeDescription);
+                recipeValues.put(RecipeEntry.COLUMN_RATING, recipeRating);
+                recipeValues.put(RecipeEntry.COLUMN_REVIEWS, recipeReviews);
+                recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, RecipeContract.getCurrentTime());
+                recipeValues.put(RecipeEntry.COLUMN_FAVORITE, 0);
+                recipeValues.put(RecipeEntry.COLUMN_SOURCE, AllRecipesListAsyncTask.ALL_RECIPES_ATTRIBUTION);
+//                Log.d(LOG_TAG, "Recipe reviews: " + recipeReviews);
+            }
 
             // Retrieve the serving count for the recipe
             Element servingElement = recipeDoc.select("meta[id=metaRecipeServings]").first();
@@ -237,13 +265,22 @@ public class AllRecipeAsyncTask extends AsyncTask<String, Void, Void> {
             // Create ContentValues from directions
             recipeValues.put(RecipeEntry.COLUMN_DIRECTIONS, directions);
 
-            // Update the database with new recipe directions
-            mContext.getContentResolver().update(
-                    RecipeEntry.CONTENT_URI,
-                    recipeValues,
-                    RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-                    new String[] {Long.toString(recipeId)}
-            );
+            if (mNewRecipe) {
+                // If new recipe, insert the values into database
+                mContext.getContentResolver().insert(
+                        RecipeEntry.CONTENT_URI,
+                        recipeValues
+                );
+            } else {
+                // If recipe exists, update the database with new recipe directions
+                mContext.getContentResolver().update(
+                        RecipeEntry.CONTENT_URI,
+                        recipeValues,
+                        RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                        new String[] {Long.toString(recipeId)}
+                );
+            }
+
 
             // Link values should not have any overlap so it should be safe to just add values
             ContentValues[] linkValues = new ContentValues[linkCVList.size()];

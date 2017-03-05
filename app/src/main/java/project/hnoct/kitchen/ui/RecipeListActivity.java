@@ -1,5 +1,9 @@
 package project.hnoct.kitchen.ui;
 
+import android.app.AlarmManager;
+import android.app.DialogFragment;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,22 +15,52 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeDbHelper;
+import project.hnoct.kitchen.data.Utilities;
+import project.hnoct.kitchen.dialog.ImportRecipeDialog;
 import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
 
-public class RecipeListActivity extends AppCompatActivity implements RecipeListFragment.RecipeCallBack {
+public class RecipeListActivity extends AppCompatActivity implements RecipeListFragment.RecipeCallBack, ImportRecipeDialog.ImportRecipeDialogListener {
     /** Constants **/
     private static final String LOG_TAG = RecipeListActivity.class.getSimpleName();
+    private final String IMPORT_DIALOG = "ImportRecipeDialog";
 
     /** Member Variables **/
+    private static boolean mFabMenuOpen;
+
+    // Bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.fab) FloatingActionButton mFab;
+    @BindView(R.id.main_menu_fab) FloatingActionButton mFab;
+    @BindView(R.id.main_add_recipe_fab) FloatingActionButton mAddRecipeFab;
+    @BindView(R.id.main_import_recipe_fab) FloatingActionButton mImportRecipeFab;
     @BindView(R.id.navigation_drawer) NavigationView mNavigationView;
+    @BindView(R.id.main_menu_text) TextView mMainFabText;
+    @BindView(R.id.main_add_recipe_text) TextView mAddRecipeText;
+    @BindView(R.id.main_import_recipe_text) TextView mImportRecipeText;
+
+    @OnClick(R.id.main_menu_fab)
+    public void onClickFabMenu() {
+        if (!mFabMenuOpen) {
+            showFabMenu();
+        } else {
+            closeFabMenu();
+        }
+    }
+
+    @OnClick(R.id.main_import_recipe_fab)
+    public void onClickFabImport() {
+        closeFabMenu();
+        showImportDialog();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,16 +69,6 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
         ButterKnife.bind(this);
 
         setSupportActionBar(mToolbar);
-
-        mFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean deleted = deleteDatabase(RecipeDbHelper.DATABASE_NAME);
-                Log.d(LOG_TAG, "Database deleted " + deleted);
-                AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(RecipeListActivity.this);
-                syncTask.execute();
-            }
-        });
 
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -71,36 +95,65 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
             case R.id.action_my_recipes: {
 
             }
+            case R.id.action_clear_data: {
+                boolean deleted = deleteDatabase(RecipeDbHelper.DATABASE_NAME);
+                Log.d(LOG_TAG, "Database deleted " + deleted);
+                AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(RecipeListActivity.this);
+                syncTask.execute();
+                RecipeDbHelper mDbhelper = new RecipeDbHelper(getApplicationContext());
+                mDbhelper.getWritableDatabase();
+                mDbhelper.close();
+                RecipeListFragment.mRecipeAdapter.notifyDataSetChanged();
+                AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                PendingIntent restartIntent = PendingIntent.getActivity(
+                        getBaseContext(), 0, new Intent(getIntent()),
+                        PendingIntent.FLAG_ONE_SHOT);
+                mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, restartIntent);
+                System.exit(2);
+            }
         }
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-//        return true;
-//    }
+    void showFabMenu() {
+        mFabMenuOpen = true;
+        mAddRecipeFab.setVisibility(View.VISIBLE);
+        mImportRecipeFab.setVisibility(View.VISIBLE);
+        mMainFabText.setVisibility(View.VISIBLE);
+        mAddRecipeText.setVisibility(View.VISIBLE);
+        mImportRecipeText.setVisibility(View.VISIBLE);
+        mFab.setImageResource(R.drawable.ic_menu_close_clear_cancel);
+    }
 
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
+    void closeFabMenu() {
+        mFabMenuOpen = false;
+        mAddRecipeFab.setVisibility(View.GONE);
+        mImportRecipeFab.setVisibility(View.GONE);
+        mMainFabText.setVisibility(View.GONE);
+        mAddRecipeText.setVisibility(View.GONE);
+        mImportRecipeText.setVisibility(View.GONE);
+        mFab.setImageResource(R.drawable.ic_menu_add_custom);
+    }
+
+    void showImportDialog() {
+        ImportRecipeDialog dialog = new ImportRecipeDialog();
+        dialog.show(getFragmentManager(), IMPORT_DIALOG);
+    }
 
     @Override
     public void onItemSelected(Uri recipeUri, RecipeAdapter.RecipeViewHolder viewHolder) {
         Intent intent = new Intent(this, RecipeDetailsActivity.class);
-        intent.setData(recipeUri);
+        Uri recipeUrl = Uri.parse(Utilities.generateAllRecipesUrlFromRecipeId(
+                RecipeContract.LinkEntry.getRecipeIdFromUri(recipeUri)
+        ));
+        intent.setData(recipeUrl);
         startActivity(intent);
     }
 
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog, String recipeUrl) {
+        Toast.makeText(this, "Positive button clicked!", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, RecipeDetailsActivity.class);
+        intent.setData(Uri.parse(recipeUrl));
+        startActivity(intent);
+    }
 }

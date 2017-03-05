@@ -33,7 +33,7 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
-import project.hnoct.kitchen.sync.AllRecipeAsyncTask;
+import project.hnoct.kitchen.sync.AllRecipesAsyncTask;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -43,6 +43,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     private static final String LOG_TAG = RecipeDetailsFragment.class.getSimpleName();
     private static final int DETAILS_LOADER = 1;
     public static final String RECIPE_DETAILS_URI = "recipe_and_ingredients_uri";
+    public static final String RECIPE_DETAILS_URL = "recipe_url";
 
     // Projection of columns to query
     private static final String[] DETAILS_PROJECTION = new String[] {
@@ -137,7 +138,18 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         if (getArguments() != null) {
             // Get the URI passed from the RecipeListActivity/RecipeDetailsActivity
             mRecipeUri = getArguments().getParcelable(RECIPE_DETAILS_URI);
-            mRecipeUrl = Utilities.generateAllRecipesUrlFromRecipeId(mRecipeId = LinkEntry.getRecipeIdFromUri(mRecipeUri));
+            if(getArguments().getParcelable(RECIPE_DETAILS_URL) != null) {
+                mRecipeUrl = getArguments().getParcelable(RECIPE_DETAILS_URL).toString();
+                mRecipeId = Utilities.getRecipeIdFromAllRecipesUrl(mRecipeUrl);
+                mRecipeUri = LinkEntry.buildIngredientUriFromRecipe(mRecipeId);
+            }
+//
+//            if (mRecipeUri != null) {
+//                mRecipeUrl = Utilities.generateAllRecipesUrlFromRecipeId(mRecipeId = LinkEntry.getRecipeIdFromUri(mRecipeUri));
+//            } else {
+//                mRecipeUrl = getArguments().getParcelable(RECIPE_DETAILS_URL);
+//            }
+
         } else {
             Log.d(LOG_TAG, "No bundle found!");
             return rootView;
@@ -194,8 +206,8 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
             if (!mSyncing) {
                 mSyncing = true;
 
-                // If recipe directions are empty or null, then start a new task to fetch the directions
-                AllRecipeAsyncTask syncTask = new AllRecipeAsyncTask(getActivity(), new AllRecipeAsyncTask.RecipeSyncCallback() {
+                // If recipe is missing information, then load details from web
+                AllRecipesAsyncTask syncTask = new AllRecipesAsyncTask(getActivity(), new AllRecipesAsyncTask.RecipeSyncCallback() {
                     @Override
                     public void onFinishLoad() {
                         getLoaderManager().restartLoader(DETAILS_LOADER, null, RecipeDetailsFragment.this);
@@ -286,14 +298,14 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
                 null
         );
 
-        cursor.moveToFirst();
+        if (cursor.moveToFirst()) {
+            // Instantiate the menu-item associated with favorites
+            MenuItem menuFavorite = menu.findItem(R.id.detail_favorites);
 
-        // Instantiate the menu-item associated with favorites
-        MenuItem menuFavorite = menu.findItem(R.id.detail_favorites);
-
-        // Set the icon for the favorites action depending on the favorite status of the recipe
-        menuFavorite.setIcon(cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1 ?
-                R.drawable.favorite_star_enabled : R.drawable.favorite_star_disabled);
+            // Set the icon for the favorites action depending on the favorite status of the recipe
+            menuFavorite.setIcon(cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1 ?
+                    R.drawable.favorite_star_enabled : R.drawable.favorite_star_disabled);
+        }
 
         super.onCreateOptionsMenu(menu, inflater);
     }

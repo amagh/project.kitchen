@@ -44,7 +44,7 @@ public class RecipeDetailsActivity extends AppCompatActivity {
 
         // Add the URI as part of a Bundle to attach to the RecipeDetailsFragment
         Bundle args = new Bundle();
-        args.putParcelable(RecipeDetailsFragment.RECIPE_DETAILS_URI, recipeUri);
+        args.putParcelable(RecipeDetailsFragment.RECIPE_DETAILS_URL, recipeUri);
 
         // Instantiate the fragment and attach the Bundle containing the recipe URI
         mDetailsFragment = new RecipeDetailsFragment();

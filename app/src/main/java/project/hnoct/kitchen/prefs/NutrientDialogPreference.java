@@ -33,7 +33,7 @@ public class NutrientDialogPreference extends DialogPreference {
         mContext = context;
 
         // Set the layout of the widget
-        setDialogLayoutResource(R.layout.pref_nutrient_dialog);
+        setDialogLayoutResource(R.layout.dialog_pref_nutrient);
 
         // Get the nutrient being selected based on title
         int nutrientTitleRes = getTitleRes();

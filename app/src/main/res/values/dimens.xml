@@ -42,4 +42,7 @@
 
     <!-- Nutrient DialogPreference -->
     <dimen name="pref_dialog_nutrient_width">200dp</dimen>
+
+    <!-- FAB -->
+    <dimen name="fab_label_padding">4dp</dimen>
 </resources>
