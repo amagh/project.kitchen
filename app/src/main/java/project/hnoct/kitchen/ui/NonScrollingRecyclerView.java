@@ -48,4 +48,6 @@ public class NonScrollingRecyclerView extends RecyclerView {
     public boolean onTouchEvent(MotionEvent e) {
         return false;
     }
+
+
 }

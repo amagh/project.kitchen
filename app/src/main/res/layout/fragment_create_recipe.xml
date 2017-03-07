@@ -1,15 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/content_create_recipe"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="project.hnoct.kitchen.ui.CreateRecipeActivityFragment"
-    tools:showIn="@layout/activity_create_recipe">
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:id="@+id/content_create_recipe"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:nextFocusLeft="@id/content_create_recipe"
+        android:nextFocusRight="@id/content_create_recipe"
+        android:nextFocusDown="@id/content_create_recipe"
+        android:nextFocusUp="@id/content_create_recipe"
+        tools:context="project.hnoct.kitchen.ui.CreateRecipeActivityFragment"
+        tools:showIn="@layout/activity_create_recipe">
 
+        <com.inthecheesefactory.thecheeselibrary.widget.AdjustableImageView
+            android:id="@+id/create_recipe_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/list_recipe_thumbnail_height_single"
+            android:scaleType="fitXY"
+            android:adjustViewBounds="true"
+            tools:src="@drawable/placeholder"
+            />
 
-</RelativeLayout>
+        <EditText
+            android:id="@+id/create_recipe_name_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_text_vertical_padding"
+            android:inputType="textAutoCorrect|textCapWords|textMultiLine"
+            android:maxLines="2"
+            android:hint="@string/create_recipe_name_hint"
+            />
+
+        <View
+            android:id="@+id/create_recipe_line_separator_top"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="@dimen/details_line_separator_padding"
+            android:layout_marginRight="@dimen/details_line_separator_padding"
+            android:background="@color/grey_300" />
+
+        <EditText
+            android:id="@+id/create_recipe_description_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/details_description_text_padding"
+            android:inputType="textMultiLine|textAutoCorrect|textCapSentences"
+            android:hint="@string/create_recipe_description_hint"
+            style="@style/descriptionText"
+            tools:text="An easy, creamy chicken enchilada casserole. Slow cooking gently melds together the flavors of the chicken thigh meat, cream of chicken soup, sour cream, and green chiles"
+            />
+
+        <View
+            android:id="@+id/create_recipe_line_separator_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="@dimen/details_line_separator_padding"
+            android:layout_marginRight="@dimen/details_line_separator_padding"
+            android:background="@color/grey_300" />
+
+        <TextView
+            android:id="@+id/create_recipe_ingredient_title_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/list_ingredient_title"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            style="@style/subtitleText" />
+
+        <project.hnoct.kitchen.ui.NonScrollingRecyclerView
+            android:id="@+id/create_recipe_ingredient_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_text_vertical_padding" />
+
+        <TextView
+            android:id="@+id/create_recipe_direction_title_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/list_direction_title"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            style="@style/subtitleText" />
+
+        <!--<project.hnoct.kitchen.ui.NonScrollingRecyclerView-->
+            <!--android:id="@+id/create_recipe_direction_recycler_view"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginBottom="@dimen/activity_vertical_margin"-->
+            <!--android:layout_marginTop="@dimen/default_text_vertical_padding" />-->
+
+    </LinearLayout>
+</ScrollView>
+

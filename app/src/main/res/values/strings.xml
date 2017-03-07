@@ -100,4 +100,24 @@
     <string name="http_scheme">http://</string>
     <string name="allrecipes_authority">allrecipes.com</string>
     <string name="allrecipes_www_authority">www.allrecipes.com</string>
+
+    <!-- Create Recipe -->
+    <string name="create_recipe_name_hint">Recipe Name</string>
+    <string name="create_recipe_description_hint">Recipe Description</string>
+    <string name="create_recipe_ingredient_quantity_hint">Quantity</string>
+    <string name="create_recipe_ingredient_name_hint">Ingredient</string>
+    <string name="create_recipe_direction_hint">Directions</string>
+
+    <!-- Save Image Folder -->
+    <string name="food_image_dir">image_food</string>
+
+    <!-- Autosave Recipe -->
+    <string name="edit_recipe_name_key">edit_recipe_name</string>
+    <string name="edit_recipe_description_key">edit_recipe_description</string>
+    <string name="edit_recipe_image_key">edit_recipe_image</string>
+    <string name="edit_recipe_id_key">edit_recipe_id</string>
+
+    <!-- List Item Add Ingredient Layout -->
+    <string name="list_add_ingredient_quantity_hint">Quantity</string>
+    <string name="list_add_ingredient_name_hint">Ingredient</string>
 </resources>

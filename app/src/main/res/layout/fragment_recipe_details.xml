@@ -114,7 +114,6 @@
                     android:gravity="center_horizontal"
                     android:visibility="invisible"
                     android:layout_marginTop="@dimen/activity_vertical_margin"
-                    app:layout_columnSpan="3"
                     style="@style/subtitleText"
                     tools:visibility="visible" />
 

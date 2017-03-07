@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.UriMatcher;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v4.util.Pair;
@@ -15,6 +16,9 @@ import android.util.Log;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -706,8 +710,8 @@ public class Utilities {
         UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
         // Add URIs that need to be matched
-        uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#", ALLRECIPES_URI);
-        uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#", ALLRECIPES_URI);
+        uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#/*", ALLRECIPES_URI);
+        uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#/*", ALLRECIPES_URI);
 
         // Return UriMatcher
         return uriMatcher;
@@ -727,6 +731,34 @@ public class Utilities {
         }
 
         return null;
+    }
+
+    public static String saveImageToFile(Context context, long recipeId, Bitmap bitmap) {
+        File directory = context.getDir(
+                context.getString(R.string.food_image_dir),
+                Context.MODE_PRIVATE
+        );
+
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+
+        File imagePath = new File(directory, recipeId + ".jpg");
+
+        FileOutputStream fileOutputStream = null;
+
+        String imageUri = null;
+
+        try {
+            fileOutputStream = new FileOutputStream(imagePath);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
+            fileOutputStream.close();
+            imageUri = Uri.fromFile(imagePath).toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return imageUri;
     }
 
 }

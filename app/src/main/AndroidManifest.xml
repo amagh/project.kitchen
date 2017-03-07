@@ -49,6 +49,7 @@
             android:name=".ui.CreateRecipeActivity"
             android:label="@string/title_activity_create_recipe"
             android:parentActivityName=".ui.RecipeListActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

@@ -62,6 +62,12 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
         showImportDialog();
     }
 
+    @OnClick(R.id.main_add_recipe_fab)
+    public void createRecipe() {
+        closeFabMenu();
+        startActivity(new Intent(this, CreateRecipeActivity.class));
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

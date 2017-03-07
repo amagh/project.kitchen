@@ -120,7 +120,7 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, recipeAuthor);
-                recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, Utilities.generateAllRecipesUrlFromRecipeId(recipeId));
                 recipeValues.put(RecipeEntry.COLUMN_IMG_URL, recipeImageUrl);
                 recipeValues.put(RecipeEntry.COLUMN_THUMBNAIL_URL, recipeThumbnailUrl);
                 recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, recipeDescription);
