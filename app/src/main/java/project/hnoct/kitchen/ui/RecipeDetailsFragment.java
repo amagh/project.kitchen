@@ -161,8 +161,18 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         mNutritionAdapter = new NutritionAdapter(getActivity());
 
         // Initialize and set the LayoutManagers
-        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
-        LinearLayoutManager llm2 = new LinearLayoutManager(getActivity());
+        LinearLayoutManager llm = new LinearLayoutManager(getActivity()) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        };
+        LinearLayoutManager llm2 = new LinearLayoutManager(getActivity()) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        };
         LinearLayoutManager llm3 = new LinearLayoutManager(getActivity());
         mIngredientsRecyclerView.setLayoutManager(llm);
         mDirectionsRecyclerView.setLayoutManager(llm2);

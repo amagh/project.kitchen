@@ -9,12 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:nextFocusLeft="@id/content_create_recipe"
-        android:nextFocusRight="@id/content_create_recipe"
-        android:nextFocusDown="@id/content_create_recipe"
-        android:nextFocusUp="@id/content_create_recipe"
+
         tools:context="project.hnoct.kitchen.ui.CreateRecipeActivityFragment"
         tools:showIn="@layout/activity_create_recipe">
 
@@ -91,12 +86,12 @@
             android:layout_marginTop="@dimen/activity_vertical_margin"
             style="@style/subtitleText" />
 
-        <!--<project.hnoct.kitchen.ui.NonScrollingRecyclerView-->
-            <!--android:id="@+id/create_recipe_direction_recycler_view"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginBottom="@dimen/activity_vertical_margin"-->
-            <!--android:layout_marginTop="@dimen/default_text_vertical_padding" />-->
+        <project.hnoct.kitchen.ui.NonScrollingRecyclerView
+            android:id="@+id/create_recipe_direction_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginTop="@dimen/default_text_vertical_padding" />
 
     </LinearLayout>
 </ScrollView>

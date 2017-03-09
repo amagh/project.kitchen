@@ -116,8 +116,13 @@
     <string name="edit_recipe_description_key">edit_recipe_description</string>
     <string name="edit_recipe_image_key">edit_recipe_image</string>
     <string name="edit_recipe_id_key">edit_recipe_id</string>
+    <string name="edit_recipe_ingredients_key">edit_recipe_ingredients</string>
+    <string name="edit_recipe_directions_key">edit_recipe_directions</string>
 
     <!-- List Item Add Ingredient Layout -->
     <string name="list_add_ingredient_quantity_hint">Quantity</string>
     <string name="list_add_ingredient_name_hint">Ingredient</string>
+
+    <!-- List Item Add Directions Layout -->
+    <string name="list_add_direction_hint">Start writing!</string>
 </resources>

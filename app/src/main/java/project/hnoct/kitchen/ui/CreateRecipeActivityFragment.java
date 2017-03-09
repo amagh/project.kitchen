@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -25,6 +26,9 @@ import com.bumptech.glide.Glide;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,6 +50,12 @@ public class CreateRecipeActivityFragment extends Fragment {
     String mRecipeImageUri;
     String mRecipeDescription;
     String mRecipeName;
+    List<Pair<String, String>> mIngredientList;
+    List<String> mDirectionList;
+
+    AddIngredientAdapter mIngredientAdapter;
+    AddDirectionAdapter mDirectionAdapter;
+
     boolean mSaved = false;     // Check if the user has saved the data manually
 
     Bitmap mImageBitmap;
@@ -54,7 +64,8 @@ public class CreateRecipeActivityFragment extends Fragment {
     @BindView(R.id.create_recipe_name_edit_text) EditText mRecipeNameEditText;
     @BindView(R.id.create_recipe_description_edit_text) EditText mRecipeDescriptionEditText;
     @BindView(R.id.create_recipe_image) ImageView mRecipeImage;
-    @BindView(R.id.create_recipe_ingredient_recycler_view) RecyclerView mIngredientRecyclerView;
+    @BindView(R.id.create_recipe_ingredient_recycler_view) NonScrollingRecyclerView mIngredientRecyclerView;
+    @BindView(R.id.create_recipe_direction_recycler_view) NonScrollingRecyclerView mDirectionRecyclerView;
 
     @OnClick(R.id.create_recipe_image)
     public void selectImage() {
@@ -76,9 +87,6 @@ public class CreateRecipeActivityFragment extends Fragment {
 
         // Attempt to retrieve saved data
         getAutosavedData();
-        Log.d(LOG_TAG, "RecipeId: " + mRecipeId);
-        Log.d(LOG_TAG, "Recipe name: " + mRecipeName);
-        Log.d(LOG_TAG, "Recipe description: " + mRecipeDescription);
 
         if (mRecipeId == 0) {
             // If no saved data exists, generate a new recipeId
@@ -95,14 +103,37 @@ public class CreateRecipeActivityFragment extends Fragment {
         }
 
         // Instantiate the RecyclerAdapters
-        AddIngredientAdapter ingredientAdapter = new AddIngredientAdapter(mContext);
+        mIngredientAdapter = new AddIngredientAdapter(mContext);
+        mDirectionAdapter = new AddDirectionAdapter(mContext);
 
-        // Instantiate the LinearLayoutManagers
-        LinearLayoutManager llm = new LinearLayoutManager(mContext);
+        if (mIngredientList != null) {
+            mIngredientAdapter.setIngredientList(mIngredientList);
+        }
+        if (mDirectionList != null) {
+            mDirectionAdapter.setDirectionList(mDirectionList);
+        }
+
+        // Instantiate the LinearLayoutManagers and override scrolling behavior to allow for smooth
+        // scrolling
+        LinearLayoutManager llm = new LinearLayoutManager(mContext) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        };
+        LinearLayoutManager llm2 = new LinearLayoutManager(mContext) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        };
 
         // Set the LLM and Adapters to the RecyclerViews
         mIngredientRecyclerView.setLayoutManager(llm);
-        mIngredientRecyclerView.setAdapter(ingredientAdapter);
+        mDirectionRecyclerView.setLayoutManager(llm2);
+
+        mIngredientRecyclerView.setAdapter(mIngredientAdapter);
+        mDirectionRecyclerView.setAdapter(mDirectionAdapter);
 
         return rootView;
     }
@@ -136,7 +167,7 @@ public class CreateRecipeActivityFragment extends Fragment {
                 mRecipeImageUri = Utilities.saveImageToFile(mContext, mRecipeId, mImageBitmap);
 
                 // Load the image into the ImageView
-                Glide.with(mContext).load(mRecipeImageUri).into(mRecipeImage);
+                Glide.with(mContext).load(selectedImageUri).into(mRecipeImage);
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -155,8 +186,40 @@ public class CreateRecipeActivityFragment extends Fragment {
         mRecipeName = prefs.getString(mContext.getString(R.string.edit_recipe_name_key), null);
         mRecipeDescription = prefs.getString(mContext.getString(R.string.edit_recipe_description_key), null);
         mRecipeImageUri = prefs.getString(mContext.getString(R.string.edit_recipe_image_key), null);
+        String ingredientString = prefs.getString(mContext.getString(R.string.edit_recipe_ingredients_key), null);
+        String directionList = prefs.getString(mContext.getString(R.string.edit_recipe_directions_key), null);
 
-        if (mRecipeName != null || mRecipeDescription != null || mRecipeImageUri != null) {
+        // Convert the stored List in String form back into a List<Pair>
+        if (ingredientString != null) {
+            // Split the String into an Array of Pairs-in-String-form
+            String[] ingredientArray = ingredientString.split("\n");
+
+            // Instantiate mIngredientList
+            mIngredientList = new LinkedList<>();
+
+            // Iterate through each Pair-in-String-form in the Array and create a Pair from the values
+            for (String ingredientPairString : ingredientArray) {
+                String first = ingredientPairString.substring(0, ingredientPairString.indexOf("|"));
+                String second = ingredientPairString.substring(ingredientPairString.indexOf("|") + 1);
+
+                // Add the Pair into mIngredientList
+                mIngredientList.add(new Pair<>(first, second));
+            }
+        }
+
+        // Convert the stored List-in-String form of directions back into a List<String>
+        if (directionList != null) {
+            String[] directionArray = directionList.split("\n");
+
+            // Instantiate mDirectionList
+            mDirectionList = new LinkedList<>();
+
+            // Add information back into mDirectionList
+            mDirectionList.addAll(Arrays.asList(directionArray));
+        }
+
+    if (mRecipeName != null || mRecipeDescription != null || mRecipeImageUri != null ||
+            mIngredientList != null || mDirectionList != null) {
             // If at least one piece of data was retrieved, then get the recipeId
             mRecipeId = prefs.getLong(mContext.getString(R.string.edit_recipe_id_key), 0);
         }
@@ -171,31 +234,85 @@ public class CreateRecipeActivityFragment extends Fragment {
         // Get the String entered by the user into the EditText Views
         mRecipeName = mRecipeNameEditText.getText().toString();
         mRecipeDescription = mRecipeDescriptionEditText.getText().toString();
+        mIngredientList = mIngredientAdapter.getIngredientList();
+        mDirectionList = mDirectionAdapter.getDirectionList();
 
         // Initialize SharedPreferences and its Editor
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         SharedPreferences.Editor editor = prefs.edit();
 
         // Save data to SharedPreferences if it exists
-        if (mRecipeName != null) {
+        // Save recipe name
+        editor.putString(
+                mContext.getString(R.string.edit_recipe_name_key),
+                mRecipeName
+        );
+
+        // Save recipe description
+        editor.putString(
+                mContext.getString(R.string.edit_recipe_description_key),
+                mRecipeDescription
+        );
+
+        // Save recipe image URI
+        editor.putString(
+                mContext.getString(R.string.edit_recipe_image_key),
+                mRecipeImageUri
+        );
+
+        // Save ingredient list
+        if (mIngredientList != null) {
+            // Initialize the StringBuilder that will be used to create the String of ingredient
+            // info to be saved
+            StringBuilder builder = new StringBuilder();
+            for (Pair<String, String> ingredientPair : mIngredientList) {
+                // Pair information is held using unique characters as separators so the text can
+                // be split back into pairs when being read from SharedPreferences
+                builder.append(ingredientPair.first)
+                        .append("|")    // Separator between first and second
+                        .append(ingredientPair.second)
+                        .append("\n");  // Separator between Pairs
+            }
+
+            // Output the builder to String and trim the last "\n" appended
+            String ingredientStringList = builder.toString().trim();
+
+            // Save ingredients to SharedPreferences
             editor.putString(
-                    mContext.getString(R.string.edit_recipe_name_key),
-                    mRecipeName
+                    mContext.getString(R.string.edit_recipe_ingredients_key),
+                    ingredientStringList
+            );
+        } else {
+            // Skip the iterator and save a null value
+            editor.putString(
+                    mContext.getString(R.string.edit_recipe_ingredients_key),
+                    null
             );
         }
-        if (mRecipeDescription != null) {
+
+        // Save direction list
+        if (mDirectionList != null) {
+            // Initialize the StringBuilder that will be used to create the String of direction
+            // info to be saved
+            StringBuilder builder = new StringBuilder();
+            for (String direction : mDirectionList) {
+                // Separate individual directions by appending a new line
+                builder.append(direction)
+                        .append("\n");
+            }
+
+            // Output the builder to String
+            String directionList = builder.toString().trim();
+
+            // Save the direction information to SharedPreferences
             editor.putString(
-                    mContext.getString(R.string.edit_recipe_description_key),
-                    mRecipeDescription
+                    mContext.getString(R.string.edit_recipe_directions_key),
+                    directionList
             );
         }
-        if (mRecipeImageUri != null) {
-            editor.putString(
-                    mContext.getString(R.string.edit_recipe_image_key),
-                    mRecipeImageUri
-            );
-        }
-        if (mRecipeName != null || mRecipeDescription != null || mRecipeImage != null) {
+
+        if (mRecipeName != null || mRecipeDescription != null || mRecipeImage != null ||
+                mIngredientList != null || mDirectionList != null) {
             // RecipeId only needs to be saved if other data was saved as well.
             editor.putLong(
                     mContext.getString(R.string.edit_recipe_id_key),
@@ -204,8 +321,6 @@ public class CreateRecipeActivityFragment extends Fragment {
         }
         // Apply the changes
         editor.apply();
-
-        Toast.makeText(mContext, "Data saved!", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -229,9 +344,19 @@ public class CreateRecipeActivityFragment extends Fragment {
                 mContext.getString(R.string.edit_recipe_image_key),
                 null
         );
+        editor.putString(
+                mContext.getString(R.string.edit_recipe_ingredients_key),
+                null
+        );
+        editor.putString(
+                mContext.getString(R.string.edit_recipe_directions_key),
+                null
+        );
         editor.putLong(
                 mContext.getString(R.string.edit_recipe_id_key),
                 0
         );
+
+        editor.apply();
     }
 }

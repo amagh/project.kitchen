@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.GridLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="@dimen/list_ingredient_min_height"
-    app:columnCount="3">
+    android:minHeight="@dimen/list_ingredient_min_height">
 
     <ImageView
         android:id="@+id/list_add_ingredient_button"
+        android:layout_height="@dimen/list_add_direction_button_size"
+        android:layout_width="@dimen/list_add_direction_button_size"
+        android:padding="@dimen/list_add_direction_button_margin"
         android:src="@drawable/ic_menu_add_custom"
         android:tint="@color/colorPrimaryDark"
         app:layout_gravity="center"
@@ -19,19 +21,23 @@
         android:id="@+id/list_add_ingredient_quantity_edit_text"
         android:layout_width="@dimen/list_add_ingredient_keyline"
         android:layout_height="wrap_content"
-        android:inputType="textAutoComplete|textAutoCorrect"
+        android:inputType="textAutoComplete|textAutoCorrect|textMultiLine"
         android:hint="@string/list_add_ingredient_quantity_hint"
         android:visibility="gone"
-        app:layout_gravity="center_vertical" />
+        style="@style/listEditText"
+        app:layout_gravity="center_vertical"
+        tools:visibility="visible"/>
 
     <EditText
         android:id="@+id/list_add_ingredient_name_edit_text"
         android:gravity="center_vertical"
-        android:layout_width="0dp"
-        android:inputType="textAutoCorrect|textAutoComplete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textAutoCorrect|textAutoComplete|textMultiLine"
         android:hint="@string/list_add_ingredient_name_hint"
         android:visibility="gone"
-        app:layout_gravity="fill"
-        app:layout_columnWeight="1" />
+        style="@style/listEditText"
+        tools:visibility="visible"
+        tools:text="This ingredient happens to be more than one line long"/>
 
-</android.support.v7.widget.GridLayout>
+</LinearLayout>

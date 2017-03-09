@@ -40,14 +40,14 @@ public class NonScrollingRecyclerView extends RecyclerView {
         params.height = getMeasuredHeight();
     }
 
-    /**
-     * Overridden to always return false to prevent interception of scrolling. If not overridden,
-     * there is not scroll inertia when initiating a scroll while touching this view.
-     */
-    @Override
-    public boolean onTouchEvent(MotionEvent e) {
-        return false;
-    }
-
+//    /**
+//     * Overridden to always return false to prevent interception of scrolling. If not overridden,
+//     * there is not scroll inertia when initiating a scroll while touching this view.
+//     */
+//    @Override
+//    public boolean onTouchEvent(MotionEvent e) {
+//        return false;
+//    }
+//
 
 }

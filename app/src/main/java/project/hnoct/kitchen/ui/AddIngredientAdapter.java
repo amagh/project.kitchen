@@ -4,9 +4,12 @@ import android.content.Context;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -18,7 +21,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnEditorAction;
 import butterknife.OnFocusChange;
+import butterknife.OnTextChanged;
 import project.hnoct.kitchen.R;
 
 /**
@@ -32,12 +37,19 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
     private Context mContext;
     private List<Pair<String, String>> mIngredientList;
     private List<Boolean> mAddList;
+    private RecyclerView mRecyclerView;
 
     public AddIngredientAdapter(Context context) {
         mContext = context;
         mIngredientList = new LinkedList<>();
         mAddList = new LinkedList<>();
         addIngredient();
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        mRecyclerView = recyclerView;
+        super.onAttachedToRecyclerView(recyclerView);
     }
 
     @Override
@@ -60,12 +72,62 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
             holder.addIngredientNameEditText.setVisibility(View.VISIBLE);
         }
 
-        if (ingredientPair.first != null) {
+        if (ingredientPair != null && ingredientPair.first != null) {
             holder.addQuantityEditText.setText(ingredientPair.first, TextView.BufferType.EDITABLE);
         }
-        if (ingredientPair.second != null) {
+        if (ingredientPair != null && ingredientPair.second != null) {
             holder.addIngredientNameEditText.setText(ingredientPair.second, TextView.BufferType.EDITABLE);
         }
+    }
+
+    /**
+     * Retrieves the ingredient list and removes empty values
+     * @return A non-empty List of ingredients or null
+     */
+    public List<Pair<String, String>> getIngredientList() {
+        boolean nullList = true;    // Final check for whether to return a List or null
+        List<Pair<String, String>> workingList = new LinkedList<>();    // List that will be modified in the iterator and returned if nullList = false
+
+        // Create a copy of the ingredient list
+        workingList.addAll(mIngredientList);
+
+        // Iterate through and ensure at least one Pair has a non-null value
+        for (Pair<String, String> ingredientPair : mIngredientList) {
+            if (ingredientPair != null &&
+                    ((ingredientPair.first != null && !ingredientPair.first.trim().equals("")) ||
+                    (ingredientPair.second != null && !ingredientPair.second.trim().equals("")))) {
+                // At least one of the Pair is not null and not an empty string
+                nullList = false;
+            } else {
+                // Otherwise remove the item from the list to be returned
+                workingList.remove(ingredientPair);
+            }
+        }
+        if (!nullList) {
+            // List contains at least one value, return list
+            return workingList;
+        } else {
+            // List is empty, return null
+            return null;
+        }
+    }
+
+    /**
+     * Sets the member mIngredientList
+     * @param ingredientList List of Ingredients
+     */
+    public void setIngredientList(List<Pair<String, String>> ingredientList) {
+        mIngredientList = new LinkedList<>();
+        mIngredientList.addAll(ingredientList);
+
+        for (int i = 0; i < ingredientList.size(); i++) {
+            mAddList.add(true);
+            mAddList.set(i, false);
+        }
+
+        addIngredient();
+
+        notifyDataSetChanged();
     }
 
     @Override
@@ -74,16 +136,16 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
     }
 
     private void addIngredient() {
-        mIngredientList.add(new Pair<String, String>(null, null));
+        mIngredientList.add(null);
         mAddList.add(true);
-        Toast.makeText(mContext, "New ingredient added!", Toast.LENGTH_SHORT).show();
-        notifyDataSetChanged();
+//        Toast.makeText(mContext, "New ingredient added!", Toast.LENGTH_SHORT).show();
+        notifyItemChanged(mIngredientList.size() - 1);
     }
 
     private void deleteIngredient(int position) {
         mIngredientList.remove(position);
         mAddList.remove(position);
-        Toast.makeText(mContext, "Ingredient removed!", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mContext, "Ingredient " + position + " removed!", Toast.LENGTH_SHORT).show();
         notifyDataSetChanged();
     }
 
@@ -96,40 +158,57 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
         @BindView(R.id.list_add_ingredient_name_edit_text) EditText addIngredientNameEditText;
         @BindView(R.id.list_add_ingredient_button) ImageView addIngredientButton;
 
-//        @OnFocusChange(R.id.list_add_ingredient_quantity_edit_text)
-//        void onQuantityChanged(boolean inFocus) {
-//            String quantity = addQuantityEditText.getText().toString();
-//            String ingredient = addIngredientNameEditText.getText().toString();
-//        }
-//
-//        @OnFocusChange(R.id.list_add_ingredient_name_edit_text)
-//        void onNameChanged(boolean inFocus) {
-//            String quantity = addQuantityEditText.getText().toString();
-//            String ingredient = addIngredientNameEditText.getText().toString();
-//        }
+        @OnTextChanged(R.id.list_add_ingredient_quantity_edit_text)
+        void onQuantityChanged(CharSequence text) {
+            int position = getAdapterPosition();
+            String quantity = text.toString();
+            String ingredient = addIngredientNameEditText.getText().toString();
+            mIngredientList.set(position, new Pair<>(quantity, ingredient));
+        }
 
-        @OnClick(R.id.list_add_ingredient_button)
-        void onClick() {
-            if (add) {
-                addIngredient();
-                addIngredientButton.setImageResource(R.drawable.ic_menu_close_clear_cancel);
-                addQuantityEditText.setVisibility(View.VISIBLE);
-                addIngredientNameEditText.setVisibility(View.VISIBLE);
-                Log.d("TEST", "Size: " + mAddList.size() + " | Position: " + getAdapterPosition());
-//                mAddList.set(getAdapterPosition(), add = false);
-            } else {
-                deleteIngredient(getAdapterPosition());
-                addIngredientButton.setImageResource(R.drawable.ic_menu_add_custom);
-                addQuantityEditText.setVisibility(View.GONE);
-                addIngredientNameEditText.setVisibility(View.GONE);
-                mAddList.set(getAdapterPosition(), add = true);
+        @OnTextChanged(R.id.list_add_ingredient_name_edit_text)
+        void onNameChanged(CharSequence text) {
+            int position = getAdapterPosition();
+            String quantity = addQuantityEditText.getText().toString();
+            String ingredient = text.toString();
+            mIngredientList.set(position, new Pair<>(quantity, ingredient));
+        }
+
+        @OnEditorAction(R.id.list_add_ingredient_quantity_edit_text)
+        boolean onEditorAction(int actionId, KeyEvent event) {
+            Log.d("TEST", "called it!");
+            if (actionId == EditorInfo.IME_ACTION_DONE && event.getAction() == KeyEvent.ACTION_DOWN) {
+                addIngredientNameEditText.requestFocus();
             }
+            return true;
         }
 
         AddIngredientViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
-            Log.d("TEST2", "Position: " + getAdapterPosition());
+            addIngredientButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position;
+                    if (mAddList.get(position = getAdapterPosition())) {
+                        addIngredient();
+                        addIngredientButton.setImageResource(R.drawable.ic_menu_close_clear_cancel);
+                        addQuantityEditText.setVisibility(View.VISIBLE);
+                        addIngredientNameEditText.setVisibility(View.VISIBLE);
+                        mAddList.set(position, false);
+                        addQuantityEditText.requestFocus();
+                        InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.showSoftInput(addQuantityEditText, InputMethodManager.SHOW_IMPLICIT);
+//                        Log.d("TEST", "Size: " + mAddList.size() + " | Position: " + position);
+                    } else {
+                        deleteIngredient(getAdapterPosition());
+                        addIngredientButton.setImageResource(R.drawable.ic_menu_add_custom);
+                        addQuantityEditText.setVisibility(View.GONE);
+                        addIngredientNameEditText.setVisibility(View.GONE);
+//                        Log.d("TEST", "Size: " + mAddList.size() + " | Position: " + position);
+                    }
+                }
+            });
         }
     }
 }
