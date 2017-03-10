@@ -6,8 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/list_direction_vertical_padding"
-    android:gravity="top"
-    app:columnCount="3">
+    android:gravity="top">
 
     <ImageView
         android:id="@+id/list_add_direction_button"
@@ -28,13 +27,13 @@
 
     <EditText
         android:id="@+id/list_add_direction_edit_text"
-        android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
+        android:inputType="textAutoCorrect|textCapSentences"
         android:hint="@string/list_add_direction_hint"
-        android:minLines="1"
+        android:minHeight="@dimen/list_add_direction_button_size"
+        android:imeOptions="actionNext"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/listEditText"
-        tools:text="Let's see how this thing does when it reaches the end of the line. At what point does this staart looking weird"
         />
 
 </LinearLayout>

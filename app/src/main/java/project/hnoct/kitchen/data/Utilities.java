@@ -726,14 +726,16 @@ public class Utilities {
                 null
         );
 
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             return cursor.getString(RecipeEntry.IDX_RECIPE_URL);
         }
+
+        cursor.close();
 
         return null;
     }
 
-    public static String saveImageToFile(Context context, long recipeId, Bitmap bitmap) {
+    public static Uri saveImageToFile(Context context, long recipeId, Bitmap bitmap) {
         File directory = context.getDir(
                 context.getString(R.string.food_image_dir),
                 Context.MODE_PRIVATE
@@ -744,16 +746,21 @@ public class Utilities {
         }
 
         File imagePath = new File(directory, recipeId + ".jpg");
+        if (imagePath.exists()) {
+            System.out.println(imagePath.delete());
+        }
 
-        FileOutputStream fileOutputStream = null;
+        System.out.println(imagePath.exists());
 
-        String imageUri = null;
+        FileOutputStream fileOutputStream;
+
+        Uri imageUri = null;
 
         try {
             fileOutputStream = new FileOutputStream(imagePath);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
             fileOutputStream.close();
-            imageUri = Uri.fromFile(imagePath).toString();
+            imageUri = Uri.fromFile(imagePath);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -761,4 +768,18 @@ public class Utilities {
         return imageUri;
     }
 
+    public static boolean deleteImageFromFile(Context context, Uri imagePathUri) {
+        Log.d(LOG_TAG, "Image path: " + imagePathUri);
+
+        File imageFile = new File(imagePathUri.getPath());
+
+        Log.d(LOG_TAG, "Image exists: " + imageFile.exists());
+
+        if (imageFile.exists()) {
+
+            return imageFile.delete();
+        } else {
+            return false;
+        }
+    }
 }

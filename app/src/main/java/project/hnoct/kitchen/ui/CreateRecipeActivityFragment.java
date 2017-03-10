@@ -12,7 +12,6 @@ import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,9 +19,10 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.signature.StringSignature;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -34,6 +34,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.Utilities;
 
 /**
@@ -47,7 +48,7 @@ public class CreateRecipeActivityFragment extends Fragment {
     /** Member Variables **/
     Context mContext;
     long mRecipeId;
-    String mRecipeImageUri;
+    Uri mRecipeImageUri;
     String mRecipeDescription;
     String mRecipeName;
     List<Pair<String, String>> mIngredientList;
@@ -66,11 +67,20 @@ public class CreateRecipeActivityFragment extends Fragment {
     @BindView(R.id.create_recipe_image) ImageView mRecipeImage;
     @BindView(R.id.create_recipe_ingredient_recycler_view) NonScrollingRecyclerView mIngredientRecyclerView;
     @BindView(R.id.create_recipe_direction_recycler_view) NonScrollingRecyclerView mDirectionRecyclerView;
+    @BindView(R.id.create_recipe_clear_image) ImageView mClearImageButton;
 
     @OnClick(R.id.create_recipe_image)
     public void selectImage() {
         Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT).setType("image/*");
         startActivityForResult(photoPickerIntent, SELECT_PHOTO);
+    }
+
+    @OnClick(R.id.create_recipe_clear_image)
+    public void clearImage() {
+        boolean deleted = Utilities.deleteImageFromFile(mContext, mRecipeImageUri);
+        mRecipeImageUri = null;
+        Log.d(LOG_TAG, "Deleted: " + deleted);
+        Glide.with(mContext).load(mRecipeImageUri).into(mRecipeImage);
     }
 
     public CreateRecipeActivityFragment() {
@@ -86,7 +96,7 @@ public class CreateRecipeActivityFragment extends Fragment {
         mContext = getActivity();
 
         // Attempt to retrieve saved data
-        getAutosavedData();
+        getSavedData();
 
         if (mRecipeId == 0) {
             // If no saved data exists, generate a new recipeId
@@ -95,7 +105,12 @@ public class CreateRecipeActivityFragment extends Fragment {
             // Insert saved data into EditText
             mRecipeNameEditText.setText(mRecipeName, TextView.BufferType.EDITABLE);
             mRecipeDescriptionEditText.setText(mRecipeDescription, TextView.BufferType.EDITABLE);
-            Glide.with(mContext).load(mRecipeImageUri).into(mRecipeImage);
+            Log.d(LOG_TAG, "Why does this exist? : " + mRecipeImageUri);
+            Glide.with(mContext)
+                    .load(mRecipeImageUri)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .into(mRecipeImage);
 
             // Delete the autosaved data so it will not show up again after they've completed this
             // recipe
@@ -141,7 +156,7 @@ public class CreateRecipeActivityFragment extends Fragment {
     @Override
     public void onPause() {
         if (!mSaved) {
-            autosaveUserInput();
+            saveUserInput();
         }
         super.onPause();
     }
@@ -167,7 +182,13 @@ public class CreateRecipeActivityFragment extends Fragment {
                 mRecipeImageUri = Utilities.saveImageToFile(mContext, mRecipeId, mImageBitmap);
 
                 // Load the image into the ImageView
-                Glide.with(mContext).load(selectedImageUri).into(mRecipeImage);
+
+                Glide.with(mContext)
+                        .load(mRecipeImageUri)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true)
+                        .into(mRecipeImage);
+//                mRecipeImage.setImageBitmap(mImageBitmap);
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -178,14 +199,18 @@ public class CreateRecipeActivityFragment extends Fragment {
     /**
      * Retrieves saved data from SharedPreferences from when user last left this Activity
      */
-    private void getAutosavedData() {
+    private void getSavedData() {
         // Initialize SharedPreferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         // Get the stored data
         mRecipeName = prefs.getString(mContext.getString(R.string.edit_recipe_name_key), null);
         mRecipeDescription = prefs.getString(mContext.getString(R.string.edit_recipe_description_key), null);
-        mRecipeImageUri = prefs.getString(mContext.getString(R.string.edit_recipe_image_key), null);
+        if (prefs.getString(mContext.getString(R.string.edit_recipe_image_key), null) != null) {
+            mRecipeImageUri = Uri.parse(prefs.getString(mContext.getString(R.string.edit_recipe_image_key), null));
+        } else {
+            mRecipeImageUri = null;
+        }
         String ingredientString = prefs.getString(mContext.getString(R.string.edit_recipe_ingredients_key), null);
         String directionList = prefs.getString(mContext.getString(R.string.edit_recipe_directions_key), null);
 
@@ -229,7 +254,7 @@ public class CreateRecipeActivityFragment extends Fragment {
      * Saves user input to SharedPreferences in case application is accidentally exited or the
      * user accidentally leaves the activity
      */
-    private void autosaveUserInput() {
+    private void saveUserInput() {
         // Save the user's input when leaving the activity so they can pick up where they left off
         // Get the String entered by the user into the EditText Views
         mRecipeName = mRecipeNameEditText.getText().toString();
@@ -255,10 +280,17 @@ public class CreateRecipeActivityFragment extends Fragment {
         );
 
         // Save recipe image URI
-        editor.putString(
-                mContext.getString(R.string.edit_recipe_image_key),
-                mRecipeImageUri
-        );
+        if (mRecipeImageUri != null) {
+            editor.putString(
+                    mContext.getString(R.string.edit_recipe_image_key),
+                    mRecipeImageUri.toString()
+            );
+        } else {
+            editor.putString(
+                    mContext.getString(R.string.edit_recipe_image_key),
+                    null
+            );
+        }
 
         // Save ingredient list
         if (mIngredientList != null) {
@@ -311,7 +343,7 @@ public class CreateRecipeActivityFragment extends Fragment {
             );
         }
 
-        if (mRecipeName != null || mRecipeDescription != null || mRecipeImage != null ||
+        if (mRecipeName != null || mRecipeDescription != null || mRecipeImageUri != null ||
                 mIngredientList != null || mDirectionList != null) {
             // RecipeId only needs to be saved if other data was saved as well.
             editor.putLong(
