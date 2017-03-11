@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.data.RecipeContract.*;
 
@@ -126,7 +125,7 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
                 recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, recipeDescription);
                 recipeValues.put(RecipeEntry.COLUMN_RATING, recipeRating);
                 recipeValues.put(RecipeEntry.COLUMN_REVIEWS, recipeReviews);
-                recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, RecipeContract.getCurrentTime());
+                recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, Utilities.getCurrentTime());
                 recipeValues.put(RecipeEntry.COLUMN_FAVORITE, 0);
                 recipeValues.put(RecipeEntry.COLUMN_SOURCE, AllRecipesListAsyncTask.ALL_RECIPES_ATTRIBUTION);
 //                Log.d(LOG_TAG, "Recipe reviews: " + recipeReviews);

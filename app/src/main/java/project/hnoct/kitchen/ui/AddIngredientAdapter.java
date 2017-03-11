@@ -2,6 +2,8 @@ package project.hnoct.kitchen.ui;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.os.Bundle;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,6 +30,8 @@ import butterknife.OnEditorAction;
 import butterknife.OnFocusChange;
 import butterknife.OnTextChanged;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract;
+import project.hnoct.kitchen.data.RecipeProvider;
 
 /**
  * Created by hnoct on 3/5/2017.
@@ -199,7 +205,7 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
 
         // ButterKnife Bound Views
         @BindView(R.id.list_add_ingredient_quantity_edit_text) EditText addQuantityEditText;
-        @BindView(R.id.list_add_ingredient_name_edit_text) EditText addIngredientNameEditText;
+        @BindView(R.id.list_add_ingredient_name_edit_text) AutoCompleteTextView addIngredientNameEditText;
         @BindView(R.id.list_add_ingredient_button) ImageView addIngredientButton;
 
         @OnClick(R.id.list_add_ingredient_button)
@@ -256,6 +262,19 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
          */
         @OnTextChanged(R.id.list_add_ingredient_name_edit_text)
         void onNameChanged(CharSequence text) {
+            Bundle searchBundle = mContext.getContentResolver().call(
+                    RecipeContract.IngredientEntry.CONTENT_URI,
+                    "search",
+                    text.toString(),
+                    null
+            );
+
+            List<String> searchResults = searchBundle.getStringArrayList("test");
+            if (searchResults != null) {
+                ArrayAdapter adapter = new ArrayAdapter(mContext, android.R.layout.simple_dropdown_item_1line, searchResults.toArray());
+                addIngredientNameEditText.setAdapter(adapter);
+            }
+
             // Get the adapter's position
             int position = getAdapterPosition();
 

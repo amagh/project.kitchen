@@ -22,7 +22,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.signature.StringSignature;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -34,7 +33,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import project.hnoct.kitchen.R;
-import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.Utilities;
 
 /**
@@ -45,12 +43,20 @@ public class CreateRecipeActivityFragment extends Fragment {
     private static final String LOG_TAG = CreateRecipeActivity.class.getSimpleName();
     private final int SELECT_PHOTO = 25687;
 
+
     /** Member Variables **/
     Context mContext;
     long mRecipeId;
-    Uri mRecipeImageUri;
-    String mRecipeDescription;
-    String mRecipeName;
+    private Uri mRecipeImageUri;
+    private String mRecipeDescription;
+    private String mRecipeName;
+
+    // Required to be added to database
+    private boolean mFavorite = false;
+    private long mDateAdded = Utilities.getCurrentTime();
+    private String mSource = "user-added";
+    private String mRecipeUrl = "user.custom/";
+
     List<Pair<String, String>> mIngredientList;
     List<String> mDirectionList;
 
@@ -69,17 +75,30 @@ public class CreateRecipeActivityFragment extends Fragment {
     @BindView(R.id.create_recipe_direction_recycler_view) NonScrollingRecyclerView mDirectionRecyclerView;
     @BindView(R.id.create_recipe_clear_image) ImageView mClearImageButton;
 
+    /**
+     * Opens Activity that allows for selection of photo to be used for recipe
+     */
     @OnClick(R.id.create_recipe_image)
     public void selectImage() {
+        // Set the intent for ACTION_GET_CONTENT with image type
         Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT).setType("image/*");
+
+        // Start activity and wait for result
         startActivityForResult(photoPickerIntent, SELECT_PHOTO);
     }
 
+    /**
+     * Removes the image from File and sets the image URI to null
+     */
     @OnClick(R.id.create_recipe_clear_image)
     public void clearImage() {
-        boolean deleted = Utilities.deleteImageFromFile(mContext, mRecipeImageUri);
+        // Delete the image from File
+        Utilities.deleteImageFromFile(mContext, mRecipeImageUri);
+
+        // Set the image URI to null
         mRecipeImageUri = null;
-        Log.d(LOG_TAG, "Deleted: " + deleted);
+
+        // Load a null image into the ImageView to remove the previous image loaded
         Glide.with(mContext).load(mRecipeImageUri).into(mRecipeImage);
     }
 
@@ -156,6 +175,7 @@ public class CreateRecipeActivityFragment extends Fragment {
     @Override
     public void onPause() {
         if (!mSaved) {
+            // Save all user-input whenever the Activity is paused
             saveUserInput();
         }
         super.onPause();
@@ -182,13 +202,11 @@ public class CreateRecipeActivityFragment extends Fragment {
                 mRecipeImageUri = Utilities.saveImageToFile(mContext, mRecipeId, mImageBitmap);
 
                 // Load the image into the ImageView
-
                 Glide.with(mContext)
                         .load(mRecipeImageUri)
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)      // Prevent Glide from caching image
+                        .skipMemoryCache(true)                          // Prevent Glide from caching image
                         .into(mRecipeImage);
-//                mRecipeImage.setImageBitmap(mImageBitmap);
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

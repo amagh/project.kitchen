@@ -8,6 +8,12 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import project.hnoct.kitchen.data.RecipeContract.RecipeEntry;
 import project.hnoct.kitchen.data.RecipeContract.IngredientEntry;
 import project.hnoct.kitchen.data.RecipeContract.LinkEntry;
@@ -416,6 +422,35 @@ public class RecipeProvider extends ContentProvider {
         return rowsUpdated;
     }
 
+    public ArrayList<String> search(String searchTerm) {
+        final SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        if (searchTerm != null &&  searchTerm.length() > 2) {
+            ArrayList<String> searchResults = new ArrayList<>();
+
+            Cursor cursor = db.query(
+                    IngredientEntry.TABLE_NAME,
+                    new String[] {IngredientEntry.COLUMN_INGREDIENT_ID, IngredientEntry.COLUMN_INGREDIENT_NAME},
+                    IngredientEntry.COLUMN_INGREDIENT_NAME + " LIKE ?",
+                    new String[] {"%" + searchTerm + "%"},
+                    null,
+                    null,
+                    IngredientEntry.COLUMN_INGREDIENT_ID + " ASC",
+                    "0,5"
+            );
+
+            if (cursor.moveToFirst()) {
+                do {
+                    searchResults.add(cursor.getString(cursor.getColumnIndex(IngredientEntry.COLUMN_INGREDIENT_NAME)));
+                } while (cursor.moveToNext());
+            }
+
+            cursor.close();
+
+            return searchResults;
+        }
+        return null;
+    }
+
     @Override
     public int bulkInsert(Uri uri, ContentValues[] values) {
         /** Constants **/
@@ -498,6 +533,17 @@ public class RecipeProvider extends ContentProvider {
             }
             default: return super.bulkInsert(uri, values);
         }
+    }
 
+    @Nullable
+    @Override
+    public Bundle call(String method, String arg, Bundle extras) {
+        if (method.equals("search")) {
+            Bundle bundle = new Bundle();
+            ArrayList<String> searchResults = search(arg);
+            bundle.putStringArrayList("test", searchResults);
+            return bundle;
+        }
+        return null;
     }
 }

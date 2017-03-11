@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -781,5 +782,14 @@ public class Utilities {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Method for standardizing the time that is added to the database
+     * @return
+     */
+    public static long getCurrentTime() {
+        GregorianCalendar gc = new GregorianCalendar();
+        return gc.getTimeInMillis();
     }
 }

@@ -25,15 +25,6 @@ public class RecipeContract {
     public static final String PATH_LINK = "link";
 
     /**
-     * Method for standardizing the time that is added to the database
-     * @return
-     */
-    public static long getCurrentTime() {
-        GregorianCalendar gc = new GregorianCalendar();
-        return gc.getTimeInMillis();
-    }
-
-    /**
      * Entry for the Recipe Table
      */
     public static class RecipeEntry implements BaseColumns {

@@ -13,7 +13,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
 
@@ -44,7 +43,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... params) {
         // Instantiate variable to hold time recipes were added. Will subtract one to the time to
         // each subsequent recipe added as to preserve order
-        long timeAdded = RecipeContract.getCurrentTime();
+        long timeAdded = Utilities.getCurrentTime();
 
         try {
             List<ContentValues> recipeCVList = new ArrayList<>();

@@ -57,7 +57,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
         // Retrieve ingredient information
         String quantity = mCursor.getString(RecipeDetailsFragment.IDX_LINK_QUANTITY);
         String ingredient = mCursor.getString(RecipeDetailsFragment.IDX_INGREDIENT_NAME);
-        Pattern pattern = Pattern.compile("[A-Z].*:");
+        Pattern pattern = Pattern.compile(".*:");
         Matcher match = pattern.matcher(ingredient);
 
         if (match.matches()) {
