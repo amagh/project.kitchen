@@ -171,6 +171,15 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
      * @param directionList List of Directions to set as mDirectionList
      */
     public void setDirectionList(List<String> directionList) {
+        if (directionList == null || directionList.isEmpty()) {
+            // If a null or empty list is added, reset the Adapter to initial conditions
+            mDirectionList = new LinkedList<>();
+            mAddList = new LinkedList<>();
+            addDirection();
+            notifyDataSetChanged();
+            return;
+        }
+
         // Set mDirectionList equal to the input direction list
         mDirectionList = new LinkedList<>();
         mDirectionList.addAll(directionList);

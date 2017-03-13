@@ -710,7 +710,7 @@ public class Utilities {
         UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
         // Add URIs that need to be matched
-        uriMatcher.addURI(context.getString(R.string.custom_authority) , "/#", CUSTOM_RECIPE_URI);
+        uriMatcher.addURI(context.getString(R.string.custom_authority) , "/*", CUSTOM_RECIPE_URI);
         uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#/*", ALLRECIPES_URI);
         uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#/*", ALLRECIPES_URI);
 
@@ -836,6 +836,10 @@ public class Utilities {
         ArrayList<ContentProviderOperation> updateList = new ArrayList<>();
         String selection = RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " +
                 IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID + " = ? AND " +
+                RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = ?";
+
+        String updateSelection = RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " +
+                IngredientEntry.COLUMN_INGREDIENT_ID + " = ? AND " +
                 RecipeEntry.COLUMN_SOURCE + " = ?";
 
         for (ContentValues linkValue : workingList) {
@@ -857,7 +861,7 @@ public class Utilities {
             if (cursor != null && cursor.moveToFirst()) {
                 cursor.close();
                 updateList.add(ContentProviderOperation.newUpdate(LinkEntry.CONTENT_URI)
-                        .withSelection(selection, selectionArgs)
+                        .withSelection(updateSelection, selectionArgs)
                         .withValue(LinkEntry.COLUMN_QUANTITY, linkValue.getAsString(LinkEntry.COLUMN_QUANTITY))
                         .withValue(LinkEntry.COLUMN_INGREDIENT_ORDER, linkValue.getAsLong(LinkEntry.COLUMN_INGREDIENT_ORDER))
                         .build()

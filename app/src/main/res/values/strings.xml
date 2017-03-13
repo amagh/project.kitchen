@@ -4,6 +4,7 @@
     <string name="action_clear_data">Clear Data \u0026 Restart</string>
     <string name="action_save">Save Recipe</string>
     <string name="action_edit">Edit Recipe</string>
+    <string name="action_clear_recipe">Clear Recipe</string>
     <string name="favorite_title">Favorites</string>
     <string name="my_recipes_title">My Recipes</string>
     <string name="title_activity_recipe_details">RecipeDetailsActivity</string>
@@ -128,4 +129,8 @@
 
     <!-- List Item Add Directions Layout -->
     <string name="list_add_direction_hint">Start writing!</string>
+
+    <!-- Attribution -->
+    <string name="attribution_custom">user-added</string>
+    <string name="attriubtion_allrecipes">Allrecipes.com</string>
 </resources>

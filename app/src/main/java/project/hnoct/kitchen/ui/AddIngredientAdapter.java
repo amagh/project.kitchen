@@ -146,6 +146,15 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
      * @param ingredientList List of Ingredients
      */
     public void setIngredientList(List<Pair<String, String>> ingredientList) {
+        if (ingredientList == null || ingredientList.isEmpty()) {
+            // If a null or empty list is added, reset the Adapter to initial conditions
+            mIngredientList = new LinkedList<>();
+            mAddList = new LinkedList<>();
+            addIngredient();
+            notifyDataSetChanged();
+            return;
+        }
+
         // Copy all values from the input list to mIngredientList (Might be faster to just set equal)
         mIngredientList = new LinkedList<>();
         mIngredientList.addAll(ingredientList);

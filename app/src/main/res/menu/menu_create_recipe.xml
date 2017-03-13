@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="project.hnoct.kitchen.ui.CreateRecipeActivity">
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
+        android:id="@+id/action_clear_recipe"
+        android:title="@string/action_clear_recipe"
+        android:icon="@drawable/ic_menu_delete"
+        app:showAsAction="never"/>
 
     <item
         android:id="@+id/action_save"

@@ -20,6 +20,8 @@ import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
 
+import static android.view.View.GONE;
+
 /**
  * Created by hnoct on 2/20/2017.
  */
@@ -90,6 +92,17 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
             Glide.with(mContext)
                     .load(recipeImgUrl)
                     .into(holder.recipeImage);
+        }
+
+        if (recipeAttribution.equals(mContext.getString(R.string.attribution_custom)) ||
+                mCursor.getLong(RecipeEntry.IDX_RECIPE_ID) < 0) {
+            holder.recipeAttribution.setVisibility(View.INVISIBLE);
+            holder.recipeReviews.setVisibility(View.INVISIBLE);
+            holder.recipeRating.setVisibility(View.INVISIBLE);
+        } else {
+            holder.recipeAttribution.setVisibility(View.VISIBLE);
+            holder.recipeReviews.setVisibility(View.VISIBLE);
+            holder.recipeRating.setVisibility(View.VISIBLE);
         }
 
         // Populate the rest of the views

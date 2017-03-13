@@ -30,11 +30,13 @@ public class CreateRecipeActivity extends AppCompatActivity {
         CreateRecipeFragment fragment = new CreateRecipeFragment();
         fragment.setArguments(args);
 
-        // Add the fragment to the container
-        getSupportFragmentManager()
-                .beginTransaction()
-                .add(R.id.create_recipe_container, fragment)
-                .commit();
+        if (savedInstanceState == null) {
+            // Add the fragment to the container if new
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.create_recipe_container, fragment)
+                    .commit();
+        }
     }
 
     @Override
@@ -52,13 +54,22 @@ public class CreateRecipeActivity extends AppCompatActivity {
                 CreateRecipeFragment fragment =
                         (CreateRecipeFragment) getSupportFragmentManager().findFragmentById(R.id.create_recipe_container);
                 fragment.onSaveClicked();
+                break;
+            }
+            case R.id.action_clear_recipe: {
+                CreateRecipeFragment fragment =
+                        (CreateRecipeFragment) getSupportFragmentManager().findFragmentById(R.id.create_recipe_container);
+                fragment.onClearClicked();
+                break;
             }
         }
         return super.onOptionsItemSelected(item);
     }
 
     // Callback Interface for informing fragment that the save button has been clicked
-    public interface SaveButtonCallback {
+    public interface MenuButtonClicked {
         void onSaveClicked();
+
+        void onClearClicked();
     }
 }

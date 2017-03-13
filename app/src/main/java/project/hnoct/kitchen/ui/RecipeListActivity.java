@@ -93,53 +93,73 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     public void selectDrawerItem(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_favorites: {
-
+                break;
             }
             case R.id.action_settings: {
                 startActivity(new Intent(RecipeListActivity.this, SettingsActivity.class));
+                break;
             }
             case R.id.action_my_recipes: {
-
+                break;
             }
             case R.id.action_clear_data: {
+                // Delete the database and restart the application to rebuild it
                 boolean deleted = deleteDatabase(RecipeDbHelper.DATABASE_NAME);
                 Log.d(LOG_TAG, "Database deleted " + deleted);
-                AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(RecipeListActivity.this);
-                syncTask.execute();
-                RecipeDbHelper mDbhelper = new RecipeDbHelper(getApplicationContext());
-                mDbhelper.getWritableDatabase();
-                mDbhelper.close();
-                RecipeListFragment.mRecipeAdapter.notifyDataSetChanged();
+
+                // Set an Alarm to re-open the Application right after it is closed
                 AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                 PendingIntent restartIntent = PendingIntent.getActivity(
                         getBaseContext(), 0, new Intent(getIntent()),
                         PendingIntent.FLAG_ONE_SHOT);
                 mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, restartIntent);
+
+                // Exit the application
                 System.exit(2);
+                break;
             }
         }
     }
 
+    /**
+     * Opens the FAB Menu
+     */
     void showFabMenu() {
+        // Set the boolean to true
         mFabMenuOpen = true;
+
+        // Make the menu options VISIBLE
         mAddRecipeFab.setVisibility(View.VISIBLE);
         mImportRecipeFab.setVisibility(View.VISIBLE);
         mMainFabText.setVisibility(View.VISIBLE);
         mAddRecipeText.setVisibility(View.VISIBLE);
         mImportRecipeText.setVisibility(View.VISIBLE);
+
+        // Set the icon for the FAB to the cancel icon
         mFab.setImageResource(R.drawable.ic_menu_close_clear_cancel);
     }
 
+    /**
+     * Closes the FAB Menu
+     */
     void closeFabMenu() {
+        // Set the boolean to false
         mFabMenuOpen = false;
+
+        // Make the menu options GONE
         mAddRecipeFab.setVisibility(View.GONE);
         mImportRecipeFab.setVisibility(View.GONE);
         mMainFabText.setVisibility(View.GONE);
         mAddRecipeText.setVisibility(View.GONE);
         mImportRecipeText.setVisibility(View.GONE);
+
+        // Set the FAB icon to the add icon
         mFab.setImageResource(R.drawable.ic_menu_add_custom);
     }
 
+    /**
+     * Shows a Dialog with an EditText to allow copy-pasting of a recipe URL so it can be imported
+     */
     void showImportDialog() {
         ImportRecipeDialog dialog = new ImportRecipeDialog();
         dialog.show(getFragmentManager(), IMPORT_DIALOG);
