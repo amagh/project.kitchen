@@ -184,7 +184,7 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
                 String ingredient = ingredientQuantityPair.first;
 
                 // Convert fractions in the quantity to Unicode equivalents if they exist
-                String quantity = Utilities.convertToUnicodeFraction(mContext, ingredientQuantityPair.second);
+                String quantity = ingredientQuantityPair.second;
 
                 // Check to see if ingredient already exists in database
                 long ingredientId;
@@ -204,7 +204,7 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
                     while (databaseIngredientName != null && !ingredient.equals(databaseIngredientName)) {
                         // Keep incrementing to find a new ID if the ingredientName already exists
                         // and does not match the ingredient being queried
-                        ingredientId = Utilities.generateNewId(mContext, ingredientId, Utilities.INGREDIENT_TYPE);
+                        ingredientId = Utilities.generateNewId(mContext, Utilities.INGREDIENT_TYPE);
                         databaseIngredientName = Utilities.getIngredientNameFromId(mContext, ingredientId);
                     }
                 }
@@ -215,9 +215,8 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
                  * ingredientIdList used to hold all ingredientIds in this recipe
                  */
                 while (ingredientIdList.contains(ingredientId)) {
-                    // If ingredientId exists in List, then generate new ID that does not already exist in database
-                    ingredientId = Utilities.generateNewId(mContext, ++ingredientId, Utilities.INGREDIENT_TYPE);
-                    Log.d(LOG_TAG, "Ingredient ID (" + ingredientId + ") already exists!");
+                    // If ingredientId exists in List, then increment the ingredientId
+                    ingredientId++;
                 }
                 ingredientIdList.add(ingredientId);
 
@@ -291,7 +290,7 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
             );
 
             // Bulk insert ingredient values
-            insertAndUpdateIngredientValues(ingredientCVList);
+            Utilities.insertIngredientValues(mContext, ingredientCVList);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -304,39 +303,6 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
         mSyncCallback.onFinishLoad();
-    }
-
-    private void insertAndUpdateIngredientValues(List<ContentValues> ingredientCVList) {
-        // Duplicate the list as to avoid ConcurrentModificationError
-        List<ContentValues> workingList = new LinkedList<>(ingredientCVList);
-
-        // Bulk insert ingredient and link information
-        for (ContentValues ingredientValue : workingList) {
-            // Check if ingredient is already in the database, if so, skip it
-            long ingredientId = ingredientValue.getAsLong(IngredientEntry.COLUMN_INGREDIENT_ID);
-
-            Cursor cursor = mContext.getContentResolver().query(
-                    IngredientEntry.CONTENT_URI,
-                    null,
-                    IngredientEntry.COLUMN_INGREDIENT_ID + " = ?",
-                    new String[] {Long.toString(ingredientId)},
-                    null
-            );
-
-            if (cursor.moveToFirst()) {
-                // Remove the ContentValues from the list to be bulk inserted
-                ingredientCVList.remove(ingredientValue);
-            }
-            // Close the Cursor
-            cursor.close();
-        }
-        ContentValues[] ingredientValues = new ContentValues[ingredientCVList.size()];
-        ingredientCVList.toArray(ingredientValues);
-
-        mContext.getContentResolver().bulkInsert(
-                IngredientEntry.CONTENT_URI,
-                ingredientValues
-        );
     }
 
     public interface RecipeSyncCallback {

@@ -21,6 +21,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.Utilities;
 
 /**
@@ -55,12 +56,15 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
         mCursor.moveToPosition(position);
 
         // Retrieve ingredient information
-        String quantity = mCursor.getString(RecipeDetailsFragment.IDX_LINK_QUANTITY);
-        String ingredient = mCursor.getString(RecipeDetailsFragment.IDX_INGREDIENT_NAME);
+        String quantity = mCursor.getString(RecipeContract.LinkEntry.IDX_LINK_QUANTITY);
+        String ingredient = mCursor.getString(RecipeContract.LinkEntry.IDX_INGREDIENT_NAME);
+
+        // Check to see if ingredient is a header (headers are notated with a ":")
         Pattern pattern = Pattern.compile(".*:");
         Matcher match = pattern.matcher(ingredient);
 
         if (match.matches()) {
+            // Ingredient is not an ingredient, but a header, so bold the text to make it stand out and remove the colon
             ingredient = ingredient.substring(0, ingredient.length() -1);
             holder.ingredientNameText.setText(ingredient);
             holder.ingredientNameText.setTypeface(holder.ingredientNameText.getTypeface(), Typeface.BOLD);

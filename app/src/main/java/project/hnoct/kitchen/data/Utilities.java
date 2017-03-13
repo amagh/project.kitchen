@@ -1,13 +1,16 @@
 package project.hnoct.kitchen.data;
 
+import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
 import android.content.UriMatcher;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.v4.util.Pair;
 import android.util.DisplayMetrics;
@@ -34,8 +37,11 @@ import java.util.regex.Pattern;
 public class Utilities {
     /** Constants **/
     private static final String LOG_TAG = Utilities.class.getSimpleName();
+
     public static final int RECIPE_TYPE = 0;
     public static final int INGREDIENT_TYPE = 1;
+
+    public static final int CUSTOM_RECIPE_URI = 0;
     public static final int ALLRECIPES_URI = 1;
 
     /** Member Variables **/
@@ -150,7 +156,7 @@ public class Utilities {
      * @param thumbnailUrl URL of the thumbnail as String
      * @return URL of the image as String
      */
-    public static String getImageUrlFromThumbnailUrl(String thumbnailUrl) {
+    public static String getAllRecipesImageUrlFromThumbnailUrl(String thumbnailUrl) {
         /** Constants **/
         final String ALL_RECIPES_IMAGE_URL_BASE = "http://images.media-allrecipes.com/userphotos/560x315/";
 
@@ -411,12 +417,12 @@ public class Utilities {
 
     /**
      * Generates a new ID given that there are conflicting IDs that already exist in the database
-     * @param context
-     * @param id
+     * @param context Interface to global Context
      * @param type
      * @return
      */
-    public static long generateNewId(Context context, long id, int type) {
+    public static long generateNewId(Context context, int type) {
+        long id = -1;
         switch (type) {
             case RECIPE_TYPE: {
                 // Instantiate a new List that will hold all the recipeIds that already exist
@@ -428,22 +434,16 @@ public class Utilities {
                         new String[] {RecipeEntry.COLUMN_RECIPE_ID},
                         null,
                         null,
-                        null
+                        RecipeEntry.COLUMN_RECIPE_ID + " DESC"
                 );
 
                 // Add all recipeIds to the List
-                if (cursor.moveToFirst()) do {
-                    recipeIdList.add(cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_RECIPE_ID)));
-                } while (cursor.moveToNext());
+                if (cursor != null && cursor.moveToFirst()) {
+                    id = cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_RECIPE_ID)) + 1;
+                }
 
                 // Close the cursor
                 cursor.close();
-
-                // Increment the ID until an unused ID is found
-                while (recipeIdList.contains(id)) {
-                    id++;
-                    Log.d(LOG_TAG, "Generating new ID: " + id);
-                }
 
                 // Return the new ID
                 return id;
@@ -458,21 +458,15 @@ public class Utilities {
                         new String[] {IngredientEntry.COLUMN_INGREDIENT_ID},
                         null,
                         null,
-                        null
+                        IngredientEntry.COLUMN_INGREDIENT_ID + " DESC"
                 );
 
 
-                if (cursor.moveToFirst()) do {
-                    ingredientIdList.add(cursor.getLong(cursor.getColumnIndex(IngredientEntry.COLUMN_INGREDIENT_ID)));
-                } while (cursor.moveToNext());
-
-                cursor.close();
-
-                while (ingredientIdList.contains(id)) {
-                    id++;
-                    Log.d(LOG_TAG, "Generating new ID: " + id);
+                if (cursor != null && cursor.moveToFirst()) {
+                    id = cursor.getLong(cursor.getColumnIndex(IngredientEntry.COLUMN_INGREDIENT_ID)) + 1;
                 }
 
+                cursor.close();
                 return id;
             }
 
@@ -483,7 +477,7 @@ public class Utilities {
     /**
      * Queries the database and returns the name of an ingredient given its ingredientId
      * @param context Interface for global context
-     * @param ingredientId
+     * @param ingredientId Id of the ingredient to query the database for a match
      * @return Name of the matching ingredient in String or null if none found
      */
     public static String getIngredientNameFromId(Context context, long ingredientId) {
@@ -496,7 +490,7 @@ public class Utilities {
                 null
         );
 
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             ingredientName = cursor.getString(cursor.getColumnIndex(IngredientEntry.COLUMN_INGREDIENT_NAME));
         }
         cursor.close();
@@ -506,7 +500,7 @@ public class Utilities {
     /**
      * Queries the database and returns the ingredientId of a ingredient given its name
      * @param context Interface for global context
-     * @param ingredientName
+     * @param ingredientName Name of the ingredient to query the database for a match
      * @return long ingredientId or -1 if none found
      */
     public static long getIngredientIdFromName(Context context, String ingredientName) {
@@ -684,6 +678,7 @@ public class Utilities {
 
         // Check to make sure scheme has been included in given URL
         String recipeScheme = recipeUri.getScheme();
+        Log.d(LOG_TAG, "Authority for " + recipeUri + ": " + recipeUri.getAuthority());
 
         if (recipeScheme == null) {
             // Add scheme if missing
@@ -695,6 +690,10 @@ public class Utilities {
         // Match the URI and return the recipeId
         UriMatcher matcher = buildUriMatcher(context);
         switch (matcher.match(recipeUri)) {
+            case CUSTOM_RECIPE_URI: {
+                return getRecipeIdFromCustomUrl(recipeUri.toString());
+            }
+
             case ALLRECIPES_URI: {
                 return getRecipeIdFromAllRecipesUrl(recipeUri.toString());
             }
@@ -711,6 +710,7 @@ public class Utilities {
         UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
         // Add URIs that need to be matched
+        uriMatcher.addURI(context.getString(R.string.custom_authority) , "/#", CUSTOM_RECIPE_URI);
         uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#/*", ALLRECIPES_URI);
         uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#/*", ALLRECIPES_URI);
 
@@ -736,6 +736,11 @@ public class Utilities {
         return null;
     }
 
+    private static long getRecipeIdFromCustomUrl(String recipeUrl) {
+        Uri recipeUri = Uri.parse(recipeUrl);
+        return Long.parseLong(recipeUri.getPathSegments().get(0));
+    }
+
     public static Uri saveImageToFile(Context context, long recipeId, Bitmap bitmap) {
         File directory = context.getDir(
                 context.getString(R.string.food_image_dir),
@@ -750,8 +755,6 @@ public class Utilities {
         if (imagePath.exists()) {
             System.out.println(imagePath.delete());
         }
-
-        System.out.println(imagePath.exists());
 
         FileOutputStream fileOutputStream;
 
@@ -770,14 +773,8 @@ public class Utilities {
     }
 
     public static boolean deleteImageFromFile(Context context, Uri imagePathUri) {
-        Log.d(LOG_TAG, "Image path: " + imagePathUri);
-
         File imageFile = new File(imagePathUri.getPath());
-
-        Log.d(LOG_TAG, "Image exists: " + imageFile.exists());
-
         if (imageFile.exists()) {
-
             return imageFile.delete();
         } else {
             return false;
@@ -791,5 +788,100 @@ public class Utilities {
     public static long getCurrentTime() {
         GregorianCalendar gc = new GregorianCalendar();
         return gc.getTimeInMillis();
+    }
+
+    /**
+     * Checks to make sure there are no duplicate ingredients in the database and then bulk-inserts
+     * values into database
+     * @param mContext Interface to global Context
+     * @param ingredientCVList List of ingredient ContentValues to be inserted to database
+     */
+    public static void insertIngredientValues(Context mContext, List<ContentValues> ingredientCVList) {
+        // Duplicate the list as to avoid ConcurrentModificationError
+        List<ContentValues> workingList = new LinkedList<>(ingredientCVList);
+
+        // Bulk insert ingredient and link information
+        for (ContentValues ingredientValue : workingList) {
+            // Check if ingredient is already in the database, if so, skip it
+            long ingredientId = ingredientValue.getAsLong(IngredientEntry.COLUMN_INGREDIENT_ID);
+
+            Cursor cursor = mContext.getContentResolver().query(
+                    IngredientEntry.CONTENT_URI,
+                    null,
+                    IngredientEntry.COLUMN_INGREDIENT_ID + " = ?",
+                    new String[] {Long.toString(ingredientId)},
+                    null
+            );
+
+            if (cursor.moveToFirst()) {
+                // Remove the ContentValues from the list to be bulk inserted
+                ingredientCVList.remove(ingredientValue);
+            }
+            // Close the Cursor
+            cursor.close();
+        }
+        ContentValues[] ingredientValues = new ContentValues[ingredientCVList.size()];
+        ingredientCVList.toArray(ingredientValues);
+
+        mContext.getContentResolver().bulkInsert(
+                IngredientEntry.CONTENT_URI,
+                ingredientValues
+        );
+    }
+
+    public static void insertAndUpdateLinkValues(Context context, List<ContentValues> linkCVList) {
+        List<ContentValues> workingList = new LinkedList<>();
+        workingList.addAll(linkCVList);
+
+        ArrayList<ContentProviderOperation> updateList = new ArrayList<>();
+        String selection = RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " +
+                IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID + " = ? AND " +
+                RecipeEntry.COLUMN_SOURCE + " = ?";
+
+        for (ContentValues linkValue : workingList) {
+
+            String[] selectionArgs = new String[]{
+                    linkValue.getAsString(RecipeEntry.COLUMN_RECIPE_ID),
+                    linkValue.getAsString(IngredientEntry.COLUMN_INGREDIENT_ID),
+                    linkValue.getAsString(RecipeEntry.COLUMN_SOURCE)
+            };
+
+            Cursor cursor = context.getContentResolver().query(
+                    LinkEntry.CONTENT_URI,
+                    null,
+                    selection,
+                    selectionArgs,
+                    null
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                cursor.close();
+                updateList.add(ContentProviderOperation.newUpdate(LinkEntry.CONTENT_URI)
+                        .withSelection(selection, selectionArgs)
+                        .withValue(LinkEntry.COLUMN_QUANTITY, linkValue.getAsString(LinkEntry.COLUMN_QUANTITY))
+                        .withValue(LinkEntry.COLUMN_INGREDIENT_ORDER, linkValue.getAsLong(LinkEntry.COLUMN_INGREDIENT_ORDER))
+                        .build()
+                );
+                linkCVList.remove(linkValue);
+
+            }
+        }
+
+        ContentValues[] linkValues = new ContentValues[linkCVList.size()];
+        for (int i = 0; i < linkCVList.size(); i++) {
+            linkValues[i] = linkCVList.get(i);
+        }
+
+        context.getContentResolver().bulkInsert(
+                LinkEntry.CONTENT_URI,
+                linkValues
+        );
+
+        try {
+            context.getContentResolver().applyBatch(RecipeContract.CONTENT_AUTHORITY, updateList);
+        } catch (RemoteException | OperationApplicationException e) {
+            e.printStackTrace();
+            Log.d(LOG_TAG, "Batch update failed!");
+        }
     }
 }

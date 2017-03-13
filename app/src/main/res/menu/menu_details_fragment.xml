@@ -6,5 +6,12 @@
         android:id="@+id/detail_favorites"
         android:title="@string/favorite_title"
         android:icon="@drawable/favorite_star_disabled"
+        android:orderInCategory="100"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/detail_menu_edit"
+        android:title="@string/action_edit"
+        android:icon="@drawable/ic_menu_edit"
         app:showAsAction="always" />
 </menu>

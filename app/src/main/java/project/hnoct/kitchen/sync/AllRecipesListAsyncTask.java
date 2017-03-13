@@ -88,8 +88,8 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                 String recipeThumbnailUrl = recipeElement.attr("data-original-src");
 
                 // Convert the thumbnail URL to the imageURL
-                /** @see Utilities#getImageUrlFromThumbnailUrl(String) **/
-                String recipeImageUrl = Utilities.getImageUrlFromThumbnailUrl(recipeThumbnailUrl);
+                /** @see Utilities#getAllRecipesImageUrlFromThumbnailUrl(String) **/
+                String recipeImageUrl = Utilities.getAllRecipesImageUrlFromThumbnailUrl(recipeThumbnailUrl);
 
                 // Recipe description contains name of recipe, so it is removed
                 String recipeDescription = recipeElement.attr("alt");

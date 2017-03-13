@@ -218,6 +218,55 @@ public class RecipeContract {
         public static final String COLUMN_QUANTITY = "quantity";                    // TEXT NOT NULL
         public static final String COLUMN_INGREDIENT_ORDER = "ingredient_order";    // INTEGER NOT NULL
 
+        // Column projection and index
+        public static final String[] LINK_PROJECTION = new String[] {
+                RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID,
+                RecipeEntry.COLUMN_RECIPE_NAME,
+                RecipeEntry.COLUMN_RECIPE_AUTHOR,
+                RecipeEntry.COLUMN_IMG_URL,
+                RecipeEntry.COLUMN_RECIPE_URL,
+                RecipeEntry.COLUMN_SHORT_DESC,
+                RecipeEntry.COLUMN_RATING,
+                RecipeEntry.COLUMN_REVIEWS,
+                RecipeEntry.COLUMN_DIRECTIONS,
+                RecipeEntry.COLUMN_FAVORITE,
+                RecipeEntry.COLUMN_SERVINGS,
+                RecipeEntry.COLUMN_CALORIES,
+                RecipeEntry.COLUMN_FAT,
+                RecipeEntry.COLUMN_CARBS,
+                RecipeEntry.COLUMN_PROTEIN,
+                RecipeEntry.COLUMN_CHOLESTEROL,
+                RecipeEntry.COLUMN_SODIUM,
+                RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE,
+                IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID,
+                IngredientEntry.COLUMN_INGREDIENT_NAME,
+                COLUMN_QUANTITY,
+                COLUMN_INGREDIENT_ORDER
+        };
+
+        public static final int IDX_RECIPE_ID = 0;
+        public static final int IDX_RECIPE_NAME = 1;
+        public static final int IDX_RECIPE_AUTHOR = 2;
+        public static final int IDX_IMG_URL = 3;
+        public static final int IDX_RECIPE_URL = 4;
+        public static final int IDX_SHORT_DESC = 5;
+        public static final int IDX_RECIPE_RATING = 6;
+        public static final int IDX_RECIPE_REVIEWS = 7;
+        public static final int IDX_RECIPE_DIRECTIONS = 8;
+        public static final int IDX_RECIPE_FAVORITE = 9;
+        public static final int IDX_RECIPE_SERVINGS = 10;
+        public static final int IDX_RECIPE_CALORIES = 11;
+        public static final int IDX_RECIPE_FAT = 12;
+        public static final int IDX_RECIPE_CARBS = 13;
+        public static final int IDX_RECIPE_PROTEIN = 14;
+        public static final int IDX_RECIPE_CHOLESTEROL = 15;
+        public static final int IDX_RECIPE_SODIUM = 16;
+        public static final int IDX_RECIPE_SOURCE = 17;
+        public static final int IDX_INGREDIENT_ID = 18;
+        public static final int IDX_INGREDIENT_NAME = 19;
+        public static final int IDX_LINK_QUANTITY = 20;
+        public static final int IDX_LINK_INGREDIENT_ORDER = 21;
+
         /** See RecipeEntry for comments on following methods **/
 
         public static Uri buildLinkUri(long id) {

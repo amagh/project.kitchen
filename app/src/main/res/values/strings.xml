@@ -2,6 +2,8 @@
     <string name="app_name">kitchen</string>
     <string name="action_settings">Settings</string>
     <string name="action_clear_data">Clear Data \u0026 Restart</string>
+    <string name="action_save">Save Recipe</string>
+    <string name="action_edit">Edit Recipe</string>
     <string name="favorite_title">Favorites</string>
     <string name="my_recipes_title">My Recipes</string>
     <string name="title_activity_recipe_details">RecipeDetailsActivity</string>
@@ -100,6 +102,7 @@
     <string name="http_scheme">http://</string>
     <string name="allrecipes_authority">allrecipes.com</string>
     <string name="allrecipes_www_authority">www.allrecipes.com</string>
+    <string name="custom_authority">user.custom</string>
 
     <!-- Create Recipe -->
     <string name="create_recipe_name_hint">Recipe Name</string>

@@ -40,7 +40,7 @@
             android:orientation="vertical"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin"
-            tools:context="project.hnoct.kitchen.ui.CreateRecipeActivityFragment"
+            tools:context="project.hnoct.kitchen.ui.CreateRecipeFragment"
             tools:showIn="@layout/activity_create_recipe">
 
             <EditText

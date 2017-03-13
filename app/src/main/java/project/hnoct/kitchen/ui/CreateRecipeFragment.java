@@ -1,30 +1,38 @@
 package project.hnoct.kitchen.ui;
 
 import android.app.Activity;
+import android.content.ContentProviderOperation;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
+import android.util.StringBuilderPrinter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,14 +41,17 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.Utilities;
+import project.hnoct.kitchen.data.RecipeContract.*;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class CreateRecipeActivityFragment extends Fragment {
+public class CreateRecipeFragment extends Fragment implements CreateRecipeActivity.SaveButtonCallback{
     /** Constants **/
     private static final String LOG_TAG = CreateRecipeActivity.class.getSimpleName();
+    static final String RECIPE_URI = "recipe_uri";
     private final int SELECT_PHOTO = 25687;
 
 
@@ -50,12 +61,13 @@ public class CreateRecipeActivityFragment extends Fragment {
     private Uri mRecipeImageUri;
     private String mRecipeDescription;
     private String mRecipeName;
+    private String mRecipeAuthor = "testUser";
 
     // Required to be added to database
     private boolean mFavorite = false;
     private long mDateAdded = Utilities.getCurrentTime();
     private String mSource = "user-added";
-    private String mRecipeUrl = "user.custom/";
+    private String mRecipeUrl = "content://user.custom/";
 
     List<Pair<String, String>> mIngredientList;
     List<String> mDirectionList;
@@ -102,7 +114,7 @@ public class CreateRecipeActivityFragment extends Fragment {
         Glide.with(mContext).load(mRecipeImageUri).into(mRecipeImage);
     }
 
-    public CreateRecipeActivityFragment() {
+    public CreateRecipeFragment() {
     }
 
     @Override
@@ -114,17 +126,75 @@ public class CreateRecipeActivityFragment extends Fragment {
         // Initialize member variables
         mContext = getActivity();
 
-        // Attempt to retrieve saved data
-        getSavedData();
+        // Attempt to load information from Bundle
+        if (getArguments() != null) {
+            Uri recipeUri = getArguments().getParcelable(RECIPE_URI);
+            if (recipeUri != null && !recipeUri.equals("")) {
+
+                Cursor cursor = mContext.getContentResolver().query(
+                        RecipeEntry.CONTENT_URI,
+                        RecipeEntry.RECIPE_PROJECTION,
+                        RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                        new String[] {Long.toString(RecipeEntry.getRecipeIdFromUri(recipeUri))},
+                        null
+                );
+
+                if (cursor != null && cursor.moveToFirst()) {
+                    mRecipeName = cursor.getString(RecipeEntry.IDX_RECIPE_NAME);
+                    mRecipeDescription = cursor.getString(RecipeEntry.IDX_SHORT_DESCRIPTION);
+                    mRecipeAuthor = cursor.getString(RecipeEntry.IDX_RECIPE_AUTHOR);
+                    mRecipeUrl = cursor.getString(RecipeEntry.IDX_RECIPE_URL);
+                    mFavorite = cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1;
+                    mRecipeImageUri = Uri.parse(cursor.getString(RecipeEntry.IDX_IMG_URL));
+                    mSource = cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
+
+                    mRecipeId = mSource.equals("user-added")
+                            ? cursor.getLong(RecipeEntry.IDX_RECIPE_ID)
+                            : -cursor.getLong(RecipeEntry.IDX_RECIPE_ID);
+
+                    String directions = cursor.getString(RecipeEntry.IDX_RECIPE_DIRECTIONS);
+                    String[] directionArray = directions.split("\n");
+                    mDirectionList = Arrays.asList(directionArray);
+                }
+
+                cursor.close();
+
+                cursor = mContext.getContentResolver().query(
+                        LinkEntry.CONTENT_URI,
+                        LinkEntry.LINK_PROJECTION,
+                        RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " + RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = ?",
+                        new String[] {Long.toString(mSource.equals("user-added")? mRecipeId : -mRecipeId), mSource},
+                        LinkEntry.COLUMN_INGREDIENT_ORDER + " ASC"
+                );
+
+                if (cursor != null && cursor.moveToFirst()) {
+                    mIngredientList = new LinkedList<>();
+
+                    do {
+                        String ingredient = cursor.getString(LinkEntry.IDX_INGREDIENT_NAME);
+                        String quantity = cursor.getString(LinkEntry.IDX_LINK_QUANTITY);
+                        Pair<String, String> ingredientPair = new Pair<>(quantity, ingredient);
+                        mIngredientList.add(ingredientPair);
+                    } while (cursor.moveToNext());
+                }
+            } else {
+                // Bundle does not exist or is empty, attempt to retrieve saved data
+                getSavedData();
+            }
+        } else {
+            // Bundle does not exist or is empty, attempt to retrieve saved data
+            getSavedData();
+        }
 
         if (mRecipeId == 0) {
             // If no saved data exists, generate a new recipeId
-            mRecipeId = Utilities.generateNewId(mContext, 10000, Utilities.RECIPE_TYPE);
+            mRecipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
         } else {
             // Insert saved data into EditText
             mRecipeNameEditText.setText(mRecipeName, TextView.BufferType.EDITABLE);
             mRecipeDescriptionEditText.setText(mRecipeDescription, TextView.BufferType.EDITABLE);
-            Log.d(LOG_TAG, "Why does this exist? : " + mRecipeImageUri);
+
+            // Load the image into the ImageView
             Glide.with(mContext)
                     .load(mRecipeImageUri)
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -408,5 +478,164 @@ public class CreateRecipeActivityFragment extends Fragment {
         );
 
         editor.apply();
+    }
+
+    private void saveToDatabase() {
+        // Variables
+        boolean newRecipe = true;   // Check to see whether values need to be inserted or updated
+
+        // Check to make sure all database requirements are statisfied prior to attempting to save
+        if (mRecipeAuthor == null || mRecipeAuthor.trim().equals("") ||
+                mRecipeDescription == null || mRecipeDescription.trim().equals("") ||
+                mRecipeImageUri == null ||
+                mRecipeName == null || mRecipeName.equals("") ||
+                mIngredientList == null || mIngredientList.isEmpty() ||
+                mDirectionList == null || mDirectionList.isEmpty()) {
+
+            Toast.makeText(
+                    mContext,
+                    "Please add required information before attempting to save!",
+                    Toast.LENGTH_LONG)
+                    .show();
+
+            return;
+        }
+
+        // Query the database to check if recipe already exists in database
+        Cursor cursor = mContext.getContentResolver().query(
+                RecipeEntry.CONTENT_URI,
+                null,
+                RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                new String[] {Long.toString(mRecipeId)},
+                null
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            // If Cursor finds a row, then values need to be updated
+            newRecipe = false;
+        }
+
+        // Close the Cursor
+        cursor.close();
+
+        // Create ContentValues for Recipe that need to be inserted/updated
+        ContentValues recipeValues = new ContentValues();
+        recipeValues.put(RecipeEntry.COLUMN_RECIPE_ID, mRecipeId);
+        recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, mRecipeName);
+        recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, "TestUser");
+        recipeValues.put(RecipeEntry.COLUMN_IMG_URL, mRecipeImageUri.toString());
+        recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, mRecipeDescription);
+        recipeValues.put(RecipeEntry.COLUMN_SOURCE, mSource);
+        recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, mRecipeUrl + mRecipeId);
+        recipeValues.put(RecipeEntry.COLUMN_FAVORITE, mFavorite);
+        recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, mDateAdded);
+
+        // Modify directions by appending new line in between separate instructions so it can be
+        // appropriately separated when read from database
+        String directions = null;
+        if (mDirectionList != null && !mDirectionList.isEmpty()) {
+            StringBuilder builder = new StringBuilder();
+            for (String direction : mDirectionList) {
+                builder.append(direction)
+                        .append("\n");
+            }
+            directions = builder.toString().trim();
+        }
+
+        // Add direction values to recipe ContentValues
+        recipeValues.put(RecipeEntry.COLUMN_DIRECTIONS, directions);
+
+        // Create Lists to hold ingredientIds, ingredient ContentValues, and link ContentValues
+        List<Long> ingredientIdList = new ArrayList<>();
+        List<ContentValues> ingredientCVList = new LinkedList<>();
+        ContentValues[] linkValues = new ContentValues[mIngredientList.size()];
+
+        if (mIngredientList != null) {
+            // Iterate through each ingredient in the List and create ContentValues from the Pair values
+            for (int i = 0; i < mIngredientList.size(); i++) {
+                // Retrieve the Pair
+                Pair<String, String> ingredientPair = mIngredientList.get(i);
+
+                // Instantiate the ContentValues for ingredient and link tables
+                ContentValues ingredientValue = new ContentValues();
+                ContentValues linkValue = new ContentValues();
+
+                // Get values for quantity and ingredient name from the Pair
+                String quantity = ingredientPair.first;
+                String ingredient = ingredientPair.second;
+
+                // Check to see if ingredient already exists in database, if so, set the ingredientId correctly
+                long ingredientId = Utilities.getIngredientIdFromName(mContext, ingredient);
+
+                if (ingredientId == -1) {
+                    // If no ingredientId exists, then generate a new Id for the ingredient
+                    ingredientId = Utilities.generateNewId(mContext, Utilities.INGREDIENT_TYPE);
+                }
+
+                // Check to make sure ingredientId isn't already contained in this recipe's list of
+                // ingredient IDs
+                while (ingredientIdList.contains(ingredientId)) {
+                    // If it does, iterate the ingredientId until a new one is generated
+                    ingredientId++;
+                }
+
+                // Add the ingredientId to the List of ingredientIds to check against subsequent ingredients
+                ingredientIdList.add(ingredientId);
+
+                // Add the values to the ContentValues for ingredients
+                ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
+                ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_NAME, ingredient);
+                ingredientCVList.add(ingredientValue);
+
+                // Add the values to the ContentValues for the Link table
+                linkValue.put(RecipeEntry.COLUMN_RECIPE_ID, mRecipeId);
+                linkValue.put(RecipeEntry.COLUMN_SOURCE, mSource);
+                linkValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
+                linkValue.put(LinkEntry.COLUMN_INGREDIENT_ORDER, i);
+                linkValue.put(LinkEntry.COLUMN_QUANTITY, quantity);
+                linkValues[i] = linkValue;
+            }
+        }
+
+        if (newRecipe) {
+            // If recipe does not already exist in database, then recipe and link values can be bulk
+            // inserted
+            mContext.getContentResolver().insert(
+                    RecipeEntry.CONTENT_URI,
+                    recipeValues
+            );
+
+            mContext.getContentResolver().bulkInsert(
+                    LinkEntry.CONTENT_URI,
+                    linkValues
+            );
+        } else {
+            // Otherwise, update the existing values in the database
+            mContext.getContentResolver().update(
+                    RecipeEntry.CONTENT_URI,
+                    recipeValues,
+                    RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                    new String[] {Long.toString(mRecipeId)}
+            );
+
+            // Generate a List from the Array of ContentValues
+            List<ContentValues> linkCVList = new LinkedList<>();
+            linkCVList.addAll(Arrays.asList(linkValues));
+
+            /** @see Utilities#insertAndUpdateLinkValues(Context, List) **/
+            Utilities.insertAndUpdateLinkValues(mContext, linkCVList);
+        }
+
+        // Insert missing ingredient values to the database
+        /** @see Utilities#insertIngredientValues(Context, List) **/
+        Utilities.insertIngredientValues(mContext, ingredientCVList);
+
+        Toast.makeText(mContext, "Recipe saved!", Toast.LENGTH_SHORT).show();
+        mSaved = true;
+    }
+
+    @Override
+    public void onSaveClicked() {
+        saveToDatabase();
     }
 }

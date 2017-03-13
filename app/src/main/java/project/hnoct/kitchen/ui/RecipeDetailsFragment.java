@@ -2,6 +2,7 @@ package project.hnoct.kitchen.ui;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
@@ -33,7 +34,6 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
-import project.hnoct.kitchen.sync.AllRecipesAsyncTask;
 import project.hnoct.kitchen.sync.RecipeImporter;
 
 /**
@@ -45,56 +45,6 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     private static final int DETAILS_LOADER = 1;
     public static final String RECIPE_DETAILS_URI = "recipe_and_ingredients_uri";
     public static final String RECIPE_DETAILS_URL = "recipe_url";
-
-    // Projection of columns to query
-    private static final String[] DETAILS_PROJECTION = new String[] {
-            RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID,
-            RecipeEntry.COLUMN_RECIPE_NAME,
-            RecipeEntry.COLUMN_RECIPE_AUTHOR,
-            RecipeEntry.COLUMN_IMG_URL,
-            RecipeEntry.COLUMN_RECIPE_URL,
-            RecipeEntry.COLUMN_SHORT_DESC,
-            RecipeEntry.COLUMN_RATING,
-            RecipeEntry.COLUMN_REVIEWS,
-            RecipeEntry.COLUMN_DIRECTIONS,
-            RecipeEntry.COLUMN_FAVORITE,
-            RecipeEntry.COLUMN_SERVINGS,
-            RecipeEntry.COLUMN_CALORIES,
-            RecipeEntry.COLUMN_FAT,
-            RecipeEntry.COLUMN_CARBS,
-            RecipeEntry.COLUMN_PROTEIN,
-            RecipeEntry.COLUMN_CHOLESTEROL,
-            RecipeEntry.COLUMN_SODIUM,
-            RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE,
-            IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID,
-            IngredientEntry.COLUMN_INGREDIENT_NAME,
-            LinkEntry.COLUMN_QUANTITY,
-            LinkEntry.COLUMN_INGREDIENT_ORDER
-    };
-
-    // Column index for the projection
-    static final int IDX_RECIPE_ID = 0;
-    static final int IDX_RECIPE_NAME = 1;
-    static final int IDX_RECIPE_AUTHOR = 2;
-    static final int IDX_IMG_URL = 3;
-    static final int IDX_RECIPE_URL = 4;
-    static final int IDX_SHORT_DESC = 5;
-    static final int IDX_RECIPE_RATING = 6;
-    static final int IDX_RECIPE_REVIEWS = 7;
-    static final int IDX_RECIPE_DIRECTIONS = 8;
-    static final int IDX_RECIPE_FAVORITE = 9;
-    static final int IDX_RECIPE_SERVINGS = 10;
-    static final int IDX_RECIPE_CALORIES = 11;
-    static final int IDX_RECIPE_FAT = 12;
-    static final int IDX_RECIPE_CARBS = 13;
-    static final int IDX_RECIPE_PROTEIN = 14;
-    static final int IDX_RECIPE_CHOLESTEROL = 15;
-    static final int IDX_RECIPE_SODIUM = 16;
-    static final int IDX_RECIPE_SOURCE = 17;
-    static final int IDX_INGREDIENT_ID = 18;
-    static final int IDX_INGREDIENT_NAME = 19;
-    static final int IDX_LINK_QUANTITY = 20;
-    static final int IDX_LINK_INGREDIENT_ORDER = 21;
 
     /** Member Variables **/
     Uri mRecipeUri;
@@ -195,7 +145,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         return new CursorLoader(
                 mContext,
                 mRecipeUri,
-                DETAILS_PROJECTION,
+                LinkEntry.LINK_PROJECTION,
                 null,
                 null,
                 sortOrder
@@ -229,18 +179,18 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         }
 
         // Retrieve recipe information from database
-        long recipeId = mCursor.getLong(IDX_RECIPE_ID);
-        String recipeTitle = mCursor.getString(IDX_RECIPE_NAME);
-        String recipeAuthor = mCursor.getString(IDX_RECIPE_AUTHOR);
-        String recipeImageUrl = mCursor.getString(IDX_IMG_URL);
-        String recipeUrl = mCursor.getString(IDX_RECIPE_URL);
-        String recipeDescription = mCursor.getString(IDX_SHORT_DESC);
-        double recipeRating = mCursor.getDouble(IDX_RECIPE_RATING);
-        long recipeReviews = mCursor.getLong(IDX_RECIPE_REVIEWS);
-        String recipeDirections = mCursor.getString(IDX_RECIPE_DIRECTIONS);
-        boolean recipeFavorite = mCursor.getInt(IDX_RECIPE_FAVORITE) == 1;
-        String recipeSource = mCursor.getString(IDX_RECIPE_SOURCE);
-        int recipeServings = mCursor.getInt(IDX_RECIPE_SERVINGS);
+        long recipeId = mCursor.getLong(LinkEntry.IDX_RECIPE_ID);
+        String recipeTitle = mCursor.getString(LinkEntry.IDX_RECIPE_NAME);
+        String recipeAuthor = mCursor.getString(LinkEntry.IDX_RECIPE_AUTHOR);
+        String recipeImageUrl = mCursor.getString(LinkEntry.IDX_IMG_URL);
+        String recipeUrl = mCursor.getString(LinkEntry.IDX_RECIPE_URL);
+        String recipeDescription = mCursor.getString(LinkEntry.IDX_SHORT_DESC);
+        double recipeRating = mCursor.getDouble(LinkEntry.IDX_RECIPE_RATING);
+        long recipeReviews = mCursor.getLong(LinkEntry.IDX_RECIPE_REVIEWS);
+        String recipeDirections = mCursor.getString(LinkEntry.IDX_RECIPE_DIRECTIONS);
+        boolean recipeFavorite = mCursor.getInt(LinkEntry.IDX_RECIPE_FAVORITE) == 1;
+        String recipeSource = mCursor.getString(LinkEntry.IDX_RECIPE_SOURCE);
+        int recipeServings = mCursor.getInt(LinkEntry.IDX_RECIPE_SERVINGS);
 
         // Populate the views with the data
         Glide.with(mContext)
@@ -330,6 +280,13 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
                 }
                 return true;
             }
+
+            case R.id.detail_menu_edit: {
+                // Start CreateRecipeActivity to edit recipe
+                Intent intent = new Intent(mContext, CreateRecipeActivity.class);
+                intent.setData(RecipeEntry.buildRecipeUriFromId(mRecipeId));
+                startActivity(intent);
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -340,12 +297,12 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         List<Pair<Integer, Double>> nutritionList = new LinkedList<>();
 
         // Retrieve nutrition information from database utilizing Cursor from CursorLoader
-        double calories = mCursor.getDouble(IDX_RECIPE_CALORIES);
-        double fatGrams = mCursor.getDouble(IDX_RECIPE_FAT);
-        double carbGrams = mCursor.getDouble(IDX_RECIPE_CARBS);
-        double proteinGrams = mCursor.getDouble(IDX_RECIPE_PROTEIN);
-        double cholesterolMg = mCursor.getDouble(IDX_RECIPE_CHOLESTEROL);
-        double sodiumMg = mCursor.getDouble(IDX_RECIPE_SODIUM);
+        double calories = mCursor.getDouble(LinkEntry.IDX_RECIPE_CALORIES);
+        double fatGrams = mCursor.getDouble(LinkEntry.IDX_RECIPE_FAT);
+        double carbGrams = mCursor.getDouble(LinkEntry.IDX_RECIPE_CARBS);
+        double proteinGrams = mCursor.getDouble(LinkEntry.IDX_RECIPE_PROTEIN);
+        double cholesterolMg = mCursor.getDouble(LinkEntry.IDX_RECIPE_CHOLESTEROL);
+        double sodiumMg = mCursor.getDouble(LinkEntry.IDX_RECIPE_SODIUM);
 
         @RecipeEntry.NutrientType int calorieType = RecipeEntry.NUTRIENT_CALORIE;
         @RecipeEntry.NutrientType int fatType = RecipeEntry.NUTRIENT_FAT;

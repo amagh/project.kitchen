@@ -172,7 +172,8 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
      */
     public void setDirectionList(List<String> directionList) {
         // Set mDirectionList equal to the input direction list
-        mDirectionList = directionList;
+        mDirectionList = new LinkedList<>();
+        mDirectionList.addAll(directionList);
 
         for (int i = 0; i < mDirectionList.size(); i++) {
             // For each value in the new direction list, add a button value
