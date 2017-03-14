@@ -71,7 +71,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                 recipeUrl = ALL_RECIPES_BASE_URL + recipeUrl;
 
                 // Get the recipe Id by converting the link to a URI and selecting the 2nd segment
-                long recipeId = Utilities.getRecipeIdFromAllRecipesUrl(recipeUrl);
+                long recipeId = Utilities.getRecipeIdFromUrl(mContext, recipeUrl);
 
                 // Retrieve the recipe name, thumbnail URL, and description
                 Element recipeElement = recipe.getElementsByClass("grid-col__rec-image").first();
@@ -81,8 +81,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                 }
 
                 // Replace some elements of the recipe title to get the recipe name
-                String recipeTitle = recipeElement.attr("title");
-                String recipeName = recipeTitle.replace(" Recipe", "").replace(" and Video", "");
+                String recipeName = recipe.select("h3.grid-col__h3").text();
 
                 // Retrieve the thumbnail URL
                 String recipeThumbnailUrl = recipeElement.attr("data-original-src");
@@ -92,8 +91,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                 String recipeImageUrl = Utilities.getAllRecipesImageUrlFromThumbnailUrl(recipeThumbnailUrl);
 
                 // Recipe description contains name of recipe, so it is removed
-                String recipeDescription = recipeElement.attr("alt");
-                recipeDescription = recipeDescription.substring(recipeTitle.length() + 3);
+                String recipeDescription = recipe.select("div.rec-card__description").text();
 
                 // Retrieve the rating
                 Element ratingElement = recipe.getElementsByClass("rating-stars").first();

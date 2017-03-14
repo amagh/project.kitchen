@@ -49,7 +49,16 @@
             android:name=".ui.CreateRecipeActivity"
             android:label="@string/title_activity_create_recipe"
             android:parentActivityName=".ui.RecipeListActivity"
-            android:windowSoftInputMode="stateHidden|adjustPan"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="stateHidden|adjustPan">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="project.hnoct.kitchen.ui.RecipeListActivity" />
+        </activity>
+        <activity
+            android:name=".ui.FavoritesActivity"
+            android:label="@string/title_activity_favorites"
+            android:parentActivityName=".ui.RecipeListActivity"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

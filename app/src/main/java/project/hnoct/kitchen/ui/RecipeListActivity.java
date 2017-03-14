@@ -93,10 +93,11 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     public void selectDrawerItem(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_favorites: {
+                startActivity(new Intent(this, FavoritesActivity.class));
                 break;
             }
             case R.id.action_settings: {
-                startActivity(new Intent(RecipeListActivity.this, SettingsActivity.class));
+                startActivity(new Intent(this, SettingsActivity.class));
                 break;
             }
             case R.id.action_my_recipes: {

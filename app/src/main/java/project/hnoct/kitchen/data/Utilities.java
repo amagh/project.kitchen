@@ -678,7 +678,6 @@ public class Utilities {
 
         // Check to make sure scheme has been included in given URL
         String recipeScheme = recipeUri.getScheme();
-        Log.d(LOG_TAG, "Authority for " + recipeUri + ": " + recipeUri.getAuthority());
 
         if (recipeScheme == null) {
             // Add scheme if missing
@@ -855,9 +854,13 @@ public class Utilities {
             // Close the Cursor
             cursor.close();
         }
+
+        // Create an Array of Content Values to be bulk inserted from what remains in the
+        // ingredientCVList
         ContentValues[] ingredientValues = new ContentValues[ingredientCVList.size()];
         ingredientCVList.toArray(ingredientValues);
 
+        // Bulk insert values into database
         mContext.getContentResolver().bulkInsert(
                 IngredientEntry.CONTENT_URI,
                 ingredientValues
