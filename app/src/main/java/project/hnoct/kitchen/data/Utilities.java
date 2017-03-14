@@ -718,7 +718,14 @@ public class Utilities {
         return uriMatcher;
     }
 
+    /**
+     * Retrieves the recipe's URL from the database given the recipeId
+     * @param context Interface to global Context
+     * @param recipeId
+     * @return URL in String form for the recipe
+     */
     public static String getRecipeUrlFromRecipeId(Context context, long recipeId) {
+        // Query the database and filter to the recipeId
         Cursor cursor = context.getContentResolver().query(
                 RecipeEntry.CONTENT_URI,
                 RecipeEntry.RECIPE_PROJECTION,
@@ -727,20 +734,38 @@ public class Utilities {
                 null
         );
 
+        // Instantiate the String for the recipe URL
+        String recipeUrl = null;
+
+        // Check to make sure Cursor exists and it returned a row
         if (cursor != null && cursor.moveToFirst()) {
-            return cursor.getString(RecipeEntry.IDX_RECIPE_URL);
+            // Get the recipe's URL from the database
+            recipeUrl = cursor.getString(RecipeEntry.IDX_RECIPE_URL);
         }
 
-        cursor.close();
+        // Close the Cursor
+        if (cursor != null) cursor.close();
 
-        return null;
+        return recipeUrl;
     }
 
+    /**
+     * Retrieves the recipe's ID from the URL for user-made/edited recipes
+     * @param recipeUrl String form of the recipe's URL
+     * @return Long recipeId
+     */
     private static long getRecipeIdFromCustomUrl(String recipeUrl) {
         Uri recipeUri = Uri.parse(recipeUrl);
         return Long.parseLong(recipeUri.getPathSegments().get(0));
     }
 
+    /**
+     * Saves a user-selected Bitmap image to file so it can be used for the recipe's image
+     * @param context Interface to global Context
+     * @param recipeId ID of the recipe to link the image to
+     * @param bitmap Image supplied by the user
+     * @return URI for the image location on file
+     */
     public static Uri saveImageToFile(Context context, long recipeId, Bitmap bitmap) {
         File directory = context.getDir(
                 context.getString(R.string.food_image_dir),
@@ -772,9 +797,19 @@ public class Utilities {
         return imageUri;
     }
 
+    /**
+     * Delete the image from the directory
+     * @param context Interface to global Context
+     * @param imagePathUri URI path for the image file
+     * @return Boolean value for whether the image was successfully deleted
+     */
     public static boolean deleteImageFromFile(Context context, Uri imagePathUri) {
+        // Get the File from the URI
         File imageFile = new File(imagePathUri.getPath());
+
+        // Check whether the File exists
         if (imageFile.exists()) {
+            // Delete the image file
             return imageFile.delete();
         } else {
             return false;
@@ -829,27 +864,41 @@ public class Utilities {
         );
     }
 
+    /**
+     * Takes a list of ContentValues for the Link Table and inserts/updates them into the database
+     * depending on whether an entry already exists
+     * @param context Interface to global Context
+     * @param linkCVList List of ContentValues to be inserted/updated into the Link Table
+     */
     public static void insertAndUpdateLinkValues(Context context, List<ContentValues> linkCVList) {
+        // Create a new List and copy the contents of the parameter List into it
         List<ContentValues> workingList = new LinkedList<>();
         workingList.addAll(linkCVList);
 
+        // Instantiate the ArrayList to be used for bulk-insertion
         ArrayList<ContentProviderOperation> updateList = new ArrayList<>();
+
+        // Selection for querying the Link Table
         String selection = RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " +
                 IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID + " = ? AND " +
                 RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = ?";
 
+        // Selection for updating the Link Table
         String updateSelection = RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " +
                 IngredientEntry.COLUMN_INGREDIENT_ID + " = ? AND " +
                 RecipeEntry.COLUMN_SOURCE + " = ?";
 
+        // Iterate through the List of ContentValues and query the databse to see if an equivalent
+        // entry already exists
         for (ContentValues linkValue : workingList) {
-
+            // Create the selection arguments for filtering the database from the ContentValues
             String[] selectionArgs = new String[]{
                     linkValue.getAsString(RecipeEntry.COLUMN_RECIPE_ID),
                     linkValue.getAsString(IngredientEntry.COLUMN_INGREDIENT_ID),
                     linkValue.getAsString(RecipeEntry.COLUMN_SOURCE)
             };
 
+            // Query the database
             Cursor cursor = context.getContentResolver().query(
                     LinkEntry.CONTENT_URI,
                     null,
@@ -859,29 +908,36 @@ public class Utilities {
             );
 
             if (cursor != null && cursor.moveToFirst()) {
+                // If an entry exists, then close the Cursor
                 cursor.close();
+
+                // Add the ContentValues to the ArrayList to be used for bulk updates
                 updateList.add(ContentProviderOperation.newUpdate(LinkEntry.CONTENT_URI)
                         .withSelection(updateSelection, selectionArgs)
                         .withValue(LinkEntry.COLUMN_QUANTITY, linkValue.getAsString(LinkEntry.COLUMN_QUANTITY))
                         .withValue(LinkEntry.COLUMN_INGREDIENT_ORDER, linkValue.getAsLong(LinkEntry.COLUMN_INGREDIENT_ORDER))
                         .build()
                 );
-                linkCVList.remove(linkValue);
 
+                // Remove the entry from the list to be bulk inserted
+                linkCVList.remove(linkValue);
             }
         }
 
+        // Create an Array of ContentValues that need to be inserted
         ContentValues[] linkValues = new ContentValues[linkCVList.size()];
         for (int i = 0; i < linkCVList.size(); i++) {
             linkValues[i] = linkCVList.get(i);
         }
 
+        // Bulk insert values into the database
         context.getContentResolver().bulkInsert(
                 LinkEntry.CONTENT_URI,
                 linkValues
         );
 
         try {
+            // Batch update values from the updateList
             context.getContentResolver().applyBatch(RecipeContract.CONTENT_AUTHORITY, updateList);
         } catch (RemoteException | OperationApplicationException e) {
             e.printStackTrace();
