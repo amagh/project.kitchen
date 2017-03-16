@@ -5,7 +5,8 @@ import android.util.TypedValue;
 import android.view.View;
 
 /**
- * Created by hnoct on 3/15/2017.
+ * Copied from {@see ahref=https://github.com/navasmdc/MaterialDesignLibrary/blob/master/MaterialDesignLibrary/MaterialDesign/src/main/java/com/gc/materialdesign/utils/Utils.java}
+ * because the library could not be imported due to incompatibilities with MaterialDesign Library
  */
 
 public class Utils {

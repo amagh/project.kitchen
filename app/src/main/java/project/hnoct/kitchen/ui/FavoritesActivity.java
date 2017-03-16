@@ -33,6 +33,7 @@ public class FavoritesActivity extends AppCompatActivity implements FavoritesFra
 
     @Override
     public void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder) {
+        // Start the RecipeDetailsActivity utilizing the URL of the recipe
         Intent intent = new Intent(this, RecipeDetailsActivity.class);
         intent.setData(Uri.parse(recipeUrl));
         startActivity(intent);
