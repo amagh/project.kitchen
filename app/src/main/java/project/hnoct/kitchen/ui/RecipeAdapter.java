@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -29,6 +30,8 @@ import static android.view.View.GONE;
 public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
     /** Constants **/
     public static final String LOG_TAG = RecipeAdapter.class.getSimpleName();
+    static final int RECIPE_VIEW_NORMAL = 0;
+    static final int RECIPE_VIEW_LAST = 1;
 
     /** Member Variables **/
     Context mContext;
@@ -57,9 +60,18 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
     @Override
     public RecipeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (parent instanceof RecyclerView) {
+            int layoutId = -1;
+
             // Inflate the list item layout
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_recipe, parent, false);
             view.setFocusable(true);
+
+            if (viewType == RECIPE_VIEW_LAST) {
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                int margin = (int) Utilities.convertDpToPixels(16);
+                params.setMargins(margin, margin, margin, margin);
+                view.setLayoutParams(params);
+            }
 
             // Set as the view in ViewHolder and return
             try {
@@ -129,6 +141,14 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
         return 0;
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        if (position == mCursor.getCount() - 1) {
+            return RECIPE_VIEW_LAST;
+        }
+        return RECIPE_VIEW_NORMAL;
+    }
+
     /**
      * Callback interface for passing information to the UI Activity
      */
@@ -148,6 +168,10 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
 
         @OnClick(R.id.list_recipe_favorite_button)
         public void favorite(ImageView view) {
+            if (mCursor.getCount() == 0) {
+                return;
+            }
+
             mCursor.moveToPosition(getAdapterPosition());
             long recipeId = mCursor.getLong(RecipeEntry.IDX_RECIPE_ID);
             boolean favorite = Utilities.setRecipeFavorite(mContext, recipeId);

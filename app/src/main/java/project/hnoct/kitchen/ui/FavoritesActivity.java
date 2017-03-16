@@ -1,5 +1,7 @@
 package project.hnoct.kitchen.ui;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -9,7 +11,7 @@ import android.view.View;
 
 import project.hnoct.kitchen.R;
 
-public class FavoritesActivity extends AppCompatActivity {
+public class FavoritesActivity extends AppCompatActivity implements FavoritesFragment.RecipeCallBack {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,4 +31,10 @@ public class FavoritesActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    @Override
+    public void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder) {
+        Intent intent = new Intent(this, RecipeDetailsActivity.class);
+        intent.setData(Uri.parse(recipeUrl));
+        startActivity(intent);
+    }
 }

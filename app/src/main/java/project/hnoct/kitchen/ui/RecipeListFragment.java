@@ -117,7 +117,7 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         getLoaderManager().initLoader(RECIPE_LOADER, null, this);
     }
 
-    public interface RecipeCallBack {
+    interface RecipeCallBack {
         void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder);
     }
 }
