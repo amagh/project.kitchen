@@ -59,11 +59,8 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     ContentResolver mContentResolver;
     IngredientAdapter mIngredientAdapter;
     DirectionAdapter mDirectionAdapter;
-    NutritionAdapter mNutritionAdapter;
+
     boolean mSyncing = false;
-    int mHeight;
-    int scrollY;
-    int scrollRatio;
 
     // Views bound by ButterKnife
     @BindView(R.id.details_ingredient_recycler_view) RecyclerView mIngredientsRecyclerView;
@@ -79,11 +76,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     @BindView(R.id.details_direction_title_text) TextView mDirectionTitleText;
     @BindView(R.id.details_line_separator_top) View mLineSeparatorTop;
     @BindView(R.id.details_line_separator_bottom) View mLineSeparatorBottom;
-    @BindView(R.id.nutrition_drawer_serving_disclosure_text) TextView mNutritionServingDisclosureText;
-    @BindView(R.id.nutrition_drawer_calorie_disclosure_text) TextView mNutritionCalorieDiscloureText;
-    @BindView(R.id.nutrition_drawer_recycler_view) RecyclerView mNutrientRecyclerView;
-    @BindView(R.id.content_recipe_details) DrawerLayout mDrawerLayout;
-    @BindView(R.id.details_scrollview) ScrollView mScrollView;
+
 
     public RecipeDetailsFragment() {
     }
@@ -117,7 +110,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         // Initialize the IngredientAdapter and DirectionAdapter
         mIngredientAdapter = new IngredientAdapter(getActivity());
         mDirectionAdapter = new DirectionAdapter(getActivity());
-        mNutritionAdapter = new NutritionAdapter(getActivity());
+
 
         // Initialize and set the LayoutManagers
         LinearLayoutManager llm = new LinearLayoutManager(getActivity()) {
@@ -132,24 +125,14 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
                 return false;
             }
         };
-        LinearLayoutManager llm3 = new LinearLayoutManager(getActivity());
+
         mIngredientsRecyclerView.setLayoutManager(llm);
         mDirectionsRecyclerView.setLayoutManager(llm2);
-        mNutrientRecyclerView.setLayoutManager(llm3);
+
 
         // Set the IngredientAdapter for the ingredient's RecyclerView
         mIngredientsRecyclerView.setAdapter(mIngredientAdapter);
         mDirectionsRecyclerView.setAdapter(mDirectionAdapter);
-        mNutrientRecyclerView.setAdapter(mNutritionAdapter);
-
-
-
-        mScrollView.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
-            @Override
-            public void onScrollChanged() {
-                scrollY = mScrollView.getScrollY();
-            }
-        });
 
         return rootView;
     }
@@ -220,12 +203,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         mRecipeRatingText.setText(Utilities.formatRating(recipeRating));
         mRecipeReviewsText.setText(Utilities.formatReviews(mContext, recipeReviews));
         mRecipeShortDescriptionText.setText(recipeDescription);
-        mNutritionServingDisclosureText.setText(
-                mContext.getString(R.string.nutrition_info_serving_disclosure, recipeServings)
-        );
-        mNutritionCalorieDiscloureText.setText(
-                mContext.getString(R.string.nutrition_info_disclosure, Utilities.getUserCalories(mContext))
-        );
+
 
         // Set the visibility of the ingredient and direction section titles to VISIBLE
         mIngredientTitleText.setVisibility(View.VISIBLE);
@@ -241,8 +219,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         // Set the direction list for the DirectionAdapter so steps can be displayed
         mDirectionAdapter.setDirectionList(Utilities.getDirectionList(recipeDirections));
 
-        // Set the nutrition list for the NutritionAdapter for the slide out drawer
-        mNutritionAdapter.setNutritionList(getNutritionList());
+        ((CursorLoaderListener)getActivity()).onCursorLoaded(cursor, recipeServings);
     }
 
     @Override
@@ -310,32 +287,9 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         return super.onOptionsItemSelected(item);
     }
 
-    private List<Pair<Integer, Double>> getNutritionList() {
-        // Use linked list to hold nutrition information to keep order the same
-        List<Pair<Integer, Double>> nutritionList = new LinkedList<>();
 
-        // Retrieve nutrition information from database utilizing Cursor from CursorLoader
-        double calories = mCursor.getDouble(LinkEntry.IDX_RECIPE_CALORIES);
-        double fatGrams = mCursor.getDouble(LinkEntry.IDX_RECIPE_FAT);
-        double carbGrams = mCursor.getDouble(LinkEntry.IDX_RECIPE_CARBS);
-        double proteinGrams = mCursor.getDouble(LinkEntry.IDX_RECIPE_PROTEIN);
-        double cholesterolMg = mCursor.getDouble(LinkEntry.IDX_RECIPE_CHOLESTEROL);
-        double sodiumMg = mCursor.getDouble(LinkEntry.IDX_RECIPE_SODIUM);
 
-        @RecipeEntry.NutrientType int calorieType = RecipeEntry.NUTRIENT_CALORIE;
-        @RecipeEntry.NutrientType int fatType = RecipeEntry.NUTRIENT_FAT;
-        @RecipeEntry.NutrientType int carbType = RecipeEntry.NUTRIENT_CARB;
-        @RecipeEntry.NutrientType int proteinType = RecipeEntry.NUTRIENT_PROTEIN;
-        @RecipeEntry.NutrientType int cholesterolType = RecipeEntry.NUTRIENT_CHOLESTEROL;
-        @RecipeEntry.NutrientType int sodiumType = RecipeEntry.NUTRIENT_SODIUM;
-
-        nutritionList.add(new Pair<>(calorieType, calories));
-        nutritionList.add(new Pair<>(fatType, fatGrams));
-        nutritionList.add(new Pair<>(carbType, carbGrams));
-        nutritionList.add(new Pair<>(proteinType, proteinGrams));
-        nutritionList.add(new Pair<>(cholesterolType, cholesterolMg));
-        nutritionList.add(new Pair<>(sodiumType, sodiumMg));
-
-        return nutritionList;
+    interface CursorLoaderListener {
+        void onCursorLoaded(Cursor cursor, int recipeServings);
     }
 }

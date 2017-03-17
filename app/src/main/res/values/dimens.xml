@@ -15,7 +15,8 @@
     <dimen name="list_recipe_thumbnail_height_single">240dp</dimen>
     <dimen name="list_recipe_vertical_padding">@dimen/activity_vertical_margin</dimen>
     <dimen name="text_horizontal_margin">8dp</dimen>
-    <dimen name="card_vertical_padding">8dp</dimen>
+    <dimen name="card_vertical_padding">16dp</dimen>
+    <dimen name="card_horizontal_padding">16dp</dimen>
 
     <!-- Ingredient list item -->
     <dimen name="list_ingredient_keyline">64dp</dimen>
@@ -30,7 +31,7 @@
     <dimen name="details_description_text_padding">12dp</dimen>
 
     <!-- Nutrition Drawer -->
-    <dimen name="details_nutrient_drawer_width">300dp</dimen>
+    <dimen name="nutrient_drawer_width">300dp</dimen>
     <dimen name="nutrient_drawer_header_height">200dp</dimen>
 
     <!-- Nutrient Drawer list item-->
