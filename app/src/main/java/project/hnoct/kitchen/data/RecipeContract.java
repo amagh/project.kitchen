@@ -16,13 +16,19 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
  */
 
 public class RecipeContract {
-    // Constants
-    /** For accessing the database */
+    /** Constants **/
+    // For accessing the database
     public static final String CONTENT_AUTHORITY = "project.hnoct.kitchen";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
     public static final String PATH_RECIPE = "recipe";
     public static final String PATH_INGREDIENT = "ingredient";
     public static final String PATH_LINK = "link";
+
+    // For searching database
+    public static final String INGREDIENT_SEARCH_KEY = "ingredient_search";
+    public static final String RECIPE_FAVORITES_SEARCH_KEY = "recipe_favorites_search";
+    public static final String SEARCH_INGREDIENT = "searchIngredient";
+    public static final String SEARCH_FAVORITES = "searchFavorites";
 
     /**
      * Entry for the Recipe Table

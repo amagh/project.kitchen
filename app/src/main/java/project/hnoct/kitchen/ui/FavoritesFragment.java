@@ -10,6 +10,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -46,7 +47,7 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
     int mPosition;
     Map<String, Integer> mRecipeIndex;
     LayoutInflater mInflater;       // Used to inflate the list_item_alphabet_index layout
-    LinearLayoutManager mLayoutManager;
+    StaggeredGridLayoutManager mLayoutManager;
 
     // Views bound by ButterKnife
     @BindView(R.id.favorites_index) SlidingAlphabeticalIndex mIndex;
@@ -76,7 +77,10 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
             }
         });
 
-        mLayoutManager = new LinearLayoutManager(mContext);
+        mRecipeAdapter.setHasStableIds(true);
+
+        int columns = getResources().getInteger(R.integer.recipe_columns);
+        mLayoutManager = new StaggeredGridLayoutManager(columns, StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mRecipeAdapter);
 
@@ -117,6 +121,11 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
         }
     }
 
+    /**
+     * Used to interpreting the position of the scroll indicator to find the correct letter to
+     * scroll to
+     * @param letter Letter the user is scrolling to
+     */
     private void scrollToIndex(String letter) {
         mLayoutManager.scrollToPositionWithOffset(mRecipeIndex.get(letter), 0);
     }

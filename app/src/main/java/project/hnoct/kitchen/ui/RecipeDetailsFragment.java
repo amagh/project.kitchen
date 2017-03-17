@@ -3,6 +3,7 @@ package project.hnoct.kitchen.ui;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
@@ -12,6 +13,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.util.Pair;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -21,7 +23,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -57,6 +61,9 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     DirectionAdapter mDirectionAdapter;
     NutritionAdapter mNutritionAdapter;
     boolean mSyncing = false;
+    int mHeight;
+    int scrollY;
+    int scrollRatio;
 
     // Views bound by ButterKnife
     @BindView(R.id.details_ingredient_recycler_view) RecyclerView mIngredientsRecyclerView;
@@ -75,6 +82,8 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     @BindView(R.id.nutrition_drawer_serving_disclosure_text) TextView mNutritionServingDisclosureText;
     @BindView(R.id.nutrition_drawer_calorie_disclosure_text) TextView mNutritionCalorieDiscloureText;
     @BindView(R.id.nutrition_drawer_recycler_view) RecyclerView mNutrientRecyclerView;
+    @BindView(R.id.content_recipe_details) DrawerLayout mDrawerLayout;
+    @BindView(R.id.details_scrollview) ScrollView mScrollView;
 
     public RecipeDetailsFragment() {
     }
@@ -132,6 +141,15 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         mIngredientsRecyclerView.setAdapter(mIngredientAdapter);
         mDirectionsRecyclerView.setAdapter(mDirectionAdapter);
         mNutrientRecyclerView.setAdapter(mNutritionAdapter);
+
+
+
+        mScrollView.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged() {
+                scrollY = mScrollView.getScrollY();
+            }
+        });
 
         return rootView;
     }

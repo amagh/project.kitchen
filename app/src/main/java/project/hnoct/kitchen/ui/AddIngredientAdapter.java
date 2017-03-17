@@ -273,12 +273,16 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
         void onNameChanged(CharSequence text) {
             Bundle searchBundle = mContext.getContentResolver().call(
                     RecipeContract.IngredientEntry.CONTENT_URI,
-                    "search",
+                    RecipeContract.SEARCH_INGREDIENT,
                     text.toString(),
                     null
             );
 
-            List<String> searchResults = searchBundle.getStringArrayList("test");
+            List<String> searchResults = null;
+            if (searchBundle != null) {
+                searchResults = searchBundle.getStringArrayList(RecipeContract.INGREDIENT_SEARCH_KEY);
+            }
+
             if (searchResults != null) {
                 ArrayAdapter adapter = new ArrayAdapter(mContext, android.R.layout.simple_dropdown_item_1line, searchResults.toArray());
                 addIngredientNameEditText.setAdapter(adapter);
@@ -298,7 +302,7 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
         /**
          * Capture the "enter" button from the IME and focus on the next EditText field
          * @param actionId Id of the button that was pressed on the IME
-         * @return
+         * @return true if action captured, false otherwise
          */
         @OnEditorAction(R.id.list_add_ingredient_quantity_edit_text)
         protected boolean onEditorAction(int actionId) {
@@ -310,6 +314,12 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
             return false;
         }
 
+        /**
+         * Capture the "enter" button from the IME, create a new ingredient list item, and focus on
+         * the next EditText field
+         * @param actionId Id of the button that was pressed on the IME
+         * @return true if action captured, false otherwise
+         */
         @OnEditorAction(R.id.list_add_ingredient_name_edit_text)
         protected boolean onFinishIngredientName(int actionId) {
 

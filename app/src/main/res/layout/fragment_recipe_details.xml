@@ -8,13 +8,16 @@
     android:layout_height="match_parent"
     tools:context="project.hnoct.kitchen.ui.RecipeDetailsFragment">
     <ScrollView
+        android:id="@+id/details_scrollview"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:focusableInTouchMode="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:focusableInTouchMode="true">
 
             <com.inthecheesefactory.thecheeselibrary.widget.AdjustableImageView
                 android:id="@+id/details_recipe_image"
@@ -44,6 +47,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/default_text_vertical_padding"
+                    android:descendantFocusability="blocksDescendants"
                     app:columnCount="2">
 
                     <TextView

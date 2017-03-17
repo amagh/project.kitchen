@@ -12,6 +12,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,6 +52,9 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         // Bind views using ButterKnife
         ButterKnife.bind(this, rootView);
 
+        // Instantiate member variables
+        mContext = getActivity();
+
         // Instantiate the Adapter for the RecyclerView
         mRecipeAdapter = new RecipeAdapter(getActivity(), new RecipeAdapter.RecipeAdapterOnClickHandler() {
             @Override
@@ -67,8 +71,13 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         });
 
         // Set LayoutManager
+        final int columns = getResources().getInteger(R.integer.recipe_columns);
+        StaggeredGridLayoutManager sglm = new StaggeredGridLayoutManager(
+                columns,
+                StaggeredGridLayoutManager.VERTICAL
+        );
         LinearLayoutManager llm = new LinearLayoutManager(mContext);
-        mRecipeRecyclerView.setLayoutManager(llm);
+        mRecipeRecyclerView.setLayoutManager(sglm);
 
         // Set the adapter to the RecyclerView
         mRecipeRecyclerView.setAdapter(mRecipeAdapter);

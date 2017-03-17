@@ -149,6 +149,14 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
         return RECIPE_VIEW_NORMAL;
     }
 
+    @Override
+    public long getItemId(int position) {
+        // ItemId will be the recipeId since it is a UNIQUE primary key
+        // Allows for smoother scrolling with StaggeredGridLayout and less shuffling
+        mCursor.moveToPosition(position);
+        return mCursor.getLong(RecipeEntry.IDX_RECIPE_ID);
+    }
+
     /**
      * Callback interface for passing information to the UI Activity
      */

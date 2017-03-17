@@ -46,24 +46,45 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.Nutr
     }
 
     @Override
-    public void onBindViewHolder(NutritionViewHolder holder, int position) {
+    public void onBindViewHolder(final NutritionViewHolder holder, int position) {
         if (mNutritionBarWidthTotal == 0) {
-            mNutritionBarWidthTotal = holder.nutrientPercentageBackground.getWidth();
+            // If mNutritionBarWithTotal has not been initialized due to View being set prior to
+            // onMeasure being called, then start Runnable to getWidth() after onMeasure has been
+            // called
+            holder.nutrientPercentageBackground.post(new Runnable() {
+                @Override
+                public void run() {
+                    mNutritionBarWidthTotal = holder.nutrientPercentageBackground.getWidth();
+
+                    // Re-call onBindViewHolder to redraw the views with the correct measurements
+                    notifyItemRangeChanged(0, getItemCount());
+                }
+            });
         }
 
+        // Get the nutrition type from Pair.first
         @RecipeEntry.NutrientType int nutrientType = mNutritionList.get(position).first;
+
+        // Get the value of the nutrient from Pair.second
         double nutrientValue = mNutritionList.get(position).second;
+
+        // Calculate the percentage of the Daily Value and its absolute value
         double nutrientPercentage = Utilities.getDailyValues(mContext, nutrientType, nutrientValue);
         String nutrientValueString = Utilities.formatNutrient(mContext, nutrientType, nutrientValue);
 
+        // Format the percentage for display
         DecimalFormat df = new DecimalFormat("#0%");
         String nutrientPercentageString = df.format(nutrientPercentage);
+
+        // Calculate the width of the percentage bar needed
         int percentageBarWidth = (int) (mNutritionBarWidthTotal * nutrientPercentage);
 
+        // Set values in Views
         holder.nutrientText.setText(Utilities.getNutrientType(mContext, nutrientType));
         holder.nutrientValueText.setText(nutrientValueString);
         holder.nutrientPercentageText.setText(nutrientPercentageString);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(percentageBarWidth, holder.nutrientPercentageBar.getHeight());
+
+        // Set the width of the percentage bar from the calculation above
         holder.nutrientPercentageBar.setMinimumWidth(percentageBarWidth);
         holder.nutrientPercentageBar.requestLayout();
     }

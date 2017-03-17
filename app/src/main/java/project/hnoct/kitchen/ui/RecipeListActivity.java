@@ -89,8 +89,6 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
 
         AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(this);
         syncTask.execute();
-
-
     }
 
     public void selectDrawerItem(MenuItem item) {
