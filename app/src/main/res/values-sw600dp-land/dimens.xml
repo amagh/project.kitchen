@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="activity_horizontal_margin">96dp</dimen>
+    <integer name="recipe_columns">3</integer>
+    <integer name="recipe_twopane_columns">1</integer>
+    <dimen name="nutrient_drawer_header_height">100dp</dimen>
+</resources>

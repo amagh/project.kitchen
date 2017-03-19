@@ -142,6 +142,10 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         // Sort the columns by order that ingredient was added to link table
         String sortOrder = LinkEntry.COLUMN_INGREDIENT_ORDER + " ASC";
 
+        if (mRecipeUri == null) {
+            return null;
+        }
+
         // Initialize and return CursorLoader
         return new CursorLoader(
                 mContext,
@@ -219,7 +223,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         // Set the direction list for the DirectionAdapter so steps can be displayed
         mDirectionAdapter.setDirectionList(Utilities.getDirectionList(recipeDirections));
 
-        ((CursorLoaderListener)getActivity()).onCursorLoaded(cursor, recipeServings);
+        // ((CursorLoaderListener)getActivity()).onCursorLoaded(cursor, recipeServings);
     }
 
     @Override

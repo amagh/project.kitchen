@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="project.hnoct.kitchen.ui.RecipeListActivity">
+
+    <android.support.design.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
+
+        <android.support.design.widget.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/AppTheme.AppBarOverlay">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+        </android.support.design.widget.AppBarLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="?attr/actionBarSize"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/container_container"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                tools:layout="@layout/fragment_recipe_details">
+
+                <FrameLayout
+                    android:id="@+id/recipe_detail_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <ImageView
+                    android:id="@+id/temp_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:padding="16dp"
+                    android:src="@drawable/ic_menu_close_clear_cancel"/>
+
+            </RelativeLayout>
+
+            <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:id="@+id/fragment"
+                android:name="project.hnoct.kitchen.ui.RecipeListFragment"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                tools:layout="@layout/fragment_main" />
+        </LinearLayout>
+
+        <android.support.v7.widget.GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            app:columnCount="2">
+
+            <TextView
+                android:id="@+id/main_add_recipe_text"
+                android:text="@string/fab_add_recipe"
+                android:padding="@dimen/fab_label_padding"
+                android:textColor="@color/opaque_white"
+                android:background="@drawable/fab_label_background"
+                android:visibility="gone"
+                app:layout_gravity="center_vertical|end"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/main_add_recipe_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:layout_gravity="center_horizontal"
+                app:srcCompat="@drawable/ic_menu_edit"
+                app:fabSize="mini"/>
+
+            <TextView
+                android:id="@+id/main_import_recipe_text"
+                android:text="@string/fab_import_recipe"
+                android:padding="@dimen/fab_label_padding"
+                android:textColor="@color/opaque_white"
+                android:background="@drawable/fab_label_background"
+                android:visibility="gone"
+                app:layout_gravity="center_vertical|end"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/main_import_recipe_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_list_item_vertical_padding"
+                android:visibility="gone"
+                app:layout_gravity="center_horizontal"
+                app:srcCompat="@drawable/ic_menu_download_custom"
+                app:fabSize="mini"/>
+
+            <TextView
+                android:id="@+id/main_menu_text"
+                android:text="@string/fab_close"
+                android:padding="@dimen/fab_label_padding"
+                android:textColor="@color/opaque_white"
+                android:background="@drawable/fab_label_background"
+                android:visibility="gone"
+                app:layout_gravity="center_vertical|end"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/main_menu_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/fab_margin"
+                app:layout_gravity="center_horizontal"
+                app:srcCompat="@drawable/ic_menu_add_custom" />
+
+
+
+        </android.support.v7.widget.GridLayout>
+
+    </android.support.design.widget.CoordinatorLayout>
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/navigation_drawer"
+        android:layout_width="@dimen/navigation_drawer_width"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/opaque_white"
+        app:menu="@menu/menu_main">
+
+    </android.support.design.widget.NavigationView>
+
+</android.support.v4.widget.DrawerLayout>

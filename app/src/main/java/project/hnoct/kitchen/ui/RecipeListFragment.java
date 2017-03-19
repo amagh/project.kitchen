@@ -13,6 +13,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +38,7 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
     ContentResolver mResolver;          // Reference to ContentResolver
     static RecipeAdapter mRecipeAdapter;
     int mPosition;                      // Position of mCursor
+    int mTempY;
 
     // Views bound by ButterKnife
     @BindView(R.id.recipe_recycler_view) RecyclerView mRecipeRecyclerView;
@@ -59,6 +61,8 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         mRecipeAdapter = new RecipeAdapter(getActivity(), new RecipeAdapter.RecipeAdapterOnClickHandler() {
             @Override
             public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
+                boolean resetLayout = !RecipeListActivity.mDetailsVisible;
+
                 // Initiate Callback to Activity which will initiate launch of new Details Activity
                 ((RecipeCallBack) getActivity()).onItemSelected(
                         Utilities.getRecipeUrlFromRecipeId(mContext, recipeId),
@@ -67,20 +71,24 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
 
                 // Set position to the position of the clicked item
                 mPosition = viewHolder.getAdapterPosition();
+
+                if (resetLayout) setLayoutColumns();
             }
         });
 
-        // Set LayoutManager
-        final int columns = getResources().getInteger(R.integer.recipe_columns);
-        StaggeredGridLayoutManager sglm = new StaggeredGridLayoutManager(
-                columns,
-                StaggeredGridLayoutManager.VERTICAL
-        );
-        LinearLayoutManager llm = new LinearLayoutManager(mContext);
-        mRecipeRecyclerView.setLayoutManager(sglm);
+        // The the number of columns that will be used for the view
+        setLayoutColumns();
 
         // Set the adapter to the RecyclerView
         mRecipeRecyclerView.setAdapter(mRecipeAdapter);
+        mRecipeRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                mTempY += dy;
+            }
+        });
 
         return rootView;
     }
@@ -128,5 +136,33 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
 
     interface RecipeCallBack {
         void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder);
+    }
+
+
+    /**
+     * Sets the number columns used by the StaggeredGridLayoutManager
+     */
+    void setLayoutColumns() {
+        // Retrieve the number of columns needed by the device/orientation
+
+        int columns;
+        if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {
+            columns = getResources().getInteger(R.integer.recipe_twopane_columns);
+        } else {
+            columns = getResources().getInteger(R.integer.recipe_columns);
+        }
+
+        // Instantiate the LayoutManager
+        StaggeredGridLayoutManager sglm = new StaggeredGridLayoutManager(
+                columns,
+                StaggeredGridLayoutManager.VERTICAL
+        );
+
+        // Set the LayoutManager for the RecyclerView
+        mRecipeRecyclerView.setLayoutManager(sglm);
+
+        // Scroll to the position of the recipe last clicked due to change in visibility of the
+        // Detailed View in Master-Flow layout
+        mRecipeRecyclerView.scrollToPosition(mPosition);
     }
 }

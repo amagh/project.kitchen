@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
@@ -17,6 +18,9 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,9 +39,13 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     /** Constants **/
     private static final String LOG_TAG = RecipeListActivity.class.getSimpleName();
     private final String IMPORT_DIALOG = "ImportRecipeDialog";
+    private final String DETAILS_FRAGMENT = "DFTAG";
 
     /** Member Variables **/
     private static boolean mFabMenuOpen;
+    public static boolean mTwoPane = false;
+    public static boolean mDetailsVisible = false;
+    private static int mPosition;
 
     // Bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -49,6 +57,18 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     @BindView(R.id.main_add_recipe_text) TextView mAddRecipeText;
     @BindView(R.id.main_import_recipe_text) TextView mImportRecipeText;
     @BindView(R.id.main_drawer_layout) DrawerLayout mDrawerLayout;
+    @Nullable @BindView(R.id.recipe_detail_container) FrameLayout mDetailsContainer;
+    @Nullable @BindView(R.id.container_container) RelativeLayout mContainer;
+    @Nullable @BindView(R.id.temp_button) ImageView mTempButton;
+
+    @OnClick(R.id.temp_button)
+    public void closePreview() {
+        mDetailsVisible = false;
+        mContainer.setVisibility(View.GONE);
+        RecipeListFragment fragment = (RecipeListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+        fragment.setLayoutColumns();
+//        fragment.mRecipeRecyclerView.scrollToPosition(mPosition);
+    }
 
     @OnClick(R.id.main_menu_fab)
     public void onClickFabMenu() {
@@ -86,6 +106,30 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
                 return true;
             }
         });
+
+        if (findViewById(R.id.recipe_detail_container) == null) {
+            // If container is not found, then utilizing phone layout without two panes
+            mTwoPane = false;
+        } else {
+            // Set the boolean indicating that there are two panes in view
+            mTwoPane = true;
+            if (savedInstanceState == null || !mDetailsVisible) {
+                // If no recipe has been selected yet, then set boolean indicating that the
+                // details fragment is not visible
+                mDetailsVisible = false;
+
+                // Set the visibility of the container to GONE to allow the RecipeListFragment
+                // to take the full width of the view
+                mContainer.setVisibility(View.GONE);
+
+                // Create a new RecipeDetailsFragment and load it into the container
+                RecipeDetailsFragment fragment = new RecipeDetailsFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.recipe_detail_container, fragment, DETAILS_FRAGMENT)
+                        .commit();
+            }
+        }
+
 
         AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(this);
         syncTask.execute();
@@ -179,9 +223,31 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
 
     @Override
     public void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder) {
-        Intent intent = new Intent(this, RecipeDetailsActivity.class);
-        intent.setData(Uri.parse(recipeUrl));
-        startActivity(intent);
+        if (!mTwoPane) {
+            // If in single-view mode, then start the RecipeDetailsActivity
+            Intent intent = new Intent(this, RecipeDetailsActivity.class);
+            intent.setData(Uri.parse(recipeUrl));
+            startActivity(intent);
+        } else {
+            mDetailsVisible = true;
+
+            // Create a new RecipeDetailsFragment
+            RecipeDetailsFragment fragment = new RecipeDetailsFragment();
+
+            // Create the Bundle and add the recipe's URL to it and set it as the argument for the
+            // fragment
+            Bundle args = new Bundle();
+            args.putParcelable(RecipeDetailsFragment.RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
+            fragment.setArguments(args);
+
+            // Replace the existing RecipeDetailsFragment with the newly created one
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.recipe_detail_container, fragment, DETAILS_FRAGMENT)
+                    .commit();
+
+            // Show the RecipeDetailsFragment in the master-flow view
+            mContainer.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -190,4 +256,5 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
         intent.setData(Uri.parse(recipeUrl));
         startActivity(intent);
     }
+
 }
