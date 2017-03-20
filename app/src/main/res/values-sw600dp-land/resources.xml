@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="recipeAdapterUseDetailView">false</bool>
+    <integer name="recipe_columns">3</integer>
+    <integer name="recipe_twopane_columns">1</integer>
+</resources>

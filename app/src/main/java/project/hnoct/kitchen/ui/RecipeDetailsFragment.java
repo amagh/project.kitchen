@@ -59,6 +59,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     ContentResolver mContentResolver;
     IngredientAdapter mIngredientAdapter;
     DirectionAdapter mDirectionAdapter;
+    CursorLoaderListener listener;
 
     boolean mSyncing = false;
 
@@ -157,6 +158,10 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         );
     }
 
+    void setCursorLoaderListener(CursorLoaderListener listener) {
+        this.listener = listener;
+    }
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         if (cursor != null) {
@@ -223,7 +228,9 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         // Set the direction list for the DirectionAdapter so steps can be displayed
         mDirectionAdapter.setDirectionList(Utilities.getDirectionList(recipeDirections));
 
-        // ((CursorLoaderListener)getActivity()).onCursorLoaded(cursor, recipeServings);
+        if (listener != null) {
+            listener.onCursorLoaded(cursor, recipeServings);
+        }
     }
 
     @Override

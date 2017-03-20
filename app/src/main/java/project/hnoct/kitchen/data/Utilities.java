@@ -712,6 +712,8 @@ public class Utilities {
         uriMatcher.addURI(context.getString(R.string.custom_authority) , "/*", CUSTOM_RECIPE_URI);
         uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#/*", ALLRECIPES_URI);
         uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#/*", ALLRECIPES_URI);
+        uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#", ALLRECIPES_URI);
+        uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#", ALLRECIPES_URI);
 
         // Return UriMatcher
         return uriMatcher;

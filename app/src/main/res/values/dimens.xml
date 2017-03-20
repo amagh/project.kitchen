@@ -56,5 +56,4 @@
     <dimen name="list_add_direction_button_top_margin">12dp</dimen>
     <dimen name="list_add_direction_button_margin">8dp</dimen>
 
-    <integer name="recipe_columns">1</integer>
 </resources>

@@ -36,9 +36,8 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
     Context mContext;                   // Interface for global context
     Cursor mCursor;
     ContentResolver mResolver;          // Reference to ContentResolver
-    static RecipeAdapter mRecipeAdapter;
+    RecipeAdapter mRecipeAdapter;
     int mPosition;                      // Position of mCursor
-    int mTempY;
 
     // Views bound by ButterKnife
     @BindView(R.id.recipe_recycler_view) RecyclerView mRecipeRecyclerView;
@@ -58,7 +57,7 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         mContext = getActivity();
 
         // Instantiate the Adapter for the RecyclerView
-        mRecipeAdapter = new RecipeAdapter(getActivity(), new RecipeAdapter.RecipeAdapterOnClickHandler() {
+        mRecipeAdapter = new RecipeAdapter(getActivity(), getChildFragmentManager(), new RecipeAdapter.RecipeAdapterOnClickHandler() {
             @Override
             public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
                 boolean resetLayout = !RecipeListActivity.mDetailsVisible;
@@ -76,19 +75,14 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
             }
         });
 
+        // Set whether the RecyclerAdapter should utilize the detail layout
+        mRecipeAdapter.setUseDetailView(getResources().getBoolean(R.bool.recipeAdapterUseDetailView));
+
         // The the number of columns that will be used for the view
         setLayoutColumns();
 
         // Set the adapter to the RecyclerView
         mRecipeRecyclerView.setAdapter(mRecipeAdapter);
-        mRecipeRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                mTempY += dy;
-            }
-        });
 
         return rootView;
     }
@@ -144,7 +138,6 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
      */
     void setLayoutColumns() {
         // Retrieve the number of columns needed by the device/orientation
-
         int columns;
         if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {
             columns = getResources().getInteger(R.integer.recipe_twopane_columns);
@@ -161,8 +154,13 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         // Set the LayoutManager for the RecyclerView
         mRecipeRecyclerView.setLayoutManager(sglm);
 
+        RecipeAdapter adapter = ((RecipeAdapter) mRecipeRecyclerView.getAdapter());
+        if (adapter != null) {
+            adapter.hideDetails();
+        }
+
         // Scroll to the position of the recipe last clicked due to change in visibility of the
         // Detailed View in Master-Flow layout
-        mRecipeRecyclerView.scrollToPosition(mPosition);
+        sglm.scrollToPositionWithOffset(mPosition, 0);
     }
 }

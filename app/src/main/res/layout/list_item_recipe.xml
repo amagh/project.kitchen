@@ -13,6 +13,7 @@
     >
 
     <RelativeLayout
+        android:id="@+id/list_recipe_image_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView
@@ -34,6 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/list_thumbnail"
+            android:maxLines="2"
             android:id="@+id/list_title"
             android:paddingLeft="@dimen/text_horizontal_margin"
             android:paddingRight="@dimen/text_horizontal_margin"
@@ -45,6 +47,7 @@
 
 
     <android.support.v7.widget.GridLayout
+        android:id="@+id/list_recipe_text_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/list_recipe_thumbnail_height_single"

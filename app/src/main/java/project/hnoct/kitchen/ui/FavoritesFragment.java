@@ -67,7 +67,7 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
         mInflater = inflater;
         mRecipeIndex = new HashMap<>();
 
-        mRecipeAdapter = new RecipeAdapter(mContext, new RecipeAdapter.RecipeAdapterOnClickHandler() {
+        mRecipeAdapter = new RecipeAdapter(mContext, getChildFragmentManager(), new RecipeAdapter.RecipeAdapterOnClickHandler() {
             @Override
             public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
                 ((RecipeCallBack) getActivity()).onItemSelected(
