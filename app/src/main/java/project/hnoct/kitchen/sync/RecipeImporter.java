@@ -5,6 +5,7 @@ import android.content.UriMatcher;
 import android.net.Uri;
 import android.util.Log;
 
+import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.Utilities;
 
 /**
@@ -29,6 +30,18 @@ public class RecipeImporter {
         // Parse the URL to a URI
         Uri recipeUri = Uri.parse(recipeUrl);
 
+        // Check to make sure scheme is properly set
+        String recipeScheme = recipeUri.getScheme();
+        Log.d(LOG_TAG, "Scheme: " + recipeScheme);
+
+        if (recipeScheme == null) {
+            // Add scheme if missing
+            recipeUri = Uri.parse(context.getString(R.string.http_scheme) +
+                    "://" +
+                    recipeUri.toString());
+
+        }
+
         // Match the URI and launch the correct AsyncTask
         switch (matcher.match(recipeUri)) {
             case Utilities.ALLRECIPES_URI: {
@@ -38,7 +51,7 @@ public class RecipeImporter {
                         syncer.onFinishLoad();
                     }
                 });
-                syncTask.execute(recipeUrl, Long.toString(Utilities.getRecipeIdFromUrl(context, recipeUrl)));
+                syncTask.execute(recipeUri.toString(), Long.toString(Utilities.getRecipeIdFromUrl(context, recipeUrl)));
                 return;
             }
             default: throw new UnsupportedOperationException("Unknown URL: " + recipeUrl);

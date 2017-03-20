@@ -4,27 +4,19 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.GridLayout;
-import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,8 +26,6 @@ import project.hnoct.kitchen.R;
 
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
-
-import static android.view.View.GONE;
 
 /**
  * Created by hnoct on 2/20/2017.
@@ -59,6 +49,8 @@ class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<Recip
     private RecyclerView mRecyclerView;
 
     private boolean useDetailView = false;
+
+    private DetailVisibilityListener mVisibilityListener;
 
 
     /**
@@ -172,6 +164,10 @@ class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<Recip
                     // If detailed layout is scrolled out of view, then set no recipes to use the
                     // detailed layout
                     mDetailCardPosition = -1;
+
+                    // Utilize listener to trigger CallBack for when the detail layout is no
+                    // longer in view
+                    if (mVisibilityListener != null) mVisibilityListener.onDetailsHidden();
                 }
             }
         });
@@ -266,6 +262,12 @@ class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<Recip
         }
     }
 
+    void setDetailCardPosition(int position) {
+        notifyItemChanged(mDetailCardPosition);
+        mDetailCardPosition = position;
+        notifyItemChanged(mDetailCardPosition);
+    }
+
     @Override
     public int getItemCount() {
         if (mCursor != null) {
@@ -300,6 +302,14 @@ class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<Recip
      */
     interface RecipeAdapterOnClickHandler {
         void onClick(long recipeId, RecipeViewHolder viewHolder);
+    }
+
+    interface DetailVisibilityListener {
+        void onDetailsHidden();
+    }
+
+    void setVisibilityListener(DetailVisibilityListener mVisibilityListener) {
+        this.mVisibilityListener = mVisibilityListener;
     }
 
     class RecipeViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{

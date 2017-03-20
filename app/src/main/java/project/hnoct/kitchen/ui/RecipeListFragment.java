@@ -10,10 +10,8 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,8 +73,19 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
             }
         });
 
+        mRecipeAdapter.setHasStableIds(true);
+
         // Set whether the RecyclerAdapter should utilize the detail layout
-        mRecipeAdapter.setUseDetailView(getResources().getBoolean(R.bool.recipeAdapterUseDetailView));
+        boolean useDetailView = getResources().getBoolean(R.bool.recipeAdapterUseDetailView);
+        mRecipeAdapter.setUseDetailView(useDetailView);
+        if (useDetailView) {
+            mRecipeAdapter.setVisibilityListener(new RecipeAdapter.DetailVisibilityListener() {
+                @Override
+                public void onDetailsHidden() {
+                    ((RecipeListActivity) getActivity()).mToolbar.getMenu().clear();
+                }
+            });
+        }
 
         // The the number of columns that will be used for the view
         setLayoutColumns();

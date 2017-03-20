@@ -51,7 +51,8 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
 
     // Views bound by ButterKnife
     @BindView(R.id.favorites_index) SlidingAlphabeticalIndex mIndex;
-    @BindView(R.id.favorites_recycler_view) RecyclerView mRecyclerView;
+    @BindView(R.id.favorites_recycler_view) RecyclerView mRecipeRecyclerView;
+    ;
 
     public FavoritesFragment() {
     }
@@ -70,19 +71,38 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
         mRecipeAdapter = new RecipeAdapter(mContext, getChildFragmentManager(), new RecipeAdapter.RecipeAdapterOnClickHandler() {
             @Override
             public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
+                boolean resetLayout = !RecipeListActivity.mDetailsVisible;
+
                 ((RecipeCallBack) getActivity()).onItemSelected(
                         Utilities.getRecipeUrlFromRecipeId(mContext, recipeId),
                         viewHolder
                 );
+
+                // Set position to the position of the clicked item
+                mPosition = viewHolder.getAdapterPosition();
+
+                if (resetLayout) setLayoutColumns();
             }
         });
 
         mRecipeAdapter.setHasStableIds(true);
 
-        int columns = getResources().getInteger(R.integer.recipe_columns);
-        mLayoutManager = new StaggeredGridLayoutManager(columns, StaggeredGridLayoutManager.VERTICAL);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setAdapter(mRecipeAdapter);
+        // Set whether the RecyclerAdapter should utilize the detail layout
+        boolean useDetailView = getResources().getBoolean(R.bool.recipeAdapterUseDetailView);
+        mRecipeAdapter.setUseDetailView(useDetailView);
+        if (useDetailView) {
+            mRecipeAdapter.setVisibilityListener(new RecipeAdapter.DetailVisibilityListener() {
+                @Override
+                public void onDetailsHidden() {
+                    ((FavoritesActivity) getActivity()).mToolbar.getMenu().clear();
+                }
+            });
+        }
+
+        setLayoutColumns();
+
+        // Set the adapter to the RecyclerView
+        mRecipeRecyclerView.setAdapter(mRecipeAdapter);
 
         // Set the onValueChangedListener to allow for scrolling to the appropriate recipe as the
         // user slides their finger along mIndex
@@ -211,5 +231,36 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
     // CallBack for starting the RecipeDetailsActivity (preparation for master-view flow)
     interface RecipeCallBack {
         void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder);
+    }
+
+    /**
+     * Sets the number columns used by the StaggeredGridLayoutManager
+     */
+    void setLayoutColumns() {
+        // Retrieve the number of columns needed by the device/orientation
+        int columns;
+        if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {
+            columns = getResources().getInteger(R.integer.recipe_twopane_columns);
+        } else {
+            columns = getResources().getInteger(R.integer.recipe_columns);
+        }
+
+        // Instantiate the LayoutManager
+        mLayoutManager = new StaggeredGridLayoutManager(
+                columns,
+                StaggeredGridLayoutManager.VERTICAL
+        );
+
+        // Set the LayoutManager for the RecyclerView
+        mRecipeRecyclerView.setLayoutManager(mLayoutManager);
+
+        RecipeAdapter adapter = ((RecipeAdapter) mRecipeRecyclerView.getAdapter());
+        if (adapter != null) {
+            adapter.hideDetails();
+        }
+
+        // Scroll to the position of the recipe last clicked due to change in visibility of the
+        // Detailed View in Master-Flow layout
+        mLayoutManager.scrollToPositionWithOffset(mPosition, 0);
     }
 }

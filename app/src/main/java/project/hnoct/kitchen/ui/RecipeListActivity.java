@@ -33,6 +33,7 @@ import project.hnoct.kitchen.data.RecipeDbHelper;
 import project.hnoct.kitchen.dialog.ImportRecipeDialog;
 import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
+import project.hnoct.kitchen.sync.RecipeImporter;
 
 public class RecipeListActivity extends AppCompatActivity implements RecipeListFragment.RecipeCallBack, ImportRecipeDialog.ImportRecipeDialogListener {
     /** Constants **/
@@ -254,7 +255,19 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, String recipeUrl) {
-        if (!mTwoPane) {
+        if (getResources().getBoolean(R.bool.recipeAdapterUseDetailView)) {
+
+            RecipeImporter.importRecipeFromUrl(this, new RecipeImporter.UtilitySyncer() {
+                @Override
+                public void onFinishLoad() {
+                    RecipeListFragment recipeListFragment =
+                            (RecipeListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+                    recipeListFragment.mRecipeAdapter.notifyDataSetChanged();
+                    recipeListFragment.mRecipeAdapter.setDetailCardPosition(0);
+                }
+            }, recipeUrl);
+
+        } else if (!mTwoPane) {
             // If in single-view mode, then start the RecipeDetailsActivity
             Intent intent = new Intent(this, RecipeDetailsActivity.class);
             intent.setData(Uri.parse(recipeUrl));

@@ -681,9 +681,10 @@ public class Utilities {
 
         if (recipeScheme == null) {
             // Add scheme if missing
-            recipeUri = recipeUri.buildUpon()
-                    .scheme(context.getString(R.string.http_scheme))
-                    .build();
+            recipeUri = Uri.parse(context.getString(R.string.http_scheme) +
+                            "://" +
+                            recipeUri.toString());
+
         }
 
         // Match the URI and return the recipeId
