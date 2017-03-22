@@ -5,9 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import project.hnoct.kitchen.data.RecipeContract.RecipeEntry;
-import project.hnoct.kitchen.data.RecipeContract.IngredientEntry;
-import project.hnoct.kitchen.data.RecipeContract.LinkEntry;
+import project.hnoct.kitchen.data.RecipeContract.*;
 
 /**
  * Created by hnoct on 2/16/2017.
@@ -48,33 +46,20 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 RecipeEntry.COLUMN_SODIUM + " REAL, " +
                 RecipeEntry.COLUMN_SERVINGS+ " INTEGER, " +
                 "UNIQUE (" + RecipeEntry.COLUMN_RECIPE_ID + ", " + RecipeEntry.COLUMN_SOURCE + "));";
-//                // Links to the relational table to reference the quantity of each ingredient
-//                "FOREIGN KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ") REFERENCES " +
-//                LinkEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_RECIPE_ID + ")" +
-//                "FOREIGN KEY (" + RecipeEntry.COLUMN_SOURCE + ") REFERENCES " +
-//                LinkEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_SOURCE + "));";
-
-//        final String SQL_CREATE_UNIQUE_INDEX = "CREATE UNIQUE INDEX " + RecipeEntry.COLUMN_UNIQUE_IDX +
-//                " ON " + RecipeEntry.TABLE_NAME + "(" +
-//                RecipeEntry.COLUMN_RECIPE_ID + ", " +
-//                RecipeEntry.COLUMN_SOURCE + ");";
 
         // Table storing ingredients
         final String SQL_CREATE_INGREDIENT_TABLE = "CREATE TABLE " + IngredientEntry.TABLE_NAME + " (" +
                 IngredientEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 IngredientEntry.COLUMN_INGREDIENT_ID + " REAL NOT NULL, " +
                 IngredientEntry.COLUMN_INGREDIENT_NAME + " TEXT NOT NULL);";
-//                // Links to the relational table to reference the quantity of each ingredient
-//                "FOREIGN KEY (" + IngredientEntry.COLUMN_INGREDIENT_ID + ") REFERENCES " +
-//                LinkEntry.TABLE_NAME + " (" + IngredientEntry.COLUMN_INGREDIENT_ID + "));";
 
         // Table for relating the amount of ingredients in each recipe
-        final String SQL_CREATE_LINK_TABLE = "CREATE TABLE " + LinkEntry.TABLE_NAME + " (" +
+        final String SQL_CREATE_LINK_TABLE = "CREATE TABLE " + LinkIngredientEntry.TABLE_NAME + " (" +
                 RecipeEntry.COLUMN_RECIPE_ID + " REAL NOT NULL, " +
                 RecipeEntry.COLUMN_SOURCE + " TEXT NOT NULL, " +
                 IngredientEntry.COLUMN_INGREDIENT_ID + " REAL NOT NULL, " +
-                LinkEntry.COLUMN_QUANTITY + " TEXT NOT NULL, " +
-                LinkEntry.COLUMN_INGREDIENT_ORDER + " INTEGER NOT NULL, " +
+                LinkIngredientEntry.COLUMN_QUANTITY + " TEXT NOT NULL, " +
+                LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + " INTEGER NOT NULL, " +
                 // Utilize the combination of unique index and ingredient as the primary key
                 "PRIMARY KEY (" + RecipeEntry.COLUMN_RECIPE_ID + "," +
                 RecipeEntry.COLUMN_SOURCE + ", " +
@@ -87,10 +72,46 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY (" + IngredientEntry.COLUMN_INGREDIENT_ID + ") REFERENCES " +
                 IngredientEntry.TABLE_NAME + " (" + IngredientEntry.COLUMN_INGREDIENT_ID + "));";
 
+        // Table for organizing recipes in recipe books
+        final String SQL_CREATE_RECIPE_BOOK_TABLE = "CREATE TABLE " + RecipeBookEntry.TABLE_NAME + " (" +
+                RecipeBookEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " REAL NOT NULL, " +
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_NAME + " TEXT);";
+
+        // Table for organizing chapters
+        final String SQL_CREATE_CHAPTER_TABLE = "CREATE TABLE " + ChapterEntry.TABLE_NAME + " (" +
+                ChapterEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                ChapterEntry.COLUMN_CHAPTER_ID + " REAL NOT NULL, " +
+                ChapterEntry.COLUMN_CHAPTER_NAME + " TEXT, " +
+                ChapterEntry.COLUMN_CHAPTER_DESCRIPTION + " TEXT, " +
+                ChapterEntry.COLUMN_CHAPTER_ORDER + " INTEGER NOT NULL);";
+
+        // Table for relating recipe books, chapters, and recipes
+        final String SQL_CREATE_RECIPE_BOOK_LINK_TABLE = "CREATE TABLE " + LinkRecipeBookTable.TABLE_NAME + " (" +
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " REAL NOT NULL, " +
+                ChapterEntry.COLUMN_CHAPTER_ID + " REAL NOT NULL, " +
+                LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " INTEGER NOT NULL, " +
+                RecipeEntry.COLUMN_RECIPE_ID + " REAL NOT NULL, " +
+                // Utilize a combination of all three columns as the primary key because each
+                // chapter in the recipe book should be unique and each recipe should only occupy
+                // a spot in the ordering within the chapter
+                "PRIMARY KEY (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ", " +
+                ChapterEntry.COLUMN_CHAPTER_ID + ", " +
+                LinkRecipeBookTable.COLUMN_RECIPE_ORDER + ") " +
+                // Foreign keys to recipe_books.recipe_book_id & chapters.chapter_id
+                "FOREIGN KEY (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ") REFERENCES " +
+                RecipeBookEntry.TABLE_NAME + " (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ") " +
+                "FOREIGN KEY (" + ChapterEntry.COLUMN_CHAPTER_ID + ") REFERENCES " +
+                ChapterEntry.TABLE_NAME + " (" + ChapterEntry.COLUMN_CHAPTER_ID + ") " +
+                "FOREIGN KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ") REFERENCES " +
+                RecipeEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_RECIPE_ID + "));";
+
         sqLiteDatabase.execSQL(SQL_CREATE_RECIPE_TABLE);
-//        sqLiteDatabase.execSQL(SQL_CREATE_UNIQUE_INDEX);
         sqLiteDatabase.execSQL(SQL_CREATE_INGREDIENT_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_LINK_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_RECIPE_BOOK_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_CHAPTER_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_RECIPE_BOOK_LINK_TABLE);
     }
 
     @Override
@@ -102,7 +123,10 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
             Log.v(LOG_TAG, "onUpgrade: ");
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RecipeEntry.TABLE_NAME);
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + IngredientEntry.TABLE_NAME);
-            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LinkEntry.TABLE_NAME);
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LinkIngredientEntry.TABLE_NAME);
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RecipeBookEntry.TABLE_NAME);
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + ChapterEntry.TABLE_NAME);
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LinkRecipeBookTable.TABLE_NAME);
             onCreate(sqLiteDatabase);
         }
     }

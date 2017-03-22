@@ -167,11 +167,11 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
 
                 // Set the Cursor to query all tables and filtering by recipeId and recipe source
                 cursor = mContext.getContentResolver().query(
-                        LinkEntry.CONTENT_URI,
-                        LinkEntry.LINK_PROJECTION,
+                        LinkIngredientEntry.CONTENT_URI,
+                        LinkIngredientEntry.LINK_PROJECTION,
                         RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " + RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = ?",
                         new String[] {Long.toString(mSource.equals(mContext.getString(R.string.attribution_custom))? mRecipeId : -mRecipeId), mSource},
-                        LinkEntry.COLUMN_INGREDIENT_ORDER + " ASC"  // Sort by ingredient order to maintain order of ingredients
+                        LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + " ASC"  // Sort by ingredient order to maintain order of ingredients
                 );
 
                 if (cursor != null && cursor.moveToFirst()) {
@@ -180,8 +180,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
 
                     // Get ingredient name and quantity and add it as a new Pair to mIngredientList
                     do {
-                        String ingredient = cursor.getString(LinkEntry.IDX_INGREDIENT_NAME);
-                        String quantity = cursor.getString(LinkEntry.IDX_LINK_QUANTITY);
+                        String ingredient = cursor.getString(LinkIngredientEntry.IDX_INGREDIENT_NAME);
+                        String quantity = cursor.getString(LinkIngredientEntry.IDX_LINK_QUANTITY);
                         Pair<String, String> ingredientPair = new Pair<>(quantity, ingredient);
                         mIngredientList.add(ingredientPair);
                     } while (cursor.moveToNext());
@@ -660,8 +660,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
                 linkValue.put(RecipeEntry.COLUMN_RECIPE_ID, mRecipeId);
                 linkValue.put(RecipeEntry.COLUMN_SOURCE, mSource);
                 linkValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
-                linkValue.put(LinkEntry.COLUMN_INGREDIENT_ORDER, i);
-                linkValue.put(LinkEntry.COLUMN_QUANTITY, quantity);
+                linkValue.put(LinkIngredientEntry.COLUMN_INGREDIENT_ORDER, i);
+                linkValue.put(LinkIngredientEntry.COLUMN_QUANTITY, quantity);
                 linkValues[i] = linkValue;
             }
         }
@@ -675,7 +675,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
             );
 
             mContext.getContentResolver().bulkInsert(
-                    LinkEntry.CONTENT_URI,
+                    LinkIngredientEntry.CONTENT_URI,
                     linkValues
             );
         } else {

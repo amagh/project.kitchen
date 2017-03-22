@@ -56,8 +56,8 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
         mCursor.moveToPosition(position);
 
         // Retrieve ingredient information
-        String quantity = mCursor.getString(RecipeContract.LinkEntry.IDX_LINK_QUANTITY);
-        String ingredient = mCursor.getString(RecipeContract.LinkEntry.IDX_INGREDIENT_NAME);
+        String quantity = mCursor.getString(RecipeContract.LinkIngredientEntry.IDX_LINK_QUANTITY);
+        String ingredient = mCursor.getString(RecipeContract.LinkIngredientEntry.IDX_INGREDIENT_NAME);
 
         // Check to see if ingredient is a header (headers are notated with a ":")
         Pattern pattern = Pattern.compile(".*:");

@@ -13,9 +13,7 @@ import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 
-import project.hnoct.kitchen.data.RecipeContract.RecipeEntry;
-import project.hnoct.kitchen.data.RecipeContract.IngredientEntry;
-import project.hnoct.kitchen.data.RecipeContract.LinkEntry;
+import project.hnoct.kitchen.data.RecipeContract.*;
 
 
 /**
@@ -32,22 +30,46 @@ public class RecipeProvider extends ContentProvider {
     static final int RECIPE_AND_INGREDIENT_QUERY = 201;
     static final int INGREDIENT = 300;
     static final int INGREDIENT_WITH_ID = 301;
+    static final int RECIPE_BOOK = 400;
+    static final int RECIPE_BOOK_WITH_ID = 401;
+    static final int CHAPTER = 500;
+    static final int CHAPTER_WITH_ID = 501;
+    static final int RECIPE_BOOK_LINK = 600;
+    static final int RECIPE_BOOK_LINK_QUERY = 601;
 
     private static final SQLiteQueryBuilder sRecipeAndIngredientQueryBuilder;
-
     static {
         // Joins the three tables together so that they can be queried as a single entity
         sRecipeAndIngredientQueryBuilder = new SQLiteQueryBuilder();
         sRecipeAndIngredientQueryBuilder.setTables(
                 RecipeEntry.TABLE_NAME + " INNER JOIN " +
-                        LinkEntry.TABLE_NAME + " ON " +
+                        LinkIngredientEntry.TABLE_NAME + " ON " +
                         RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = " +
-                        LinkEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " AND " +
+                        LinkIngredientEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " AND " +
                         RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = " +
-                        LinkEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " INNER JOIN " +
+                        LinkIngredientEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " INNER JOIN " +
                         IngredientEntry.TABLE_NAME + " ON " +
-                        LinkEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID + " = " +
+                        LinkIngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID + " = " +
                         IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID
+        );
+    }
+
+    private static final SQLiteQueryBuilder sRecipeBookChapterAndRecipeQueryBuilder;
+    static {
+        // Joins recipe_books, chapters, recipes, and recipe_book_link tables together to be queried as a
+        // single entity
+        sRecipeBookChapterAndRecipeQueryBuilder = new SQLiteQueryBuilder();
+        sRecipeBookChapterAndRecipeQueryBuilder.setTables(
+                RecipeEntry.TABLE_NAME + " INNER JOIN " +
+                        LinkRecipeBookTable.TABLE_NAME + " ON " +
+                        RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = " +
+                        LinkRecipeBookTable.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " INNER JOIN " +
+                        RecipeBookEntry.TABLE_NAME + " ON " +
+                        LinkRecipeBookTable.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = " +
+                        RecipeBookEntry.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " INNER JOIN " +
+                        ChapterEntry.TABLE_NAME + " ON " +
+                        LinkRecipeBookTable.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = " +
+                        ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID
         );
     }
 
@@ -74,8 +96,14 @@ public class RecipeProvider extends ContentProvider {
         uriMatcher.addURI(authority, RecipeContract.PATH_RECIPE + "/#", RECIPE_WITH_ID);
         uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT, INGREDIENT);
         uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT + "/#", INGREDIENT_WITH_ID);
-        uriMatcher.addURI(authority, RecipeContract.PATH_LINK, RECIPE_AND_INGREDIENT);      // Used for inserting into Link Table
-        uriMatcher.addURI(authority, RecipeContract.PATH_LINK + "/*", RECIPE_AND_INGREDIENT_QUERY);
+        uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT_LINK, RECIPE_AND_INGREDIENT);      // Used for inserting into Link Table
+        uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT_LINK + "/*", RECIPE_AND_INGREDIENT_QUERY);
+        uriMatcher.addURI(authority, RecipeContract.PATH_BOOK, RECIPE_BOOK);
+        uriMatcher.addURI(authority, RecipeContract.PATH_BOOK + "/#", RECIPE_BOOK_WITH_ID);
+        uriMatcher.addURI(authority, RecipeContract.PATH_CHAPTER, CHAPTER);
+        uriMatcher.addURI(authority, RecipeContract.PATH_CHAPTER + "/#", CHAPTER_WITH_ID);
+        uriMatcher.addURI(authority, RecipeContract.PATH_BOOK_LINK, RECIPE_BOOK_LINK);
+        uriMatcher.addURI(authority, RecipeContract.PATH_BOOK_LINK + "/*", RECIPE_BOOK_LINK_QUERY);
 
         return uriMatcher;
     }
@@ -83,6 +111,8 @@ public class RecipeProvider extends ContentProvider {
     // Static constants for querying with selection
     private static final String sRecipeSelection = RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = ?";
     private static final String sIngredientSelection = IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID + " = ?";
+    private static final String sRecipeBookSelection = RecipeBookEntry.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = ?";
+    private static final String sChapterSelection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
 
     /**
      * Helper method for creating a {@link Cursor} given a URI containing a recipeId
@@ -129,6 +159,42 @@ public class RecipeProvider extends ContentProvider {
         );
     }
 
+    /** @see #getRecipeById(Uri, String[], String) **/
+    private Cursor getRecipeBookById(Uri uri, String[] projection, String sortOrder) {
+        long recipeBookId = RecipeBookEntry.getRecipeBookIdFromUri(uri);
+
+        String selection = sRecipeBookSelection;
+        String[] selectionArgs = new String[] {Long.toString(recipeBookId)};
+
+        return mDbHelper.getReadableDatabase().query(
+                RecipeBookEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    /** @see #getRecipeById(Uri, String[], String) **/
+    private Cursor getChapterById(Uri uri, String[] projection, String sortOrder) {
+        long chapterId = ChapterEntry.getChapterIdFromUri(uri);
+
+        String selection = sChapterSelection;
+        String[] selectionArgs = new String[] {Long.toString(chapterId)};
+
+        return mDbHelper.getReadableDatabase().query(
+                ChapterEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
     /**
      * Helper method for building a query for all ingredients for a given recipe or vice-versa
      * @param uri Uri containing either a query for a recipe or an ingredient
@@ -138,8 +204,8 @@ public class RecipeProvider extends ContentProvider {
      */
     private Cursor filterRecipeAndIngredientById(Uri uri, String[] projection, String sortOrder) {
         // Attempt to retrieve both a recipeId and ingredientId from the URI
-        long recipeId = LinkEntry.getRecipeIdFromUri(uri);
-        long ingredientId = LinkEntry.getIngredientIdFromUri(uri);
+        long recipeId = LinkIngredientEntry.getRecipeIdFromUri(uri);
+        long ingredientId = LinkIngredientEntry.getIngredientIdFromUri(uri);
 
         if (recipeId != -1) {
             // If recipeId can be retrieved, then query all ingredients for a given recipe
@@ -182,6 +248,47 @@ public class RecipeProvider extends ContentProvider {
         }
     }
 
+    /**
+     * Queries the recipe_book_link table and filters it for recipes given either the recipe book ID
+     * or the chapter ID
+     * @param uri URI containing either a query for a recipe book or chapter
+     * @param projection Columns to return
+     * @param sortOrder Order to sort the columns
+     * @return Cursor querying the recipe_book_link table while filtering for the selection
+     */
+    private Cursor filterRecipeBookChapterAndRecipeById(Uri uri, String[] projection, String sortOrder) {
+        long recipeBookId = LinkRecipeBookTable.getRecipeBookIdFromUri(uri);
+        long chapterId = LinkRecipeBookTable.getChapterIdFromUri(uri);
+
+        if (chapterId != -1) {
+            String selection = sChapterSelection;
+            String[] selectingArgs = new String[] {Long.toString(chapterId)};
+
+            return sRecipeBookChapterAndRecipeQueryBuilder.query(
+                    mDbHelper.getReadableDatabase(),
+                    projection,
+                    selection,
+                    selectingArgs,
+                    null,
+                    null,
+                    sortOrder
+            );
+        } else {
+            String selection = sRecipeBookSelection;
+            String[] selectionArgs = new String[] {Long.toString(recipeBookId)};
+
+            return sRecipeBookChapterAndRecipeQueryBuilder.query(
+                    mDbHelper.getReadableDatabase(),
+                    projection,
+                    selection,
+                    selectionArgs,
+                    null,
+                    null,
+                    sortOrder
+            );
+        }
+    }
+
     @Override
     public boolean onCreate() {
         mDbHelper = new RecipeDbHelper(getContext());
@@ -201,9 +308,21 @@ public class RecipeProvider extends ContentProvider {
             case INGREDIENT_WITH_ID:                // For accessing a single row on the Ingredient Table
                 return IngredientEntry.CONTENT_ITEM_TYPE;
             case RECIPE_AND_INGREDIENT:             // For accessing the linked tables
-                return LinkEntry.CONTENT_TYPE;
+                return LinkIngredientEntry.CONTENT_TYPE;
             case RECIPE_AND_INGREDIENT_QUERY:       // For filtering the linked table for one or the other
-                return LinkEntry.CONTENT_TYPE;
+                return LinkIngredientEntry.CONTENT_TYPE;
+            case RECIPE_BOOK:                       // For accessing the Recipe Book Table
+                return RecipeBookEntry.CONTENT_TYPE;
+            case RECIPE_BOOK_WITH_ID:               // For accessing a single row on the Recipe Book Table
+                return RecipeBookEntry.CONTENT_ITEM_TYPE;
+            case CHAPTER:                           // For accessing the Chapter Table
+                return ChapterEntry.CONTENT_TYPE;
+            case CHAPTER_WITH_ID:                   // For accessing a single row in the Chapter Table
+                return ChapterEntry.CONTENT_ITEM_TYPE;
+            case RECIPE_BOOK_LINK:                  // For accessing the linked tables
+                return RecipeBookEntry.CONTENT_TYPE;
+            case RECIPE_BOOK_LINK_QUERY:            // For filtering the linked tables with a query
+                return RecipeBookEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown URI: " + uri);
         }
@@ -268,6 +387,54 @@ public class RecipeProvider extends ContentProvider {
                 cursor = filterRecipeAndIngredientById(uri, projection, sortOrder);
                 break;
             }
+            case RECIPE_BOOK: {
+                cursor = mDbHelper.getReadableDatabase().query(
+                        RecipeBookEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case RECIPE_BOOK_WITH_ID: {
+                cursor = getRecipeBookById(uri, projection, sortOrder);
+                break;
+            }
+            case CHAPTER: {
+                cursor = mDbHelper.getReadableDatabase().query(
+                        ChapterEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case CHAPTER_WITH_ID: {
+                cursor =  getChapterById(uri, projection, sortOrder);
+                break;
+            }
+            case RECIPE_BOOK_LINK: {
+                cursor = mDbHelper.getReadableDatabase().query(
+                        LinkRecipeBookTable.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case RECIPE_BOOK_LINK_QUERY: {
+                cursor = filterRecipeBookChapterAndRecipeById(uri, projection, sortOrder);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown URI: " + uri);
         }
@@ -313,14 +480,56 @@ public class RecipeProvider extends ContentProvider {
             case RECIPE_AND_INGREDIENT: {
                 // Inserting recipe, ingredient, and quantity into link table
                 long _id = mDbHelper.getWritableDatabase().insert(
-                        LinkEntry.TABLE_NAME,
+                        LinkIngredientEntry.TABLE_NAME,
                         null,
                         contentValues
                 );
                 if (_id > 0) {
-                    returnUri = LinkEntry.buildLinkUri(_id);
+                    returnUri = LinkIngredientEntry.buildIngredientLinkUri(_id);
                 } else {
-                    throw new SQLException("Error inserting link values into link table");
+                    throw new SQLException("Error inserting quantity and ingredient order into ingredient link table.");
+                }
+                break;
+            }
+            case RECIPE_BOOK: {
+                // Inserting a recipe book
+                long _id = mDbHelper.getWritableDatabase().insert(
+                        RecipeBookEntry.TABLE_NAME,
+                        null,
+                        contentValues
+                );
+                if (_id > 0) {
+                    returnUri = RecipeBookEntry.buildRecipeBookUri(_id);
+                } else {
+                    throw new SQLException("Error inserting recipe book into database.");
+                }
+                break;
+            }
+            case CHAPTER: {
+                // Inserting a chapter
+                long _id = mDbHelper.getWritableDatabase().insert(
+                        ChapterEntry.TABLE_NAME,
+                        null,
+                        contentValues
+                );
+                if (_id > 0) {
+                    returnUri = ChapterEntry.buildChapterUri(_id);
+                } else {
+                    throw new SQLException("Error inserting chapter into database.");
+                }
+                break;
+            }
+            case RECIPE_BOOK_LINK: {
+                // Inserting recipe order into the recipe_book_link table
+                long _id = mDbHelper.getWritableDatabase().insert(
+                        LinkRecipeBookTable.TABLE_NAME,
+                        null,
+                        contentValues
+                );
+                if (_id > 0) {
+                    returnUri = LinkRecipeBookTable.buildRecipeBookLinkUri(_id);
+                } else {
+                    throw new SQLException("Error inserting recipe order into recipe book link table.");
                 }
                 break;
             }
@@ -362,7 +571,7 @@ public class RecipeProvider extends ContentProvider {
             case RECIPE_AND_INGREDIENT: {
                 // Delete from Link Table
                 rowsDeleted = db.delete(
-                        LinkEntry.TABLE_NAME,
+                        LinkIngredientEntry.TABLE_NAME,
                         selection,
                         selectionArgs
                 );
@@ -407,7 +616,7 @@ public class RecipeProvider extends ContentProvider {
             case RECIPE_AND_INGREDIENT: {
                 // Updating rows in the link table
                 rowsUpdated = db.update(
-                        LinkEntry.TABLE_NAME,
+                        LinkIngredientEntry.TABLE_NAME,
                         contentValues,
                         selection,
                         selectionArgs
@@ -544,7 +753,7 @@ public class RecipeProvider extends ContentProvider {
                 try {
                     for (ContentValues value : values) {
                         long _id = db.insert(
-                                LinkEntry.TABLE_NAME,
+                                LinkIngredientEntry.TABLE_NAME,
                                 null,
                                 value
                         );

@@ -906,7 +906,7 @@ public class Utilities {
 
             // Query the database
             Cursor cursor = context.getContentResolver().query(
-                    LinkEntry.CONTENT_URI,
+                    LinkIngredientEntry.CONTENT_URI,
                     null,
                     selection,
                     selectionArgs,
@@ -918,10 +918,10 @@ public class Utilities {
                 cursor.close();
 
                 // Add the ContentValues to the ArrayList to be used for bulk updates
-                updateList.add(ContentProviderOperation.newUpdate(LinkEntry.CONTENT_URI)
+                updateList.add(ContentProviderOperation.newUpdate(LinkIngredientEntry.CONTENT_URI)
                         .withSelection(updateSelection, selectionArgs)
-                        .withValue(LinkEntry.COLUMN_QUANTITY, linkValue.getAsString(LinkEntry.COLUMN_QUANTITY))
-                        .withValue(LinkEntry.COLUMN_INGREDIENT_ORDER, linkValue.getAsLong(LinkEntry.COLUMN_INGREDIENT_ORDER))
+                        .withValue(LinkIngredientEntry.COLUMN_QUANTITY, linkValue.getAsString(LinkIngredientEntry.COLUMN_QUANTITY))
+                        .withValue(LinkIngredientEntry.COLUMN_INGREDIENT_ORDER, linkValue.getAsLong(LinkIngredientEntry.COLUMN_INGREDIENT_ORDER))
                         .build()
                 );
 
@@ -938,7 +938,7 @@ public class Utilities {
 
         // Bulk insert values into the database
         context.getContentResolver().bulkInsert(
-                LinkEntry.CONTENT_URI,
+                LinkIngredientEntry.CONTENT_URI,
                 linkValues
         );
 

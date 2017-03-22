@@ -134,4 +134,5 @@
     <string name="attribution_custom">user-added</string>
     <string name="attriubtion_allrecipes">Allrecipes.com</string>
     <string name="title_activity_favorites">FavoritesActivity</string>
+    <string name="title_activity_recipe_book">RecipeBookActivity</string>
 </resources>

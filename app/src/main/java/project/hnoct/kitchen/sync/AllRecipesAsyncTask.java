@@ -231,8 +231,8 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
                 linkValue.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
                 linkValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
                 linkValue.put(RecipeEntry.COLUMN_SOURCE, AllRecipesListAsyncTask.ALL_RECIPES_ATTRIBUTION);
-                linkValue.put(LinkEntry.COLUMN_QUANTITY, quantity);
-                linkValue.put(LinkEntry.COLUMN_INGREDIENT_ORDER, ingredientOrder);
+                linkValue.put(LinkIngredientEntry.COLUMN_QUANTITY, quantity);
+                linkValue.put(LinkIngredientEntry.COLUMN_INGREDIENT_ORDER, ingredientOrder);
 
                 linkCVList.add(linkValue);
 
@@ -285,7 +285,7 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
             linkCVList.toArray(linkValues);
 
             mContext.getContentResolver().bulkInsert(
-                    LinkEntry.CONTENT_URI,
+                    LinkIngredientEntry.CONTENT_URI,
                     linkValues
             );
 

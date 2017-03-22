@@ -1,24 +1,14 @@
 package project.hnoct.kitchen.data;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.provider.Settings;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.util.Pair;
 import android.test.ProviderTestCase2;
-import android.test.mock.MockContentProvider;
 import android.test.mock.MockContentResolver;
 import android.util.Log;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
 
@@ -81,7 +71,7 @@ public class TestProvider extends ProviderTestCase2<RecipeProvider> {
         assertTrue("Error inserting ingredient into database", ingredientInsertionUri != null);
 
         /** Repeat with link values **/
-        Uri linkUri = RecipeContract.LinkEntry.CONTENT_URI;
+        Uri linkUri = RecipeContract.LinkIngredientEntry.CONTENT_URI;
         ContentValues linkValues = TestUtilities.createTestLinkValues();
         Uri linkInsertionUri = mMockContentResolver.insert(
                 linkUri,
@@ -146,7 +136,7 @@ public class TestProvider extends ProviderTestCase2<RecipeProvider> {
         cursor.close();
 
         /** Repeat steps for link query **/
-        Uri linkUri = RecipeContract.LinkEntry.CONTENT_URI;
+        Uri linkUri = RecipeContract.LinkIngredientEntry.CONTENT_URI;
         cursor = mMockContentResolver.query(
                 linkUri,
                 null,
@@ -194,7 +184,7 @@ public class TestProvider extends ProviderTestCase2<RecipeProvider> {
         assertNotEquals("Error deleting rows from ingredient table.", rows, 0);
 
         /** Repeat steps for link table **/
-        Uri linkUri = RecipeContract.LinkEntry.CONTENT_URI;
+        Uri linkUri = RecipeContract.LinkIngredientEntry.CONTENT_URI;
         rows = mMockContentResolver.delete(
                 linkUri,
                 null,
@@ -273,13 +263,13 @@ public class TestProvider extends ProviderTestCase2<RecipeProvider> {
         }
 
         /** Repeat steps for link table **/
-        Uri linkUri = RecipeContract.LinkEntry.CONTENT_URI;
+        Uri linkUri = RecipeContract.LinkIngredientEntry.CONTENT_URI;
         ContentValues linkValues = new ContentValues();
-        linkValues.put(RecipeContract.LinkEntry.COLUMN_QUANTITY, "1/2 tbsp");
+        linkValues.put(RecipeContract.LinkIngredientEntry.COLUMN_QUANTITY, "1/2 tbsp");
         rows = mMockContentResolver.update(
                 linkUri,
                 linkValues,
-                RecipeContract.LinkEntry.COLUMN_QUANTITY + " = ?",
+                RecipeContract.LinkIngredientEntry.COLUMN_QUANTITY + " = ?",
                 new String[] {"1/4 tsp"}
         );
 

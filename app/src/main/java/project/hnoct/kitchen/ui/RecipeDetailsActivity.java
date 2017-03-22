@@ -170,12 +170,12 @@ public class RecipeDetailsActivity extends AppCompatActivity implements RecipeDe
         List<Pair<Integer, Double>> nutritionList = new LinkedList<>();
 
         // Retrieve nutrition information from database utilizing Cursor from CursorLoader
-        double calories = cursor.getDouble(RecipeContract.LinkEntry.IDX_RECIPE_CALORIES);
-        double fatGrams = cursor.getDouble(RecipeContract.LinkEntry.IDX_RECIPE_FAT);
-        double carbGrams = cursor.getDouble(RecipeContract.LinkEntry.IDX_RECIPE_CARBS);
-        double proteinGrams = cursor.getDouble(RecipeContract.LinkEntry.IDX_RECIPE_PROTEIN);
-        double cholesterolMg = cursor.getDouble(RecipeContract.LinkEntry.IDX_RECIPE_CHOLESTEROL);
-        double sodiumMg = cursor.getDouble(RecipeContract.LinkEntry.IDX_RECIPE_SODIUM);
+        double calories = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_CALORIES);
+        double fatGrams = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_FAT);
+        double carbGrams = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_CARBS);
+        double proteinGrams = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_PROTEIN);
+        double cholesterolMg = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_CHOLESTEROL);
+        double sodiumMg = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_SODIUM);
 
         @RecipeContract.RecipeEntry.NutrientType int calorieType = RecipeContract.RecipeEntry.NUTRIENT_CALORIE;
         @RecipeContract.RecipeEntry.NutrientType int fatType = RecipeContract.RecipeEntry.NUTRIENT_FAT;

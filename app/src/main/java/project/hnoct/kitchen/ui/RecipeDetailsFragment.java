@@ -3,7 +3,6 @@ package project.hnoct.kitchen.ui;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
@@ -12,8 +11,6 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.util.Pair;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -23,15 +20,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-
-import java.util.LinkedList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -101,7 +93,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
 
                 // Get the recipeId and generate recipeUri for database
                 mRecipeId = Utilities.getRecipeIdFromUrl(mContext, mRecipeUrl);
-                mRecipeUri = LinkEntry.buildIngredientUriFromRecipe(mRecipeId);
+                mRecipeUri = LinkIngredientEntry.buildIngredientUriFromRecipe(mRecipeId);
             }
         } else {
             Log.d(LOG_TAG, "No bundle found!");
@@ -141,7 +133,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         // Sort the columns by order that ingredient was added to link table
-        String sortOrder = LinkEntry.COLUMN_INGREDIENT_ORDER + " ASC";
+        String sortOrder = LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + " ASC";
 
         if (mRecipeUri == null) {
             return null;
@@ -151,7 +143,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         return new CursorLoader(
                 mContext,
                 mRecipeUri,
-                LinkEntry.LINK_PROJECTION,
+                LinkIngredientEntry.LINK_PROJECTION,
                 null,
                 null,
                 sortOrder
@@ -189,18 +181,18 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         }
 
         // Retrieve recipe information from database
-        long recipeId = mCursor.getLong(LinkEntry.IDX_RECIPE_ID);
-        String recipeTitle = mCursor.getString(LinkEntry.IDX_RECIPE_NAME);
-        String recipeAuthor = mCursor.getString(LinkEntry.IDX_RECIPE_AUTHOR);
-        String recipeImageUrl = mCursor.getString(LinkEntry.IDX_IMG_URL);
-        String recipeUrl = mCursor.getString(LinkEntry.IDX_RECIPE_URL);
-        String recipeDescription = mCursor.getString(LinkEntry.IDX_SHORT_DESC);
-        double recipeRating = mCursor.getDouble(LinkEntry.IDX_RECIPE_RATING);
-        long recipeReviews = mCursor.getLong(LinkEntry.IDX_RECIPE_REVIEWS);
-        String recipeDirections = mCursor.getString(LinkEntry.IDX_RECIPE_DIRECTIONS);
-        boolean recipeFavorite = mCursor.getInt(LinkEntry.IDX_RECIPE_FAVORITE) == 1;
-        String recipeSource = mCursor.getString(LinkEntry.IDX_RECIPE_SOURCE);
-        int recipeServings = mCursor.getInt(LinkEntry.IDX_RECIPE_SERVINGS);
+        long recipeId = mCursor.getLong(LinkIngredientEntry.IDX_RECIPE_ID);
+        String recipeTitle = mCursor.getString(LinkIngredientEntry.IDX_RECIPE_NAME);
+        String recipeAuthor = mCursor.getString(LinkIngredientEntry.IDX_RECIPE_AUTHOR);
+        String recipeImageUrl = mCursor.getString(LinkIngredientEntry.IDX_IMG_URL);
+        String recipeUrl = mCursor.getString(LinkIngredientEntry.IDX_RECIPE_URL);
+        String recipeDescription = mCursor.getString(LinkIngredientEntry.IDX_SHORT_DESC);
+        double recipeRating = mCursor.getDouble(LinkIngredientEntry.IDX_RECIPE_RATING);
+        long recipeReviews = mCursor.getLong(LinkIngredientEntry.IDX_RECIPE_REVIEWS);
+        String recipeDirections = mCursor.getString(LinkIngredientEntry.IDX_RECIPE_DIRECTIONS);
+        boolean recipeFavorite = mCursor.getInt(LinkIngredientEntry.IDX_RECIPE_FAVORITE) == 1;
+        String recipeSource = mCursor.getString(LinkIngredientEntry.IDX_RECIPE_SOURCE);
+        int recipeServings = mCursor.getInt(LinkIngredientEntry.IDX_RECIPE_SERVINGS);
 
         // Populate the views with the data
         Glide.with(mContext)

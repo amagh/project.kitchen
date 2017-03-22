@@ -7,7 +7,6 @@ import android.provider.BaseColumns;
 import android.support.annotation.IntDef;
 
 import java.lang.annotation.Retention;
-import java.util.GregorianCalendar;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
@@ -22,7 +21,10 @@ public class RecipeContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
     public static final String PATH_RECIPE = "recipe";
     public static final String PATH_INGREDIENT = "ingredient";
-    public static final String PATH_LINK = "link";
+    public static final String PATH_INGREDIENT_LINK = "ingredient_link";
+    public static final String PATH_BOOK = "recipe_book";
+    public static final String PATH_CHAPTER = "chapter";
+    public static final String PATH_BOOK_LINK = "recipe_book_link";
 
     // For searching database
     public static final String INGREDIENT_SEARCH_KEY = "ingredient_search";
@@ -207,17 +209,17 @@ public class RecipeContract {
      * The link table functions to relate the quantity of each ingredient with the recipe because
      * databases are not set up for lists.
      */
-    public static class LinkEntry implements BaseColumns {
+    public static class LinkIngredientEntry implements BaseColumns {
         // URI for linking the two tables with their measurements
-        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_LINK).build();
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_INGREDIENT_LINK).build();
 
         // Since this table will not be directly selected for, only the item type is used for
         // insertions
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LINK;
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_INGREDIENT_LINK;
 
         // Table name
-        public static final String TABLE_NAME = "link";
+        public static final String TABLE_NAME = "ingredient_link";
 
         // Columns (Only the quantity column is required because all other columns will be
         // foreign keys)
@@ -275,7 +277,7 @@ public class RecipeContract {
 
         /** See RecipeEntry for comments on following methods **/
 
-        public static Uri buildLinkUri(long id) {
+        public static Uri buildIngredientLinkUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
@@ -301,6 +303,122 @@ public class RecipeContract {
         public static long getIngredientIdFromUri(Uri uri) {
             String ingredientString = uri.getQueryParameter(IngredientEntry.COLUMN_INGREDIENT_ID);
             return (ingredientString != null && ingredientString.length() > 0) ? Long.parseLong(ingredientString) : -1;
+        }
+    }
+
+    public static class RecipeBookEntry implements BaseColumns {
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_BOOK).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_BOOK;
+
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_BOOK;
+
+        // SCHEMA
+        // Table name
+        public static final String TABLE_NAME = "recipe_books";
+
+        // Columns
+        public static final String COLUMN_RECIPE_BOOK_ID = "recipe_book_id";        // REAL NOT NULL
+        public static final String COLUMN_RECIPE_BOOK_NAME = "recipe_book";         // TEXT
+
+        public static Uri buildRecipeBookUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        public static Uri buildUriFromRecipeBookId(long recipeBookId) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath(Long.toString(recipeBookId))
+                    .build();
+        }
+
+        public static long getRecipeBookIdFromUri(Uri uri) {
+            return Long.parseLong(uri.getPathSegments().get(1));
+        }
+    }
+
+    public static class ChapterEntry implements BaseColumns {
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CHAPTER).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_CHAPTER;
+
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_CHAPTER;
+
+        // SCHEMA
+        // Table name
+        public static final String TABLE_NAME = "chapters";
+
+        // Columns
+        public static final String COLUMN_CHAPTER_ID = "chapter_id";                    // REAL NOT NULL
+        public static final String COLUMN_CHAPTER_NAME = "chapter_name";                // TEXT
+        public static final String COLUMN_CHAPTER_DESCRIPTION = "chapter_description";  // TEXT
+        public static final String COLUMN_CHAPTER_ORDER = "chapter_order";              // INTEGER NOT NULL
+
+        public static Uri buildChapterUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        public static Uri buildUriFromChapterId(long chapterId) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath(Long.toString(chapterId))
+                    .build();
+        }
+
+        public static long getChapterIdFromUri(Uri uri) {
+            return Long.parseLong(uri.getPathSegments().get(1));
+        }
+    }
+
+    public static class LinkRecipeBookTable implements BaseColumns {
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_BOOK_LINK).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_BOOK_LINK;
+
+        // SCHEMA
+        // Table name
+        public static final String TABLE_NAME = "recipe_book_link";
+
+        // Columns
+        public static final String COLUMN_RECIPE_ORDER = "recipe_order";
+
+        public static Uri buildRecipeBookLinkUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        /** Methods for building URIs for filtering the database **/
+        // Not sure this is needed
+        public static Uri buildChapterUriFromRecipeBookId(long recipeBookId) {
+            return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID, Long.toString(recipeBookId))
+                    .appendPath(ChapterEntry.TABLE_NAME)
+                    .build();
+        }
+
+        public static Uri buildRecipeUriFromChapterId(long chapterId) {
+            return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(ChapterEntry.COLUMN_CHAPTER_ID, Long.toString(chapterId))
+                    .build();
+        }
+
+        public static Uri buildRecipeUriFromRecipeBookId(long recipeBookId) {
+            return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID, Long.toString(recipeBookId))
+                    .appendPath(RecipeEntry.TABLE_NAME)
+                    .build();
+        }
+
+        public static long getRecipeBookIdFromUri(Uri uri) {
+            String recipeBookString = uri.getQueryParameter(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID);
+            return (recipeBookString == null && recipeBookString.length() > 0) ? -1 : Long.parseLong(recipeBookString);
+        }
+
+        public static long getChapterIdFromUri(Uri uri) {
+            String chapterString = uri.getQueryParameter(ChapterEntry.COLUMN_CHAPTER_ID);
+            return (chapterString == null && chapterString.length() > 0) ? -1 : Long.parseLong(chapterString);
         }
     }
 }

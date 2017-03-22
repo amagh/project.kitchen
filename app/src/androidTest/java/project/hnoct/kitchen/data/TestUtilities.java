@@ -5,12 +5,6 @@ import android.database.Cursor;
 import android.support.v4.util.Pair;
 import android.util.Log;
 
-import static org.junit.Assert.*;
-
-import java.util.Set;
-
-import javax.crypto.spec.RC2ParameterSpec;
-
 /**
  * Created by hnoct on 2/17/2017.
  */
@@ -49,7 +43,7 @@ public class TestUtilities {
         ContentValues linkValues = new ContentValues();
         linkValues.put(RecipeContract.RecipeEntry.COLUMN_RECIPE_ID, TEST_RECIPE_ID);
         linkValues.put(RecipeContract.IngredientEntry.COLUMN_INGREDIENT_ID, TEST_INGREDIENT_ID);
-        linkValues.put(RecipeContract.LinkEntry.COLUMN_QUANTITY, "1/4 tsp");
+        linkValues.put(RecipeContract.LinkIngredientEntry.COLUMN_QUANTITY, "1/4 tsp");
 
         return linkValues;
     }
