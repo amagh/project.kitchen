@@ -577,6 +577,33 @@ public class RecipeProvider extends ContentProvider {
                 );
                 break;
             }
+            case RECIPE_BOOK: {
+                // Delete from Recipe Book Table
+                rowsDeleted = db.delete(
+                        RecipeBookEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case CHAPTER: {
+                // Delete from Chapter Table
+                rowsDeleted = db.delete(
+                        ChapterEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case RECIPE_BOOK_LINK: {
+                // Delete from Recipe Book Link Table
+                rowsDeleted = db.delete(
+                        LinkRecipeBookTable.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
             default: throw new UnsupportedOperationException("Unknown URI: " + uri);
         }
         // Notify listeners of change in data associated with the URI
@@ -617,6 +644,36 @@ public class RecipeProvider extends ContentProvider {
                 // Updating rows in the link table
                 rowsUpdated = db.update(
                         LinkIngredientEntry.TABLE_NAME,
+                        contentValues,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case RECIPE_BOOK: {
+                // Updating rows in the recipe book table
+                rowsUpdated = db.update(
+                        RecipeBookEntry.TABLE_NAME,
+                        contentValues,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case CHAPTER: {
+                // Updating rows in the chapter table
+                rowsUpdated = db.update(
+                        ChapterEntry.TABLE_NAME,
+                        contentValues,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case RECIPE_BOOK_LINK: {
+                // Updating rows in the recipe book link table
+                rowsUpdated = db.update(
+                        LinkRecipeBookTable.TABLE_NAME,
                         contentValues,
                         selection,
                         selectionArgs
@@ -754,6 +811,72 @@ public class RecipeProvider extends ContentProvider {
                     for (ContentValues value : values) {
                         long _id = db.insert(
                                 LinkIngredientEntry.TABLE_NAME,
+                                null,
+                                value
+                        );
+                        if (_id > 0) {
+                            rowsInserted++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return rowsInserted;
+            }
+            case RECIPE_BOOK: {
+                // Insert multiple rows into the recipe book table
+                /** See above comments for details **/
+                db.beginTransaction();
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(
+                                RecipeBookEntry.TABLE_NAME,
+                                null,
+                                value
+                        );
+                        if (_id > 0) {
+                            rowsInserted++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return rowsInserted;
+            }
+            case CHAPTER: {
+                // Insert multiple rows into the chapter table
+                /** See above comments for details **/
+                db.beginTransaction();
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(
+                                ChapterEntry.TABLE_NAME,
+                                null,
+                                value
+                        );
+                        if (_id > 0) {
+                            rowsInserted++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return rowsInserted;
+            }
+            case RECIPE_BOOK_LINK: {
+                // Insert multiple rows into the link table
+                /** See above comments for details **/
+                db.beginTransaction();
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(
+                                LinkRecipeBookTable.TABLE_NAME,
                                 null,
                                 value
                         );
