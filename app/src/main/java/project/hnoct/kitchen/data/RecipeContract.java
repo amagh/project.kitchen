@@ -75,7 +75,7 @@ public class RecipeContract {
 
         // Column Projection and index
         public static final String[] RECIPE_PROJECTION = new String[] {
-                COLUMN_RECIPE_ID,
+                TABLE_NAME + "." + COLUMN_RECIPE_ID,
                 COLUMN_RECIPE_NAME,
                 COLUMN_RECIPE_AUTHOR,
                 COLUMN_THUMBNAIL_URL,
@@ -357,6 +357,7 @@ public class RecipeContract {
         public static final String COLUMN_CHAPTER_DESCRIPTION = "chapter_description";  // TEXT
         public static final String COLUMN_CHAPTER_ORDER = "chapter_order";              // INTEGER NOT NULL
 
+
         public static Uri buildChapterUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
@@ -388,6 +389,61 @@ public class RecipeContract {
         public static Uri buildRecipeBookLinkUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        // Column projection and index
+        String[] PROJECTION = new String[] {
+                RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID,
+                RecipeEntry.COLUMN_RECIPE_NAME,
+                RecipeEntry.COLUMN_RECIPE_AUTHOR,
+                RecipeEntry.COLUMN_IMG_URL,
+                RecipeEntry.COLUMN_RECIPE_URL,
+                RecipeEntry.COLUMN_SHORT_DESC,
+                RecipeEntry.COLUMN_RATING,
+                RecipeEntry.COLUMN_REVIEWS,
+                RecipeEntry.COLUMN_DIRECTIONS,
+                RecipeEntry.COLUMN_FAVORITE,
+                RecipeEntry.COLUMN_SERVINGS,
+                RecipeEntry.COLUMN_CALORIES,
+                RecipeEntry.COLUMN_FAT,
+                RecipeEntry.COLUMN_CARBS,
+                RecipeEntry.COLUMN_PROTEIN,
+                RecipeEntry.COLUMN_CHOLESTEROL,
+                RecipeEntry.COLUMN_SODIUM,
+                RecipeEntry.COLUMN_SOURCE,
+                RecipeBookEntry.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID,
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_NAME,
+                ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID,
+                ChapterEntry.COLUMN_CHAPTER_NAME,
+                ChapterEntry.COLUMN_CHAPTER_DESCRIPTION,
+                ChapterEntry.COLUMN_CHAPTER_ORDER,
+                COLUMN_RECIPE_ORDER
+        };
+
+        public static final int IDX_RECIPE_ID = 0;
+        public static final int IDX_RECIPE_NAME = 1;
+        public static final int IDX_RECIPE_AUTHOR = 2;
+        public static final int IDX_IMG_URL = 3;
+        public static final int IDX_RECIPE_URL = 4;
+        public static final int IDX_SHORT_DESC = 5;
+        public static final int IDX_RECIPE_RATING = 6;
+        public static final int IDX_RECIPE_REVIEWS = 7;
+        public static final int IDX_RECIPE_DIRECTIONS = 8;
+        public static final int IDX_RECIPE_FAVORITE = 9;
+        public static final int IDX_RECIPE_SERVINGS = 10;
+        public static final int IDX_RECIPE_CALORIES = 11;
+        public static final int IDX_RECIPE_FAT = 12;
+        public static final int IDX_RECIPE_CARBS = 13;
+        public static final int IDX_RECIPE_PROTEIN = 14;
+        public static final int IDX_RECIPE_CHOLESTEROL = 15;
+        public static final int IDX_RECIPE_SODIUM = 16;
+        public static final int IDX_RECIPE_SOURCE = 17;
+        public static final int IDX_BOOK_ID = 18;
+        public static final int IDX_BOOK_NAME = 19;
+        public static final int IDX_CHAPTER_ID = 20;
+        public static final int IDX_CHAPTER_NAME = 21;
+        public static final int IDX_CHAPTER_DESCRIPTION = 22;
+        public static final int IDX_CHAPTER_ORDER = 23;
+        public static final int IDX_RECIPE_ORDER = 24;
 
         /** Methods for building URIs for filtering the database **/
         // Not sure this is needed
