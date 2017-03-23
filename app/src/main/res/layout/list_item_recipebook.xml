@@ -3,16 +3,17 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_marginTop="@dimen/card_vertical_padding"
-    android:layout_marginRight="@dimen/card_horizontal_padding"
-    android:layout_marginLeft="@dimen/card_horizontal_padding"
+    android:layout_marginTop="@dimen/card_vertical_separation"
+    android:layout_marginRight="@dimen/card_horizontal_margin"
+    android:layout_marginLeft="@dimen/card_horizontal_margin"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="4dp"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:contentPaddingBottom="@dimen/card_vertical_padding"
     >
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/list_recipe_thumbnail_height_single">
+        android:layout_height="@dimen/card_thumbnail_height_single">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -72,8 +73,8 @@
             android:layout_alignParentBottom="true"
             android:maxLines="2"
             android:id="@+id/list_recipe_book_title"
-            android:paddingLeft="@dimen/text_horizontal_margin"
-            android:paddingRight="@dimen/text_horizontal_margin"
+            android:paddingLeft="@dimen/card_text_horizontal_margin"
+            android:paddingRight="@dimen/card_text_horizontal_margin"
             android:paddingBottom="@dimen/activity_vertical_margin"
             style="@style/titleText"
             tools:text="Christmas Dinner"/>
@@ -84,10 +85,9 @@
         android:id="@+id/list_recipe_book_description_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/list_recipe_thumbnail_height_single"
-        android:paddingBottom="16dp"
-        android:paddingLeft="@dimen/text_horizontal_margin"
-        android:paddingRight="@dimen/text_horizontal_margin"
+        android:layout_marginTop="@dimen/card_thumbnail_height_single"
+        android:paddingLeft="@dimen/card_text_horizontal_margin"
+        android:paddingRight="@dimen/card_text_horizontal_margin"
         tools:text="This is from Christmas 2016. My first Christmas cooking dinner by myself!"/>
 
 </android.support.v7.widget.CardView>

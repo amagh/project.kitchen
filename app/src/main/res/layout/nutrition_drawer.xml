@@ -29,7 +29,7 @@
 
     <TextView
         android:id="@+id/nutrition_drawer_serving_disclosure_text"
-        android:layout_marginTop="@dimen/default_list_item_vertical_padding"
+        android:layout_marginTop="@dimen/default_text_vertical_padding"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingLeft="@dimen/list_nutrient_padding"
@@ -51,7 +51,7 @@
         android:layout_height="wrap_content"
         android:paddingLeft="@dimen/list_nutrient_padding"
         android:paddingRight="@dimen/list_nutrient_padding"
-        android:layout_marginTop="@dimen/default_list_item_vertical_padding"
+        android:layout_marginTop="@dimen/default_text_vertical_padding"
         style="@style/bodyDarkText"
         tools:text="Based on 2000 calorie diet"/>
 

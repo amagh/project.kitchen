@@ -17,7 +17,7 @@
                 android:id="@+id/create_recipe_image"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="@dimen/list_recipe_thumbnail_height_single"
+                android:minHeight="@dimen/card_thumbnail_height_single"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
                 tools:src="@drawable/placeholder" />

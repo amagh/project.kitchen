@@ -2,7 +2,7 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="fab_margin">16dp</dimen>
+
 
     <!-- General use -->
     <dimen name="default_list_item_vertical_padding">8dp</dimen>
@@ -11,12 +11,13 @@
     <!-- Navigation Drawer -->
     <dimen name="navigation_drawer_width">200dp</dimen>
 
-    <!-- Recipe list item -->
-    <dimen name="list_recipe_thumbnail_height_single">240dp</dimen>
-    <dimen name="list_recipe_vertical_padding">@dimen/activity_vertical_margin</dimen>
-    <dimen name="text_horizontal_margin">8dp</dimen>
+    <!-- Card view dimensions -->
+    <dimen name="card_corner_radius">4dp</dimen>
+    <dimen name="card_thumbnail_height_single">240dp</dimen>
+    <dimen name="card_vertical_separation">16dp</dimen>
     <dimen name="card_vertical_padding">16dp</dimen>
-    <dimen name="card_horizontal_padding">16dp</dimen>
+    <dimen name="card_horizontal_margin">16dp</dimen>
+    <dimen name="card_text_horizontal_margin">8dp</dimen>
 
     <!-- Ingredient list item -->
     <dimen name="list_ingredient_keyline">64dp</dimen>
@@ -45,6 +46,7 @@
     <dimen name="pref_dialog_nutrient_width">200dp</dimen>
 
     <!-- FAB -->
+    <dimen name="fab_margin">16dp</dimen>
     <dimen name="fab_label_padding">4dp</dimen>
 
     <!-- Add Ingredient List Item -->

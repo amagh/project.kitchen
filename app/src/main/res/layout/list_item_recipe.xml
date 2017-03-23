@@ -6,10 +6,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/card_vertical_padding"
-    android:layout_marginRight="@dimen/card_horizontal_padding"
-    android:layout_marginLeft="@dimen/card_horizontal_padding"
+    android:layout_marginRight="@dimen/card_horizontal_margin"
+    android:layout_marginLeft="@dimen/card_horizontal_margin"
     app:contentPaddingBottom="@dimen/card_vertical_padding"
-    app:cardCornerRadius="4dp"
+    app:cardCornerRadius="@dimen/card_corner_radius"
     >
 
     <RelativeLayout
@@ -19,7 +19,7 @@
         <ImageView
             android:id="@+id/list_thumbnail"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/list_recipe_thumbnail_height_single"
+            android:layout_height="@dimen/card_thumbnail_height_single"
             android:scaleType="centerCrop"
             android:adjustViewBounds="true"
             tools:src="@drawable/placeholder"
@@ -37,9 +37,9 @@
             android:layout_alignBottom="@id/list_thumbnail"
             android:maxLines="2"
             android:id="@+id/list_title"
-            android:paddingLeft="@dimen/text_horizontal_margin"
-            android:paddingRight="@dimen/text_horizontal_margin"
-            android:paddingBottom="@dimen/activity_vertical_margin"
+            android:paddingLeft="@dimen/card_text_horizontal_margin"
+            android:paddingRight="@dimen/card_text_horizontal_margin"
+            android:paddingBottom="@dimen/default_text_vertical_padding"
             style="@style/titleText"
             tools:text="Fried Chicken"/>
 
@@ -50,35 +50,34 @@
         android:id="@+id/list_recipe_text_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/list_recipe_thumbnail_height_single"
-        android:layout_marginLeft="@dimen/text_horizontal_margin"
-        android:layout_marginRight="@dimen/text_horizontal_margin"
+        android:layout_marginTop="@dimen/card_thumbnail_height_single"
+        android:layout_marginLeft="@dimen/card_text_horizontal_margin"
+        android:layout_marginRight="@dimen/card_text_horizontal_margin"
         app:columnCount="2">
 
         <TextView
             android:id="@+id/list_recipe_description_text"
-            android:paddingBottom="@dimen/card_vertical_padding"
+            android:paddingBottom="@dimen/default_text_vertical_padding"
             app:layout_columnSpan="2"
             tools:text="Simple fried chicken from Kentucky" />
 
         <TextView
             android:id="@+id/list_recipe_author_text"
-            app:layout_columnWeight="1"
-            tools:text="Recipe by hnocturna" />
+            android:maxWidth="250dp"
+            android:maxLines="1"
+            app:layout_gravity="fill"
+            tools:text="Recipe by hnocturna a;lsdkjfas ;laksdjf la;sdjf;a skjsdalkfjasd;flk" />
 
         <TextView
             android:id="@+id/list_recipe_attribution_text"
             android:gravity="end"
-            app:layout_columnWeight="1"
             app:layout_gravity="fill_horizontal"
             tools:text="Allrecipes"
             />
 
         <TextView
             android:id="@+id/list_recipe_reviews_text"
-            app:layout_columnSpan="1"
-            app:layout_columnWeight="1"
-            app:layout_gravity="fill_vertical"
+            app:layout_gravity="fill_horizontal"
             tools:text="25 reviews" />
 
         <ImageView
@@ -94,8 +93,7 @@
         <TextView
             android:id="@+id/list_recipe_rating_text"
             android:gravity="center_vertical"
-            app:layout_columnWeight="1"
-            app:layout_gravity="center_vertical|fill_vertical"
+            app:layout_gravity="fill_horizontal"
             tools:text="4.9\u2605" />
 
     </android.support.v7.widget.GridLayout>
