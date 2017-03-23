@@ -35,7 +35,9 @@ public class RecipeProvider extends ContentProvider {
     static final int CHAPTER = 500;
     static final int CHAPTER_WITH_ID = 501;
     static final int RECIPE_BOOK_LINK = 600;
-    static final int RECIPE_BOOK_LINK_QUERY = 601;
+    static final int RECIPE_BOOK_LINK_QUERY_CHAPTERS = 601;
+    static final int RECIPE_BOOK_LINK_QUERY_RECIPES = 602;
+    static final int RECIPE_BOOK_LINK_QUERY_RECIPES_WITH_CHAPTER = 603;
 
     private static final SQLiteQueryBuilder sRecipeAndIngredientQueryBuilder;
     static {
@@ -103,7 +105,9 @@ public class RecipeProvider extends ContentProvider {
         uriMatcher.addURI(authority, RecipeContract.PATH_CHAPTER, CHAPTER);
         uriMatcher.addURI(authority, RecipeContract.PATH_CHAPTER + "/#", CHAPTER_WITH_ID);
         uriMatcher.addURI(authority, RecipeContract.PATH_BOOK_LINK, RECIPE_BOOK_LINK);
-        uriMatcher.addURI(authority, RecipeContract.PATH_BOOK_LINK + "/*", RECIPE_BOOK_LINK_QUERY);
+        uriMatcher.addURI(authority, RecipeContract.PATH_BOOK_LINK + "/#/" + ChapterEntry.TABLE_NAME, RECIPE_BOOK_LINK_QUERY_CHAPTERS);
+        uriMatcher.addURI(authority, RecipeContract.PATH_BOOK_LINK + "/#/" + RecipeEntry.TABLE_NAME, RECIPE_BOOK_LINK_QUERY_RECIPES);
+        uriMatcher.addURI(authority, RecipeContract.PATH_BOOK_LINK + "/#/" + ChapterEntry.TABLE_NAME + "/#", RECIPE_BOOK_LINK_QUERY_RECIPES_WITH_CHAPTER);
 
         return uriMatcher;
     }
@@ -248,45 +252,59 @@ public class RecipeProvider extends ContentProvider {
         }
     }
 
-    /**
-     * Queries the recipe_book_link table and filters it for recipes given either the recipe book ID
-     * or the chapter ID
-     * @param uri URI containing either a query for a recipe book or chapter
-     * @param projection Columns to return
-     * @param sortOrder Order to sort the columns
-     * @return Cursor querying the recipe_book_link table while filtering for the selection
-     */
-    private Cursor filterRecipeBookChapterAndRecipeById(Uri uri, String[] projection, String sortOrder) {
+    /** @see #getRecipeById(Uri, String[], String) **/
+    private Cursor getChaptersFromRecipeBook(Uri uri, String[] projection, String sortOrder) {
+        long recipeBookId = LinkRecipeBookTable.getRecipeBookIdFromUri(uri);
+
+        String selection = sRecipeBookSelection;
+        String[] selectionArgs = new String[] {Long.toString(recipeBookId)};
+
+        return sRecipeBookChapterAndRecipeQueryBuilder.query(
+                mDbHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    /** @see #getRecipeById(Uri, String[], String) **/
+    private Cursor getRecipesFromRecipeBook(Uri uri, String[] projection, String sortOrder) {
+        long recipeBookId = LinkRecipeBookTable.getRecipeBookIdFromUri(uri);
+
+        String selection = sRecipeBookSelection;
+        String[] selectionArgs = new String[] {Long.toString(recipeBookId)};
+
+        return sRecipeBookChapterAndRecipeQueryBuilder.query(
+                mDbHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    /** @see #getRecipeById(Uri, String[], String) **/
+    private Cursor getRecipesFromRecipeBookWithChapter(Uri uri, String[] projection, String sortOrder) {
         long recipeBookId = LinkRecipeBookTable.getRecipeBookIdFromUri(uri);
         long chapterId = LinkRecipeBookTable.getChapterIdFromUri(uri);
 
-        if (chapterId != -1) {
-            String selection = sChapterSelection;
-            String[] selectingArgs = new String[] {Long.toString(chapterId)};
+        String selection = sRecipeBookSelection + " AND " + sChapterSelection;
+        String[] selectionArgs = new String[] {Long.toString(recipeBookId), Long.toString(chapterId)};
 
-            return sRecipeBookChapterAndRecipeQueryBuilder.query(
-                    mDbHelper.getReadableDatabase(),
-                    projection,
-                    selection,
-                    selectingArgs,
-                    null,
-                    null,
-                    sortOrder
-            );
-        } else {
-            String selection = sRecipeBookSelection;
-            String[] selectionArgs = new String[] {Long.toString(recipeBookId)};
-
-            return sRecipeBookChapterAndRecipeQueryBuilder.query(
-                    mDbHelper.getReadableDatabase(),
-                    projection,
-                    selection,
-                    selectionArgs,
-                    null,
-                    null,
-                    sortOrder
-            );
-        }
+        return sRecipeBookChapterAndRecipeQueryBuilder.query(
+                mDbHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
     }
 
     @Override
@@ -321,7 +339,7 @@ public class RecipeProvider extends ContentProvider {
                 return ChapterEntry.CONTENT_ITEM_TYPE;
             case RECIPE_BOOK_LINK:                  // For accessing the linked tables
                 return RecipeBookEntry.CONTENT_TYPE;
-            case RECIPE_BOOK_LINK_QUERY:            // For filtering the linked tables with a query
+            case RECIPE_BOOK_LINK_QUERY_CHAPTERS:            // For filtering the linked tables with a query
                 return RecipeBookEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown URI: " + uri);
@@ -431,9 +449,16 @@ public class RecipeProvider extends ContentProvider {
                 );
                 break;
             }
-            case RECIPE_BOOK_LINK_QUERY: {
-                cursor = filterRecipeBookChapterAndRecipeById(uri, projection, sortOrder);
+            case RECIPE_BOOK_LINK_QUERY_CHAPTERS: {
+                cursor = getChaptersFromRecipeBook(uri, projection, sortOrder);
                 break;
+            }
+            case RECIPE_BOOK_LINK_QUERY_RECIPES: {
+                cursor = getRecipesFromRecipeBook(uri, projection, sortOrder);
+                break;
+            }
+            case RECIPE_BOOK_LINK_QUERY_RECIPES_WITH_CHAPTER: {
+                cursor = getRecipesFromRecipeBookWithChapter(uri, projection, sortOrder);
             }
             default:
                 throw new UnsupportedOperationException("Unknown URI: " + uri);

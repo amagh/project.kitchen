@@ -393,32 +393,32 @@ public class RecipeContract {
         // Not sure this is needed
         public static Uri buildChapterUriFromRecipeBookId(long recipeBookId) {
             return CONTENT_URI.buildUpon()
-                    .appendQueryParameter(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID, Long.toString(recipeBookId))
+                    .appendPath(Long.toString(recipeBookId))
                     .appendPath(ChapterEntry.TABLE_NAME)
                     .build();
         }
 
-        public static Uri buildRecipeUriFromChapterId(long chapterId) {
+        public static Uri buildRecipeUriFromBookAndChapterId(long recipeBookId, long chapterId) {
             return CONTENT_URI.buildUpon()
-                    .appendQueryParameter(ChapterEntry.COLUMN_CHAPTER_ID, Long.toString(chapterId))
+                    .appendPath(Long.toString(recipeBookId))
+                    .appendPath(ChapterEntry.TABLE_NAME)
+                    .appendPath(Long.toString(chapterId))
                     .build();
         }
 
         public static Uri buildRecipeUriFromRecipeBookId(long recipeBookId) {
             return CONTENT_URI.buildUpon()
-                    .appendQueryParameter(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID, Long.toString(recipeBookId))
+                    .appendPath(Long.toString(recipeBookId))
                     .appendPath(RecipeEntry.TABLE_NAME)
                     .build();
         }
 
         public static long getRecipeBookIdFromUri(Uri uri) {
-            String recipeBookString = uri.getQueryParameter(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID);
-            return (recipeBookString == null && recipeBookString.length() > 0) ? -1 : Long.parseLong(recipeBookString);
+            return Long.parseLong(uri.getPathSegments().get(1));
         }
 
         public static long getChapterIdFromUri(Uri uri) {
-            String chapterString = uri.getQueryParameter(ChapterEntry.COLUMN_CHAPTER_ID);
-            return (chapterString == null && chapterString.length() > 0) ? -1 : Long.parseLong(chapterString);
+            return Long.parseLong(uri.getPathSegments().get(3));
         }
     }
 }
