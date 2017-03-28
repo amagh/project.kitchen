@@ -99,6 +99,10 @@
     <!-- Import Dialog -->
     <string name="dialog_import_url_hint">Link to recipe</string>
 
+    <!-- Recipe Book Details Dialog -->
+    <string name="dialog_recipebook_details_title">Recipe book title</string>
+    <string name="dialog_recipebook_details_description">Recipe book description</string>
+
     <!-- Utility -->
     <string name="http_scheme">http</string>
     <string name="allrecipes_authority">allrecipes.com</string>
@@ -135,4 +139,5 @@
     <string name="attriubtion_allrecipes">Allrecipes.com</string>
     <string name="title_activity_favorites">FavoritesActivity</string>
     <string name="title_activity_recipe_book">RecipeBookActivity</string>
+    <string name="title_activity_chapter">ChapterActivity</string>
 </resources>

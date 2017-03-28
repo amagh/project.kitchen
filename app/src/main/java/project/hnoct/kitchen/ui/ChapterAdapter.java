@@ -46,6 +46,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
     @Override
     public ChapterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (parent instanceof RecyclerView) {
+            // Inflate the layout to be used for the chapter list item
             View view = LayoutInflater.from(mContext).inflate(R.layout.list_item_chapter, parent, false);
             return new ChapterViewHolder(view);
         } else {
@@ -55,15 +56,20 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
 
     @Override
     public void onBindViewHolder(ChapterViewHolder holder, int position) {
+        // Move the Cursor to the correct entry in the database
         mCursor.moveToPosition(position);
+
+        // Retrieve the information to be used to populate the views within the view holder
         String chapterTitleText = mCursor.getString(LinkRecipeBookTable.IDX_CHAPTER_NAME);
         String chapterDescriptionText = mCursor.getString(LinkRecipeBookTable.IDX_CHAPTER_DESCRIPTION);
         long chapterId = mCursor.getLong(LinkRecipeBookTable.IDX_CHAPTER_ID);
         long recipeBookId = mCursor.getLong(LinkRecipeBookTable.IDX_BOOK_ID);
 
+        // Attempt to retrieve the Cursor from the CursorManager
         Cursor cursor = mCursorManager.getCursor(position);
 
         if (cursor == null) {
+            // Instantiate the Cursor by querying for the recipes of the chapter
             Uri recipesOfChapterUri = LinkRecipeBookTable.buildRecipeUriFromBookAndChapterId(
                     recipeBookId,
                     chapterId
@@ -80,9 +86,11 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             );
         }
 
+        // Populate the views of the view holder
         holder.titleText.setText(chapterTitleText);
         holder.descriptionText.setText(chapterDescriptionText);
 
+        // Retrieve the column information from pre-defined resources
         int columnCount;
 
         if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {
@@ -91,11 +99,15 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             columnCount = mContext.getResources().getInteger(R.integer.recipe_columns);
         }
 
+        // Instantiate the layout manager to use the correct number of columns
         StaggeredGridLayoutManager sglm =
                 new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
 
+        // Check whether the orientation and screen size calls for utilization of the detailed view
+        // within the RecipeAdapter
         final boolean useDetailView = mContext.getResources().getBoolean(R.bool.recipeAdapterUseDetailView);
 
+        // Set the layout manager for the recycler view and set the adapter
         holder.recipeRecyclerView.setLayoutManager(sglm);
         RecipeAdapter recipeAdapter = new RecipeAdapter(mContext, mFragmentManager, new RecipeAdapter.RecipeAdapterOnClickHandler() {
             @Override

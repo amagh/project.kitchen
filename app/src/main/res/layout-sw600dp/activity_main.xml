@@ -74,7 +74,7 @@
                 android:id="@+id/main_import_recipe_fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_list_item_vertical_padding"
+                android:layout_marginTop="@dimen/default_list_item_vertical_separation"
                 android:visibility="gone"
                 app:layout_gravity="center_horizontal"
                 app:srcCompat="@drawable/ic_menu_download_custom"

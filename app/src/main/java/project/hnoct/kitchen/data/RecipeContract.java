@@ -320,8 +320,20 @@ public class RecipeContract {
         public static final String TABLE_NAME = "recipe_books";
 
         // Columns
-        public static final String COLUMN_RECIPE_BOOK_ID = "recipe_book_id";        // REAL NOT NULL
-        public static final String COLUMN_RECIPE_BOOK_NAME = "recipe_book";         // TEXT
+        public static final String COLUMN_RECIPE_BOOK_ID = "recipe_book_id";                    // REAL NOT NULL
+        public static final String COLUMN_RECIPE_BOOK_NAME = "recipe_book";                     // TEXT
+        public static final String COLUMN_RECIPE_BOOK_DESCRIPTION = "recipe_book_description";  // TEXT
+
+        // Column projection and index
+        public static final String[] PROJECTION = new String[] {
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID,
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_NAME,
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_DESCRIPTION,
+        };
+
+        public static final int IDX_BOOK_ID = 0;
+        public static final int IDX_BOOK_NAME = 1;
+        public static final int IDX_BOOK_DESCRIPTION = 2;
 
         public static Uri buildRecipeBookUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
@@ -391,7 +403,7 @@ public class RecipeContract {
         }
 
         // Column projection and index
-        String[] PROJECTION = new String[] {
+        public static final String[] PROJECTION = new String[] {
                 RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID,
                 RecipeEntry.COLUMN_RECIPE_NAME,
                 RecipeEntry.COLUMN_RECIPE_AUTHOR,
@@ -412,6 +424,7 @@ public class RecipeContract {
                 RecipeEntry.COLUMN_SOURCE,
                 RecipeBookEntry.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID,
                 RecipeBookEntry.COLUMN_RECIPE_BOOK_NAME,
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_DESCRIPTION,
                 ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID,
                 ChapterEntry.COLUMN_CHAPTER_NAME,
                 ChapterEntry.COLUMN_CHAPTER_DESCRIPTION,
@@ -439,11 +452,12 @@ public class RecipeContract {
         public static final int IDX_RECIPE_SOURCE = 17;
         public static final int IDX_BOOK_ID = 18;
         public static final int IDX_BOOK_NAME = 19;
-        public static final int IDX_CHAPTER_ID = 20;
-        public static final int IDX_CHAPTER_NAME = 21;
-        public static final int IDX_CHAPTER_DESCRIPTION = 22;
-        public static final int IDX_CHAPTER_ORDER = 23;
-        public static final int IDX_RECIPE_ORDER = 24;
+        public static final int IDX_BOOK_DESCRIPTION = 20;
+        public static final int IDX_CHAPTER_ID = 21;
+        public static final int IDX_CHAPTER_NAME = 22;
+        public static final int IDX_CHAPTER_DESCRIPTION = 23;
+        public static final int IDX_CHAPTER_ORDER = 24;
+        public static final int IDX_RECIPE_ORDER = 25;
 
         /** Methods for building URIs for filtering the database **/
         // Not sure this is needed

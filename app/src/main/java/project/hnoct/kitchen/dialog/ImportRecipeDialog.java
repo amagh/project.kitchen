@@ -44,8 +44,8 @@ public class ImportRecipeDialog extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         // Send a Callback to the MainActivity so that the new recipe can be added
-                        Toast.makeText(getActivity(), "Positive button clicked!", Toast.LENGTH_SHORT).show();
                         if (mEditText != null) {
+                            // Get the URL from the EditText
                             String inputText = mEditText.getText().toString();
                             mlistener.onDialogPositiveClick(ImportRecipeDialog.this, inputText);
                         }
