@@ -18,6 +18,10 @@
         android:title="@string/my_recipes_title" />
 
     <item
+        android:id="@+id/action_my_recipe_books"
+        android:title="@string/recipe_book_title" />
+
+    <item
         android:id="@+id/action_clear_data"
         android:title="@string/action_clear_data"
         android:orderInCategory="2"/>

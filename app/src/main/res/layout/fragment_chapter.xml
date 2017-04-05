@@ -4,7 +4,7 @@
     android:id="@+id/content_chapter"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="project.hnoct.kitchen.ui.ChapterActivityFragment"
+    tools:context="project.hnoct.kitchen.ui.ChapterFragment"
     tools:showIn="@layout/activity_chapter">
 
     <android.support.v7.widget.RecyclerView

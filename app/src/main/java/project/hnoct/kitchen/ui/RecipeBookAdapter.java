@@ -53,9 +53,9 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
         mCursor.moveToPosition(position);
 
         // Retrieve the information from database to populate the view holder
-        long bookId = mCursor.getLong(LinkRecipeBookTable.IDX_BOOK_ID);
-        String bookTitle = mCursor.getString(LinkRecipeBookTable.IDX_BOOK_NAME);
-        String bookDescription = mCursor.getString(LinkRecipeBookTable.IDX_BOOK_DESCRIPTION);
+        long bookId = mCursor.getLong(RecipeBookEntry.IDX_BOOK_ID);
+        String bookTitle = mCursor.getString(RecipeBookEntry.IDX_BOOK_NAME);
+        String bookDescription = mCursor.getString(RecipeBookEntry.IDX_BOOK_DESCRIPTION);
 
         // Populate the views of the view holder
         holder.recipeBookTitleText.setText(bookTitle);
@@ -73,7 +73,7 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
             cursor = mContext.getContentResolver().query(
                     recipeBookUri,
                     LinkRecipeBookTable.PROJECTION,
-                    LinkRecipeBookTable.IDX_BOOK_ID + " = ? AND " + LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " = ?",
+                    RecipeBookEntry.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = ? AND " + LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " = ?",
                     new String[] {Long.toString(bookId), Integer.toString(0)},
                     ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC"
             );
@@ -121,6 +121,7 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
             holder.image1.setVisibility(View.GONE);
             holder.image2.setVisibility(View.GONE);
             holder.image3.setVisibility(View.GONE);
+            holder.gradient.setVisibility(View.GONE);
         }
     }
 
@@ -129,12 +130,12 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
      * ChapterActivity can be correctly called
      */
     interface RecipeBookAdapterOnClickHandler {
-        void onClick(RecipeBookViewHolder viewHolder, int position);
+        void onClick(RecipeBookViewHolder viewHolder, long bookId);
     }
 
     @Override
     public int getItemCount() {
-        return mCursor.getCount();
+        return mCursor != null ? mCursor.getCount() : 0;
     }
 
     public void swapCursor(Cursor cursor) {
@@ -142,12 +143,13 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
     }
 
     class RecipeBookViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        @BindView(R.id.list_recipe_book_image_0) ImageView image0;
-        @BindView(R.id.list_recipe_book_image_1) ImageView image1;
-        @BindView(R.id.list_recipe_book_image_2) ImageView image2;
-        @BindView(R.id.list_recipe_book_image_3) ImageView image3;
-        @BindView(R.id.list_recipe_book_title) TextView recipeBookTitleText;
-        @BindView(R.id.list_recipe_description_text) TextView recipeBookDescriptionText;
+        @BindView(R.id.list_recipebook_image_0) ImageView image0;
+        @BindView(R.id.list_recipebook_image_1) ImageView image1;
+        @BindView(R.id.list_recipebook_image_2) ImageView image2;
+        @BindView(R.id.list_recipebook_image_3) ImageView image3;
+        @BindView(R.id.list_recipebook_gradient) ImageView gradient;
+        @BindView(R.id.list_recipebook_title) TextView recipeBookTitleText;
+        @BindView(R.id.list_recipebook_description_text) TextView recipeBookDescriptionText;
 
         public RecipeBookViewHolder(View view) {
             super(view);
@@ -157,7 +159,10 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
 
         @Override
         public void onClick(View view) {
-            mClickHandler.onClick(this, getAdapterPosition());
+            int position = getAdapterPosition();
+            mCursor.moveToPosition(position);
+            long bookId = mCursor.getLong(RecipeBookEntry.IDX_BOOK_ID);
+            mClickHandler.onClick(this, bookId);
         }
     }
 }

@@ -74,22 +74,25 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
 
         // Table for organizing recipes in recipe books
         final String SQL_CREATE_RECIPE_BOOK_TABLE = "CREATE TABLE " + RecipeBookEntry.TABLE_NAME + " (" +
-                RecipeBookEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " REAL NOT NULL, " +
-                RecipeBookEntry.COLUMN_RECIPE_BOOK_NAME + " TEXT);";
+//                RecipeBookEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_NAME + " TEXT," +
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_DESCRIPTION + " TEXT);";
 
         // Table for organizing chapters
         final String SQL_CREATE_CHAPTER_TABLE = "CREATE TABLE " + ChapterEntry.TABLE_NAME + " (" +
-                ChapterEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                ChapterEntry.COLUMN_CHAPTER_ID + " REAL NOT NULL, " +
+//                ChapterEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                ChapterEntry.COLUMN_CHAPTER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 ChapterEntry.COLUMN_CHAPTER_NAME + " TEXT, " +
                 ChapterEntry.COLUMN_CHAPTER_DESCRIPTION + " TEXT, " +
                 ChapterEntry.COLUMN_CHAPTER_ORDER + " INTEGER NOT NULL);";
 
         // Table for relating recipe books, chapters, and recipes
         final String SQL_CREATE_RECIPE_BOOK_LINK_TABLE = "CREATE TABLE " + LinkRecipeBookTable.TABLE_NAME + " (" +
-                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " REAL NOT NULL, " +
-                ChapterEntry.COLUMN_CHAPTER_ID + " REAL NOT NULL, " +
+//                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " REAL NOT NULL, " +
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " INTEGER NOT NULL, " +
+//                ChapterEntry.COLUMN_CHAPTER_ID + " REAL NOT NULL, " +
+                ChapterEntry.COLUMN_CHAPTER_ID + " INTEGER NOT NULL, " +
                 LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " INTEGER NOT NULL, " +
                 RecipeEntry.COLUMN_RECIPE_ID + " REAL NOT NULL, " +
                 // Utilize a combination of all three columns as the primary key because each

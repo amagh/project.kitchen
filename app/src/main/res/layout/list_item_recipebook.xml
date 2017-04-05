@@ -9,85 +9,94 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="@dimen/card_corner_radius"
-    app:contentPaddingBottom="@dimen/card_vertical_padding"
-    >
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/card_thumbnail_height_single">
+    app:contentPaddingBottom="@dimen/card_vertical_padding">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ImageView
-                android:id="@+id/list_recipe_book_image_0"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                tools:src="@drawable/placeholder"
-                />
-
-            <ImageView
-                android:id="@+id/list_recipe_book_image_1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                tools:src="@drawable/placeholder2"
-                />
-
-            <ImageView
-                android:id="@+id/list_recipe_book_image_2"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                tools:src="@drawable/placeholder3"
-                />
-
-            <ImageView
-                android:id="@+id/list_recipe_book_image_3"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                tools:src="@drawable/placeholder4"
-                />
-
-        </LinearLayout>
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:layout_alignParentBottom="true"
-            android:src="@drawable/list_title_gradient"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:maxLines="2"
-            android:id="@+id/list_recipe_book_title"
-            android:paddingLeft="@dimen/card_text_horizontal_margin"
-            android:paddingRight="@dimen/card_text_horizontal_margin"
-            android:paddingBottom="@dimen/activity_vertical_margin"
-            style="@style/titleText"
-            tools:text="Christmas Dinner"/>
-
-    </RelativeLayout>
-
-    <TextView
-        android:id="@+id/list_recipe_book_description_text"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/card_thumbnail_height_single"
-        android:paddingLeft="@dimen/card_text_horizontal_margin"
-        android:paddingRight="@dimen/card_text_horizontal_margin"
-        tools:text="This is from Christmas 2016. My first Christmas cooking dinner by myself!"/>
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/list_recipebook_image_0"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/card_thumbnail_height_single"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    tools:src="@drawable/placeholder"
+                    />
+
+                <ImageView
+                    android:id="@+id/list_recipebook_image_1"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/card_thumbnail_height_single"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    tools:src="@drawable/placeholder2"
+                    />
+
+                <ImageView
+                    android:id="@+id/list_recipebook_image_2"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/card_thumbnail_height_single"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    tools:src="@drawable/placeholder3"
+                    />
+
+                <ImageView
+                    android:id="@+id/list_recipebook_image_3"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/card_thumbnail_height_single"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    tools:src="@drawable/placeholder4"
+                    />
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/list_recipebook_gradient"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/card_thumbnail_gradient_height_single"
+                android:layout_gravity="bottom"
+                android:src="@drawable/list_title_gradient"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:maxLines="2"
+                android:id="@+id/list_recipebook_title"
+                android:paddingTop="@dimen/card_vertical_padding"
+                android:paddingLeft="@dimen/card_text_horizontal_margin"
+                android:paddingRight="@dimen/card_text_horizontal_margin"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                style="@style/titleText"
+                tools:text="Christmas Dinner"/>
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/list_recipebook_description_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/card_text_horizontal_margin"
+            android:paddingRight="@dimen/card_text_horizontal_margin"
+            tools:text="This is from Christmas 2016. My first Christmas cooking dinner by myself!"/>
+    </LinearLayout>
+
 
 </android.support.v7.widget.CardView>

@@ -17,25 +17,27 @@ import android.view.ViewGroup;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.CursorManager;
 import project.hnoct.kitchen.data.RecipeContract.*;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class ChapterActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class ChapterFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     /** Constants **/
     static final String RECIPE_BOOK_URI = "recipe_book_uri";
 
     /** Member Variables **/
     Context mContext;
     Cursor mCursor;
+    CursorManager mCursorManager;
     Uri mRecipeBookUri;
     ChapterAdapter mChapterAdapter;
     int mPosition;
 
     @BindView(R.id.chapter_recyclerview) RecyclerView mRecyclerView;
 
-    public ChapterActivityFragment() {
+    public ChapterFragment() {
     }
 
     @Override
@@ -44,16 +46,25 @@ public class ChapterActivityFragment extends Fragment implements LoaderManager.L
         View view = inflater.inflate(R.layout.fragment_chapter, container, false);
         ButterKnife.bind(this, view);
 
+        // Instantiate member variables
+        mContext = getActivity();
+
         // Get the Uri of the recipe book to be accessed
         Bundle bundle = getArguments();
         if (bundle != null) {
             mRecipeBookUri = bundle.getParcelable(RECIPE_BOOK_URI);
         }
 
-        // TODO: Instantiate and setup the ChapterAdapter
+        mChapterAdapter = new ChapterAdapter(
+                mContext,
+                getChildFragmentManager(),
+                mCursorManager = new CursorManager()
+        );
 
         // Set the layout manager and the number of columns to use
         setLayoutColumns();
+
+        mRecyclerView.setAdapter(mChapterAdapter);
 
         return view;
     }
@@ -66,7 +77,7 @@ public class ChapterActivityFragment extends Fragment implements LoaderManager.L
 
             // Instantiate the parameters used to query the database
             Uri uri = LinkRecipeBookTable.CONTENT_URI;
-            String selection = RecipeBookEntry.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID;
+            String selection = RecipeBookEntry.TABLE_NAME + "." + RecipeBookEntry._ID;
             String[] selectionArgs = new String[] {Long.toString(recipeBookId)};
             String sortOrder = ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
 
@@ -85,12 +96,23 @@ public class ChapterActivityFragment extends Fragment implements LoaderManager.L
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        mCursor = cursor;
+        mCursor.moveToFirst();
 
+        if (cursor.getCount() > 0) {
+            mChapterAdapter.swapCursor(cursor);
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        mChapterAdapter.swapCursor(null);
+    }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        mCursorManager.closeAllCursors();
     }
 
     /**

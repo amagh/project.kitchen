@@ -7,6 +7,7 @@
     <string name="action_clear_recipe">Clear Recipe</string>
     <string name="favorite_title">Favorites</string>
     <string name="my_recipes_title">My Recipes</string>
+    <string name="recipe_book_title">My Recipe Books</string>
     <string name="title_activity_recipe_details">RecipeDetailsActivity</string>
 
     <!-- Common key Strings -->
@@ -137,6 +138,8 @@
     <!-- Attribution -->
     <string name="attribution_custom">user-added</string>
     <string name="attriubtion_allrecipes">Allrecipes.com</string>
+
+
     <string name="title_activity_favorites">FavoritesActivity</string>
     <string name="title_activity_recipe_book">RecipeBookActivity</string>
     <string name="title_activity_chapter">ChapterActivity</string>

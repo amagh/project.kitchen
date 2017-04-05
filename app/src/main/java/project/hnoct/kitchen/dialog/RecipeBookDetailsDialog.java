@@ -73,6 +73,10 @@ public class RecipeBookDetailsDialog extends DialogFragment {
         return builder.create();
     }
 
+    public void setPositiveClickListener(RecipeBookDetailsListener listener) {
+        mListener = listener;
+    }
+
     /**
      * Callback interface to pass the entered information to the RecipeBookActivity
      */

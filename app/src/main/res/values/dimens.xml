@@ -14,6 +14,7 @@
     <!-- Card view dimensions -->
     <dimen name="card_corner_radius">4dp</dimen>
     <dimen name="card_thumbnail_height_single">240dp</dimen>
+    <dimen name="card_thumbnail_gradient_height_single">180dp</dimen>
     <dimen name="card_vertical_separation">16dp</dimen>
     <dimen name="card_vertical_padding">16dp</dimen>
     <dimen name="card_horizontal_margin">16dp</dimen>

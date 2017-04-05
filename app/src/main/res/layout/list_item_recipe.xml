@@ -27,7 +27,7 @@
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="180dp"
+            android:layout_height="@dimen/card_thumbnail_gradient_height_single"
             android:layout_alignBottom="@id/list_thumbnail"
             android:src="@drawable/list_title_gradient"/>
 

@@ -320,7 +320,7 @@ public class RecipeContract {
         public static final String TABLE_NAME = "recipe_books";
 
         // Columns
-        public static final String COLUMN_RECIPE_BOOK_ID = "recipe_book_id";                    // REAL NOT NULL
+        public static final String COLUMN_RECIPE_BOOK_ID = "recipe_book_id";                    // INTEGER AUTOINCREMENT
         public static final String COLUMN_RECIPE_BOOK_NAME = "recipe_book";                     // TEXT
         public static final String COLUMN_RECIPE_BOOK_DESCRIPTION = "recipe_book_description";  // TEXT
 

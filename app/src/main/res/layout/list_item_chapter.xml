@@ -14,6 +14,7 @@
         android:layout_height="wrap_content"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingLeft="@dimen/activity_horizontal_margin"
+
         style="@style/titleText"
         tools:text="Chapter One"/>
 

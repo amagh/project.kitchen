@@ -154,6 +154,12 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
                 hideNavigationDrawer();
                 break;
             }
+            case R.id.action_my_recipe_books: {
+                hideNavigationDrawer();
+                Intent intent = new Intent(this, RecipeBookActivity.class);
+                startActivity(intent);
+                break;
+            }
             case R.id.action_clear_data: {
                 // Delete the database and restart the application to rebuild it
                 boolean deleted = deleteDatabase(RecipeDbHelper.DATABASE_NAME);

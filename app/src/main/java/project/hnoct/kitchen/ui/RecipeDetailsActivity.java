@@ -86,7 +86,7 @@ public class RecipeDetailsActivity extends AppCompatActivity implements RecipeDe
 
         // Change the size of the touch field for the NutritionDrawer based on orientation
         if (getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE) {
-            setDrawerTouchMargin();
+            extendDrawerTouchMargin();
         }
     }
 
@@ -94,9 +94,9 @@ public class RecipeDetailsActivity extends AppCompatActivity implements RecipeDe
      * Doubles the touch field for dragging out the DrawerLayout when in landscape for easier
      * access for phones with on-screen keys
      */
-    void setDrawerTouchMargin() {
+    void extendDrawerTouchMargin() {
         try {
-            // Get the Field referring to the Dragger of the DrawerLayhout
+            // Get the Field referring to the Dragger of the DrawerLayout
             Field mDragger = mNutritionDrawer.getClass().getDeclaredField("mRightDragger");
 
             // Get access to the Field

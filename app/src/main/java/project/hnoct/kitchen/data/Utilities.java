@@ -437,7 +437,7 @@ public class Utilities {
                         RecipeEntry.COLUMN_RECIPE_ID + " DESC"
                 );
 
-                // Add all recipeIds to the List
+                // Add all recipeIds to the List // TODO: Replace this explanation
                 if (cursor != null && cursor.moveToFirst()) {
                     id = cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_RECIPE_ID)) + 1;
                 }
