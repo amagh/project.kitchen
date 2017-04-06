@@ -6,6 +6,7 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
+import android.util.Log;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +21,9 @@ import java.util.Map;
  */
 
 public class CursorManager {
+    /** Constants **/
+    private static final String LOG_TAG = CursorManager.class.getSimpleName();
+
     /** Member Variables **/
     private Map<Integer, Cursor> mCursorMap;    // Map that correlates the position of a ViewHolder with the correct Cursor
     private Map<Cursor, Integer> mReverseMap;   // Map that correlates a given Cursor with its position
@@ -98,6 +102,22 @@ public class CursorManager {
 
         mCursorMap.put(position, cursor);
         mReverseMap.put(cursor, position);
+    }
+
+    /**
+     * For adding Cursors that are already being managed by a CursorLoader
+     * @param position position of the ViewHolder requesting the Cursor
+     * @param cursor Cursor to be managed
+     */
+    public void addManagedCursor(int position, Cursor cursor) {
+        Log.d(LOG_TAG, "Cursor has been added to the Map!");
+        mCursorMap.put(position, cursor);
+        mReverseMap.put(cursor, position);
+
+        // If there is a registered observer, notify the Adapter there is a change in a given position
+        if (mListener != null) {
+            mListener.onCursorChanged(mReverseMap.get(cursor));
+        }
     }
 
     /**

@@ -22,7 +22,6 @@ import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.CursorManager;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
-import project.hnoct.kitchen.dialog.AddRecipeDialog;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -32,6 +31,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
     private static final String LOG_TAG = ChapterFragment.class.getSimpleName();
     private static final int CHAPTER_LOADER = 4;
     static final String RECIPE_BOOK_URI = "recipe_book_uri";
+    private static final int POSITION_MODIFIER = 10000;
 
     /** Member Variables **/
     Context mContext;
@@ -89,17 +89,11 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        if (mRecipeBookUri != null) {
-            Log.d(LOG_TAG, "in onCreateLoader");
+        if (mRecipeBookUri != null && id == CHAPTER_LOADER) {
             // Get the recipe book ID that is being queried from the Uri passed
             long recipeBookId = RecipeBookEntry.getRecipeBookIdFromUri(mRecipeBookUri);
 
             // Instantiate the parameters used to query the database
-//            Uri uri = LinkRecipeBookTable.CONTENT_URI;
-//            String selection = RecipeBookEntry.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = ?";
-//            String[] selectionArgs = new String[] {Long.toString(recipeBookId)};
-//            String sortOrder = ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
-
             Uri uri = ChapterEntry.CONTENT_URI;
             String selection = RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = ?";
             String[] selectionArgs = new String[] {Long.toString(recipeBookId)};
@@ -114,20 +108,83 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
                     selectionArgs,
                     sortOrder
             );
+        } else if (args != null) {
+            // The Loader is for Cursors used by RecyclerViews within ChapterAdapter
+            // Retrieve the arguments from the passed Bundle
+            Uri uri = args.getParcelable(Utilities.URI);
+            String[] projection = args.getStringArray(Utilities.PROJECTION);
+            String selection = args.getString(Utilities.SELECTION);
+            String[] selectionArgs = args.getStringArray(Utilities.SELECTION_ARGS);
+            String sortOrder = args.getString(Utilities.SORT_ORDER);
+
+            // Return a new CursorLoader with the given parameters
+            return new CursorLoader(
+                    mContext,
+                    uri,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    sortOrder
+            );
+        } else {
+            return null;
         }
-        return null;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        Log.v(LOG_TAG, "in onLoadFinished");
         mCursor = cursor;
-        mChapterAdapter.swapCursor(cursor);
+
+        if (loader.getId() == CHAPTER_LOADER && cursor != null && cursor.moveToFirst()) {
+            for (int i = 0; i < cursor.getCount(); i++) {
+                // Retrieve the parameters for generating the URI for querying the database
+                long chapterId = cursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+                long recipeBookId = cursor.getLong(ChapterEntry.IDX_BOOK_ID);
+
+                // Instantiate the Cursor by querying for the recipes of the chapter
+                Uri recipesOfChapterUri = LinkRecipeBookTable.buildRecipeUriFromBookAndChapterId(
+                        recipeBookId,
+                        chapterId
+                );
+
+                // Initialize parameters for querying the database
+                String[] projection = RecipeEntry.RECIPE_PROJECTION;
+                String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
+                String[] selectionArgs = new String[] {Long.toString(chapterId)};
+                String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC";
+
+                // Pass the parameters to a Bundle to be passed to the new CursorLoaders
+                Bundle args = new Bundle();
+                args.putParcelable(getString(R.string.uri_key), recipesOfChapterUri);
+                args.putStringArray(getString(R.string.projection_key), projection);
+                args.putString(getString(R.string.selection_key), selection);
+                args.putStringArray(getString(R.string.selection_args_key), selectionArgs);
+                args.putString(getString(R.string.sort_order_key), sortOrder);
+
+                // Initialize a new Loader and add 10 to the Id so that the position can be maintained
+                // when passing the Cursor to the CursorManager
+                getLoaderManager().initLoader(i + POSITION_MODIFIER, args, this);
+
+                cursor.moveToNext();
+                Log.d(LOG_TAG, "Initializing CursorLoader for position: " + i);
+            }
+
+            // After all the other required Cursors have been initialized, swap the Cursor into
+            // ChapterAdapter
+            mChapterAdapter.swapCursor(mCursor);
+        } else if (cursor != null && cursor.moveToFirst()) {
+            mCursorManager.addManagedCursor(loader.getId() - POSITION_MODIFIER, cursor);
+            Log.d(LOG_TAG, "Cursor for position: " + (loader.getId() - POSITION_MODIFIER) + " loaded into Manager");
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        // Swap a null Cursor into ChapterAdapter
         mChapterAdapter.swapCursor(null);
+
+//        // Close all previously opened Cursors used by the ChapterAdapter
+//        mCursorManager.closeAllCursors();
     }
 
     @Override

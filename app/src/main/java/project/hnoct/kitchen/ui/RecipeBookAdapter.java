@@ -35,6 +35,12 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
         mContext = context;
         mClickHandler = clickHandler;
         mCursorManager = cursorManager;
+        mCursorManager.setCursorChangeListener(new CursorManager.CursorChangeListener() {
+            @Override
+            public void onCursorChanged(int position) {
+                notifyItemChanged(position);
+            }
+        });
     }
 
     @Override
@@ -64,24 +70,8 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
         // Get the URI for the recipe book within the table so its chapters can be retrieved
         Uri recipeBookUri = LinkRecipeBookTable.buildRecipeUriFromRecipeBookId(bookId);
 
-        // Instantiate the Cursor that will be used to query the database for the chapters
-        Cursor cursor;
-
-        if ((cursor = mCursorManager.getCursor(position)) == null) {
-            // If Cursor has not been loaded into the CursorManager yet, initialize the Cursor by
-            // querying the linked recipe book and chapter table for chapter information
-            String projecton[] = LinkRecipeBookTable.PROJECTION;
-            String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC, " + ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
-
-            cursor = mContext.getContentResolver().query(
-                    recipeBookUri,
-                    LinkRecipeBookTable.PROJECTION,
-                    null,
-                    null,
-                    sortOrder
-            );
-            mCursorManager.addCursor(position, cursor);
-        }
+        // Retrieve the Cursor from mCursorManager
+        Cursor cursor = mCursorManager.getCursor(position);
 
         if (cursor != null && cursor.moveToFirst()) {
             // Set the first recipe image of each chapter to the correct thumbnail in the recipe
@@ -162,6 +152,7 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
 
         @Override
         public void onClick(View view) {
+            // Pass the recipe book ID of the clicked item to the click handler
             int position = getAdapterPosition();
             mCursor.moveToPosition(position);
             long bookId = mCursor.getLong(RecipeBookEntry.IDX_BOOK_ID);

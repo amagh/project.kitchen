@@ -147,4 +147,11 @@
     <string name="title_activity_favorites">FavoritesActivity</string>
     <string name="title_activity_recipe_book">RecipeBookActivity</string>
     <string name="title_activity_chapter">ChapterActivity</string>
+
+    <!-- Bundle Keys -->
+    <string name="uri_key">uri</string>
+    <string name="projection_key">projection</string>
+    <string name="selection_key">selection</string>
+    <string name="selection_args_key">selectionArgs</string>
+    <string name="sort_order_key">sortOrder</string>
 </resources>

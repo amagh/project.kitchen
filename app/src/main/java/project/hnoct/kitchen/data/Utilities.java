@@ -44,6 +44,12 @@ public class Utilities {
     public static final int CUSTOM_RECIPE_URI = 0;
     public static final int ALLRECIPES_URI = 1;
 
+    public static final String URI = "uri";
+    public static final String PROJECTION = "projection";
+    public static final String SELECTION = "selection";
+    public static final String SELECTION_ARGS = "selectionArgs";
+    public static final String SORT_ORDER = "sortOrder";
+
     /** Member Variables **/
 
     /**

@@ -52,8 +52,10 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             @Override
             public void onCursorChanged(int position) {
                 Log.d(LOG_TAG, "Cursor changed!");
-                mRecipeAdapterArray[position].swapCursor(mCursorManager.getCursor(position));
-                mRecipeAdapterArray[position].notifyDataSetChanged();
+                if (mRecipeAdapterArray != null) {
+                    mRecipeAdapterArray[position].swapCursor(mCursorManager.getCursor(position));
+                    mRecipeAdapterArray[position].notifyDataSetChanged();
+                }
             }
         });
     }
@@ -65,7 +67,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
      */
     Cursor swapCursor(Cursor newCursor) {
         // Check if the new Cursor is different than the old one
-        if (mCursor != newCursor) {
+        if (newCursor != null && mCursor != newCursor) {
             // Set the member Cursor to the new Cursor
             mCursor = newCursor;
 
@@ -97,37 +99,34 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         // Retrieve the information to be used to populate the views within the view holder
         String chapterTitleText = mCursor.getString(ChapterEntry.IDX_CHAPTER_NAME);
         String chapterDescriptionText = mCursor.getString(ChapterEntry.IDX_CHAPTER_DESCRIPTION);
-        final long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
-        final long recipeBookId = mCursor.getLong(ChapterEntry.IDX_BOOK_ID);
+//        final long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+//        final long recipeBookId = mCursor.getLong(ChapterEntry.IDX_BOOK_ID);
 
-        // Attempt to retrieve the Cursor from the CursorManager
-        Cursor cursor = mCursorManager.getCursor(position);
-
-        if (cursor == null) {
-            // Instantiate the Cursor by querying for the recipes of the chapter
-            Uri recipesOfChapterUri = LinkRecipeBookTable.buildRecipeUriFromBookAndChapterId(
-                    recipeBookId,
-                    chapterId
-            );
-
-            // Initialize parameters for querying the database
-            String[] projection = RecipeEntry.RECIPE_PROJECTION;
-            String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
-            String[] selectionArgs = new String[] {Long.toString(chapterId)};
-            String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC";
-
-            // Query the database
-            cursor = mContext.getContentResolver().query(
-                    recipesOfChapterUri,
-                    RecipeEntry.RECIPE_PROJECTION,
-                    selection,
-                    selectionArgs,
-                    sortOrder
-            );
-
-            // Add the new Cursor to the member CursorManager
-            mCursorManager.addCursor(position, cursor, recipesOfChapterUri, projection, sortOrder);
-        }
+//        if (cursor == null) {
+//            // Instantiate the Cursor by querying for the recipes of the chapter
+//            Uri recipesOfChapterUri = LinkRecipeBookTable.buildRecipeUriFromBookAndChapterId(
+//                    recipeBookId,
+//                    chapterId
+//            );
+//
+//            // Initialize parameters for querying the database
+//            String[] projection = RecipeEntry.RECIPE_PROJECTION;
+//            String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
+//            String[] selectionArgs = new String[] {Long.toString(chapterId)};
+//            String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC";
+//
+//            // Query the database
+//            cursor = mContext.getContentResolver().query(
+//                    recipesOfChapterUri,
+//                    RecipeEntry.RECIPE_PROJECTION,
+//                    selection,
+//                    selectionArgs,
+//                    sortOrder
+//            );
+//
+//            // Add the new Cursor to the member CursorManager
+//            mCursorManager.addCursor(position, cursor, recipesOfChapterUri, projection, sortOrder);
+//        }
 
         // Populate the views of the view holder
         holder.titleText.setText(chapterTitleText);
@@ -153,6 +152,8 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         // Set the layout manager for the recycler view and set the adapter
         holder.recipeRecyclerView.setLayoutManager(sglm);
 
+        Cursor cursor = mCursorManager.getCursor(position);
+
         // Attempt to get a reference to the RecipeAdapter in memory if it exists
         RecipeAdapter recipeAdapter;
         if ((recipeAdapter = mRecipeAdapterArray[position]) == null)  {
@@ -174,7 +175,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         }
 
         // Swap the Cursor in the recipeAdapter with the new one
-        recipeAdapter.swapCursor(cursor);
+        recipeAdapter.swapCursor(mCursorManager.getCursor(position));
 
         // Set the Adapter to the ViewHolder's RecyclerView
         holder.recipeRecyclerView.setAdapter(recipeAdapter);
