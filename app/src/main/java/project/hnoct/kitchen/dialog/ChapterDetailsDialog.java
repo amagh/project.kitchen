@@ -14,17 +14,17 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 
 /**
- * Created by hnoct on 3/27/2017.
+ * Created by hnoct on 4/4/2017.
  */
 
-public class RecipeBookDetailsDialog extends DialogFragment {
+public class ChapterDetailsDialog extends DialogFragment {
     /** Constants **/
 
     /** Member Variables **/
-    RecipeBookDetailsListener mListener;
+    ChapterDetailsListener mListener;
 
-    @BindView(R.id.dialog_recipebook_title_edit_text) EditText titleEditText;
-    @BindView(R.id.dialog_recipebook_description_edit_text) EditText descriptionEditText;
+    @BindView(R.id.dialog_chapter_title_edit_text) EditText titleEditText;
+    @BindView(R.id.dialog_chapter_description_edit_text) EditText descriptionEditText;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -33,7 +33,7 @@ public class RecipeBookDetailsDialog extends DialogFragment {
 
         // Set the layout to be used by the dialog
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.dialog_recipebook_details, null);
+        View view = inflater.inflate(R.layout.dialog_chapter_details, null);
 
         ButterKnife.bind(this, view);
 
@@ -56,7 +56,7 @@ public class RecipeBookDetailsDialog extends DialogFragment {
                         if (titleInputText != null || descriptionInputText != null) {
                             // Send the Callback to the Activity that called the dialog
                             if (mListener != null) mListener.onPositiveDialogClick(
-                                    RecipeBookDetailsDialog.this,
+                                    ChapterDetailsDialog.this,
                                     titleInputText,
                                     descriptionInputText
                             );
@@ -73,14 +73,14 @@ public class RecipeBookDetailsDialog extends DialogFragment {
         return builder.create();
     }
 
-    public void setPositiveClickListener(RecipeBookDetailsListener listener) {
+    public void setPositiveClickListener(ChapterDetailsListener listener) {
         mListener = listener;
     }
 
     /**
      * Callback interface to pass the entered information to the RecipeBookActivity
      */
-    public interface RecipeBookDetailsListener {
+    public interface ChapterDetailsListener {
         void onPositiveDialogClick(DialogFragment dialog, String titleText, String descriptionText);
     }
 }

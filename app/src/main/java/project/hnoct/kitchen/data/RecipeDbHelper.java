@@ -85,7 +85,10 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 ChapterEntry.COLUMN_CHAPTER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 ChapterEntry.COLUMN_CHAPTER_NAME + " TEXT, " +
                 ChapterEntry.COLUMN_CHAPTER_DESCRIPTION + " TEXT, " +
-                ChapterEntry.COLUMN_CHAPTER_ORDER + " INTEGER NOT NULL);";
+                ChapterEntry.COLUMN_CHAPTER_ORDER + " INTEGER NOT NULL, " +
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " REAL NOT NULL, " +
+                "FOREIGN KEY (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ") REFERENCES " +
+                RecipeBookEntry.TABLE_NAME + " (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + "));";
 
         // Table for relating recipe books, chapters, and recipes
         final String SQL_CREATE_RECIPE_BOOK_LINK_TABLE = "CREATE TABLE " + LinkRecipeBookTable.TABLE_NAME + " (" +

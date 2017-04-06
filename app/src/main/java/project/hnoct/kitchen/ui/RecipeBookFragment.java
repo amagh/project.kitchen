@@ -46,10 +46,10 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_recipe_book, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_recipebook, container, false);
         ButterKnife.bind(this, rootView);
         mContext = getActivity();
-        mCursorManager = new CursorManager();
+        mCursorManager = new CursorManager(mContext);
 
         mRecipeBookAdapter = new RecipeBookAdapter(mContext, new RecipeBookAdapter.RecipeBookAdapterOnClickHandler() {
             @Override

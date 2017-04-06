@@ -438,8 +438,8 @@ public class RecipeProvider extends ContentProvider {
                 break;
             }
             case RECIPE_BOOK_LINK: {
-                cursor = mDbHelper.getReadableDatabase().query(
-                        LinkRecipeBookTable.TABLE_NAME,
+                cursor = sRecipeBookChapterAndRecipeQueryBuilder.query(
+                        mDbHelper.getReadableDatabase(),
                         projection,
                         selection,
                         selectionArgs,
@@ -459,6 +459,7 @@ public class RecipeProvider extends ContentProvider {
             }
             case RECIPE_BOOK_LINK_QUERY_RECIPES_WITH_CHAPTER: {
                 cursor = getRecipesFromRecipeBookWithChapter(uri, projection, sortOrder);
+                break;
             }
             default:
                 throw new UnsupportedOperationException("Unknown URI: " + uri);

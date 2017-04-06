@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="project.hnoct.kitchen.ui.RecipeBookFragment"
-    tools:showIn="@layout/activity_recipe_book">
+    tools:showIn="@layout/activity_recipebook">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recipe_book_recyclerview"

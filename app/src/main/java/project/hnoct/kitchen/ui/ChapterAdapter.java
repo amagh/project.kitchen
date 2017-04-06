@@ -1,19 +1,25 @@
 package project.hnoct.kitchen.ui;
 
 import android.content.Context;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Layout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.CursorManager;
 import project.hnoct.kitchen.data.RecipeContract.*;
@@ -23,21 +29,50 @@ import project.hnoct.kitchen.data.RecipeContract.*;
  */
 
 public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterViewHolder> {
+    /** Constants **/
+    private static final String LOG_TAG = ChapterAdapter.class.getSimpleName();
+
+    /** Member Variables **/
     private Context mContext;
     private Cursor mCursor;
     private CursorManager mCursorManager;
     private FragmentManager mFragmentManager;
+    private RecipeClickListener mListener;
+    private RecipeAdapter[] mRecipeAdapterArray;
 
     public ChapterAdapter(Context context, FragmentManager fragmentManager, CursorManager cursorManager) {
         mContext = context;
+        mFragmentManager = fragmentManager;
         // Get the CursorManager passed from the activity so all the Cursors being managed can be
         // properly closed in onStop of the Activity
         mCursorManager = cursorManager;
+
+        // Set the listener to manage the RecipeAdapters and their Cursors
+        cursorManager.setCursorChangeListener(new CursorManager.CursorChangeListener() {
+            @Override
+            public void onCursorChanged(int position) {
+                Log.d(LOG_TAG, "Cursor changed!");
+                mRecipeAdapterArray[position].swapCursor(mCursorManager.getCursor(position));
+                mRecipeAdapterArray[position].notifyDataSetChanged();
+            }
+        });
     }
 
+    /**
+     * Changes the Cursor being used to display data
+     * @param newCursor New Cursor to be used for data
+     * @return Cursor currently used after the change
+     */
     Cursor swapCursor(Cursor newCursor) {
+        // Check if the new Cursor is different than the old one
         if (mCursor != newCursor) {
+            // Set the member Cursor to the new Cursor
             mCursor = newCursor;
+
+            // Reset the Array holding the RecipeAdapters being used
+            mRecipeAdapterArray = new RecipeAdapter[mCursor.getCount()];
+
+            // Notify the Adapter of the change in data
             notifyDataSetChanged();
         }
         return mCursor;
@@ -60,10 +95,10 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         mCursor.moveToPosition(position);
 
         // Retrieve the information to be used to populate the views within the view holder
-        String chapterTitleText = mCursor.getString(LinkRecipeBookTable.IDX_CHAPTER_NAME);
-        String chapterDescriptionText = mCursor.getString(LinkRecipeBookTable.IDX_CHAPTER_DESCRIPTION);
-        long chapterId = mCursor.getLong(LinkRecipeBookTable.IDX_CHAPTER_ID);
-        long recipeBookId = mCursor.getLong(LinkRecipeBookTable.IDX_BOOK_ID);
+        String chapterTitleText = mCursor.getString(ChapterEntry.IDX_CHAPTER_NAME);
+        String chapterDescriptionText = mCursor.getString(ChapterEntry.IDX_CHAPTER_DESCRIPTION);
+        final long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+        final long recipeBookId = mCursor.getLong(ChapterEntry.IDX_BOOK_ID);
 
         // Attempt to retrieve the Cursor from the CursorManager
         Cursor cursor = mCursorManager.getCursor(position);
@@ -74,16 +109,24 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                     recipeBookId,
                     chapterId
             );
-            String[] projection;
+
+            // Initialize parameters for querying the database
+            String[] projection = RecipeEntry.RECIPE_PROJECTION;
+            String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
+            String[] selectionArgs = new String[] {Long.toString(chapterId)};
             String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC";
 
+            // Query the database
             cursor = mContext.getContentResolver().query(
                     recipesOfChapterUri,
-                    RecipeEntry.RECIPE_PROJECTION, // <-- TODO: Make sure this works out correctly
-                    null,
-                    null,
+                    RecipeEntry.RECIPE_PROJECTION,
+                    selection,
+                    selectionArgs,
                     sortOrder
             );
+
+            // Add the new Cursor to the member CursorManager
+            mCursorManager.addCursor(position, cursor, recipesOfChapterUri, projection, sortOrder);
         }
 
         // Populate the views of the view holder
@@ -109,15 +152,49 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
 
         // Set the layout manager for the recycler view and set the adapter
         holder.recipeRecyclerView.setLayoutManager(sglm);
-        RecipeAdapter recipeAdapter = new RecipeAdapter(mContext, mFragmentManager, new RecipeAdapter.RecipeAdapterOnClickHandler() {
-            @Override
-            public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
-                if (useDetailView);
-            }
-        });
 
-        recipeAdapter.setUseDetailView(useDetailView);
+        // Attempt to get a reference to the RecipeAdapter in memory if it exists
+        RecipeAdapter recipeAdapter;
+        if ((recipeAdapter = mRecipeAdapterArray[position]) == null)  {
+            // If there is no reference to a corresponding RecipeAdapter, initialize a new
+            // RecipeAdapter
+            recipeAdapter = new RecipeAdapter(mContext, new RecipeAdapter.RecipeAdapterOnClickHandler() {
+                @Override
+                public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
+                    // Relay the click event and its data to the registered Observer
+                    mListener.onRecipeClicked(recipeId, viewHolder);
+                }
+            });
+
+            // Set a reference to this RecipeAdapter in mRecipeAdapterArray
+            mRecipeAdapterArray[position] = recipeAdapter;
+
+            // Set whether the RecipeAdapter should use the DetailedView layout or master-flow/single
+            recipeAdapter.setUseDetailView(useDetailView, mFragmentManager);
+        }
+
+        // Swap the Cursor in the recipeAdapter with the new one
         recipeAdapter.swapCursor(cursor);
+
+        // Set the Adapter to the ViewHolder's RecyclerView
+        holder.recipeRecyclerView.setAdapter(recipeAdapter);
+    }
+
+    /**
+     * Interface for a listener to notify a registered observer of whether a specific recipe was
+     * selected or if user clicked to add a new recipe to the Chapter
+     */
+    interface RecipeClickListener {
+        void onRecipeClicked(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder);
+        void onAddRecipeClicked(long chapterId);
+    }
+
+    /**
+     * Registers an observer to be notified of user interaction with the Adapter
+     * @param listener
+     */
+    void setRecipeClickListener(RecipeClickListener listener) {
+        mListener = listener;
     }
 
     @Override
@@ -137,9 +214,27 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
     }
 
     class ChapterViewHolder extends RecyclerView.ViewHolder {
+        // Views bound by ButterKnife
         @BindView(R.id.list_chapter_title) TextView titleText;
         @BindView(R.id.list_chapter_description) TextView descriptionText;
         @BindView(R.id.list_chapter_recipe_recyclerview) NonScrollingRecyclerView recipeRecyclerView;
+        @BindView(R.id.list_chapter_add_recipe) CardView addRecipeButton;
+
+        @OnClick(R.id.list_chapter_add_recipe)
+        /**
+         * Notifies the registered observer that the user has selected to add a recipe to the chapter
+         */
+        void addRecipe() {
+            // Get the position of the Chapter the recipe is to be added to
+            int position = getAdapterPosition();
+
+            // Get the chapterId
+            mCursor.moveToPosition(position);
+            long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+
+            // Notify the observer to allow the user to select a new recipe to be added
+            if (mListener != null) mListener.onAddRecipeClicked(chapterId);
+        }
 
         public ChapterViewHolder(View view) {
             super(view);

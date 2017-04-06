@@ -70,12 +70,15 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
         if ((cursor = mCursorManager.getCursor(position)) == null) {
             // If Cursor has not been loaded into the CursorManager yet, initialize the Cursor by
             // querying the linked recipe book and chapter table for chapter information
+            String projecton[] = LinkRecipeBookTable.PROJECTION;
+            String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC, " + ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
+
             cursor = mContext.getContentResolver().query(
                     recipeBookUri,
                     LinkRecipeBookTable.PROJECTION,
-                    RecipeBookEntry.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = ? AND " + LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " = ?",
-                    new String[] {Long.toString(bookId), Integer.toString(0)},
-                    ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC"
+                    null,
+                    null,
+                    sortOrder
             );
             mCursorManager.addCursor(position, cursor);
         }
@@ -88,17 +91,17 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
             Glide.with(mContext)
                     .load(image0Url)
                     .into(holder.image0);
-            if (cursor.moveToNext()) {
+            if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookTable.IDX_RECIPE_ORDER) <= 0) {
                 image1Url = cursor.getString(LinkRecipeBookTable.IDX_IMG_URL);
                 Glide.with(mContext)
                         .load(image1Url)
                         .into(holder.image1);
-                if (cursor.moveToNext()) {
+                if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookTable.IDX_RECIPE_ORDER) <= 0) {
                     image2Url = cursor.getString(LinkRecipeBookTable.IDX_IMG_URL);
                     Glide.with(mContext)
                             .load(image2Url)
                             .into(holder.image2);
-                    if (cursor.moveToNext()) {
+                    if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookTable.IDX_RECIPE_ORDER) <= 0) {
                         image3Url = cursor.getString(LinkRecipeBookTable.IDX_IMG_URL);
                         Glide.with(mContext)
                                 .load(image3Url)

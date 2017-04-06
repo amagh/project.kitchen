@@ -369,6 +369,20 @@ public class RecipeContract {
         public static final String COLUMN_CHAPTER_DESCRIPTION = "chapter_description";  // TEXT
         public static final String COLUMN_CHAPTER_ORDER = "chapter_order";              // INTEGER NOT NULL
 
+        public static final String[] PROJECTION = {
+                COLUMN_CHAPTER_ID,
+                COLUMN_CHAPTER_NAME,
+                COLUMN_CHAPTER_DESCRIPTION,
+                COLUMN_CHAPTER_ORDER,
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID
+        };
+
+        public static final int IDX_CHAPTER_ID = 0;
+        public static final int IDX_CHAPTER_NAME = 1;
+        public static final int IDX_CHAPTER_DESCRIPTION = 2;
+        public static final int IDX_CHAPTER_ORDER = 3;
+        public static final int IDX_BOOK_ID = 4;
+
 
         public static Uri buildChapterUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);

@@ -6,14 +6,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
-
-import java.net.URI;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -36,7 +32,7 @@ public class RecipeBookActivity extends AppCompatActivity implements RecipeBookD
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_recipe_book);
+        setContentView(R.layout.activity_recipebook);
         ButterKnife.bind(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -67,7 +63,6 @@ public class RecipeBookActivity extends AppCompatActivity implements RecipeBookD
      */
     @Override
     public void onPositiveDialogClick(DialogFragment dialog, String titleText, String descriptionText) {
-        Log.d(LOG_TAG, "Positive Dialog Clicked!");
         // Initialize parameters for inserting recipe book into database
         Uri uri = RecipeBookEntry.CONTENT_URI;
 

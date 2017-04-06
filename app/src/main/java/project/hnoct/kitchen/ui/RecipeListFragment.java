@@ -55,12 +55,12 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         mContext = getActivity();
 
         // Instantiate the Adapter for the RecyclerView
-        mRecipeAdapter = new RecipeAdapter(getActivity(), getChildFragmentManager(), new RecipeAdapter.RecipeAdapterOnClickHandler() {
+        mRecipeAdapter = new RecipeAdapter(getActivity(), new RecipeAdapter.RecipeAdapterOnClickHandler() {
             @Override
             public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
                 boolean resetLayout = !RecipeListActivity.mDetailsVisible;
 
-                // Initiate Callback to Activity which will initiate launch of new Details Activity
+                // Initiate Callback to Activity which will launch Details Activity
                 ((RecipeCallBack) getActivity()).onItemSelected(
                         Utilities.getRecipeUrlFromRecipeId(mContext, recipeId),
                         viewHolder
@@ -77,7 +77,7 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
 
         // Set whether the RecyclerAdapter should utilize the detail layout
         boolean useDetailView = getResources().getBoolean(R.bool.recipeAdapterUseDetailView);
-        mRecipeAdapter.setUseDetailView(useDetailView);
+        mRecipeAdapter.setUseDetailView(useDetailView, getChildFragmentManager());
         if (useDetailView) {
             mRecipeAdapter.setVisibilityListener(new RecipeAdapter.DetailVisibilityListener() {
                 @Override

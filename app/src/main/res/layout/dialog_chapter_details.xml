@@ -7,15 +7,17 @@
     android:padding="@dimen/activity_vertical_margin">
 
     <EditText
-        android:id="@+id/dialog_recipebook_title_edit_text"
+        android:id="@+id/dialog_chapter_title_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/dialog_recipebook_details_title"/>
+        android:inputType="textAutoCorrect|textCapWords"
+        android:hint="@string/dialog_chapter_details_title"/>
 
     <EditText
-        android:id="@+id/dialog_recipebook_description_edit_text"
+        android:id="@+id/dialog_chapter_description_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/dialog_recipebook_details_description"/>
+        android:inputType="textAutoCorrect|textCapSentences"
+        android:hint="@string/dialog_chapter_details_description"/>
 
 </LinearLayout>

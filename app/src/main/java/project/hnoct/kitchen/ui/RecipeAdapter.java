@@ -31,7 +31,7 @@ import project.hnoct.kitchen.data.Utilities;
  * Created by hnoct on 2/20/2017.
  */
 
-class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
+public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
     /** Constants **/
     public static final String LOG_TAG = RecipeAdapter.class.getSimpleName();
     private static final int RECIPE_VIEW_NORMAL = 0;
@@ -59,14 +59,13 @@ class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<Recip
      * @param context interface for global context
      * @param clickHandler interface for passing information to the UI from the Adapter
      */
-    RecipeAdapter(Context context, FragmentManager fragmentManager, RecipeAdapterOnClickHandler clickHandler) {
+    public RecipeAdapter(Context context, RecipeAdapterOnClickHandler clickHandler) {
         mContext = context;
         mClickHandler = clickHandler;
-        mFragmentManager = fragmentManager;
         mDetailCardPosition = -1;
     }
 
-    Cursor swapCursor(Cursor newCursor) {
+    public Cursor swapCursor(Cursor newCursor) {
         if (mCursor != newCursor) {
             mCursor = newCursor;
             notifyDataSetChanged();
@@ -74,8 +73,9 @@ class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<Recip
         return mCursor;
     }
 
-    void setUseDetailView(boolean useDetailView) {
+    void setUseDetailView(boolean useDetailView, FragmentManager fragmentManager) {
         this.useDetailView = useDetailView;
+        mFragmentManager = fragmentManager;
     }
 
     @Override
@@ -300,7 +300,7 @@ class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<Recip
     /**
      * Callback interface for passing information to the UI Activity
      */
-    interface RecipeAdapterOnClickHandler {
+    public interface RecipeAdapterOnClickHandler {
         void onClick(long recipeId, RecipeViewHolder viewHolder);
     }
 
@@ -312,7 +312,7 @@ class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<Recip
         this.mVisibilityListener = mVisibilityListener;
     }
 
-    class RecipeViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class RecipeViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         @Nullable @BindView(R.id.list_title) TextView recipeTitle;
         @Nullable @BindView(R.id.list_recipe_author_text) TextView recipeAuthor;
         @Nullable @BindView(R.id.list_recipe_attribution_text) TextView recipeAttribution;

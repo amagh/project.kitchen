@@ -68,7 +68,7 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
         mInflater = inflater;
         mRecipeIndex = new HashMap<>();
 
-        mRecipeAdapter = new RecipeAdapter(mContext, getChildFragmentManager(), new RecipeAdapter.RecipeAdapterOnClickHandler() {
+        mRecipeAdapter = new RecipeAdapter(mContext, new RecipeAdapter.RecipeAdapterOnClickHandler() {
             @Override
             public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
                 boolean resetLayout = !RecipeListActivity.mDetailsVisible;
@@ -89,7 +89,7 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
 
         // Set whether the RecyclerAdapter should utilize the detail layout
         boolean useDetailView = getResources().getBoolean(R.bool.recipeAdapterUseDetailView);
-        mRecipeAdapter.setUseDetailView(useDetailView);
+        mRecipeAdapter.setUseDetailView(useDetailView, getChildFragmentManager());
         if (useDetailView) {
             mRecipeAdapter.setVisibilityListener(new RecipeAdapter.DetailVisibilityListener() {
                 @Override
