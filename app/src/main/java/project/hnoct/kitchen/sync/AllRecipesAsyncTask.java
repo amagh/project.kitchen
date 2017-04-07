@@ -1,5 +1,6 @@
 package project.hnoct.kitchen.sync;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -14,8 +15,10 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.data.RecipeContract.*;
@@ -57,9 +60,11 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
         // Set the parameter indicating if this is a new recipe
         mNewRecipe = !cursor.moveToFirst();
 
-        List<Long> ingredientIdList = new ArrayList<>();        // Hack for duplicate ingredients. See below.
+//        List<Long> ingredientIdList = new ArrayList<>();        // Hack for duplicate ingredients. See below.
         List<ContentValues> ingredientCVList = new ArrayList<>();
         List<ContentValues> linkCVList = new LinkedList<>();
+
+        @SuppressLint("UseSparseArrays") Map<Long, String> ingredientIdNameMap = new HashMap<>();
 
         try {
             // Connect to the recipe URL and get the document
@@ -193,39 +198,66 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
                     ingredientId = Long.parseLong(ingredientElement.attr("data-id"));
                 }
 
-                if (ingredientId <= 0) {
-                    // Ingredients without ingredientIds are section headings and should be relegated
-                    // to an unused spot in the ingredient table or new ingredients added by the user
+                String ingredientDbName = Utilities.getIngredientNameFromId(mContext, ingredientId);
+                String ingredientMapName = ingredientIdNameMap.get(ingredientId);
+
+                if (ingredientId <= 0 ||
+                        (ingredientDbName != null && !ingredient.equals(ingredientDbName)) ||
+                        (ingredientMapName != null && !ingredient.equals(ingredientIdNameMap.get(ingredientId)))) {
+                    // Ingredients without ingredientIds are section headings, duplicate ingredients
+                    // with different preparations, or new ingredients added by the user and should
+                    // be relegated to an unused spot in the ingredient table
                     ingredientId = 1000000;
 
                     // Generate a new ingredientId if needed
                     // Check to see if ingredientId already matches an ingredient
-                    String databaseIngredientName = Utilities.getIngredientNameFromId(mContext, ingredientId);
-                    while (databaseIngredientName != null && !ingredient.equals(databaseIngredientName)) {
+                    ingredientDbName = Utilities.getIngredientNameFromId(mContext, ingredientId);
+                    ingredientMapName = ingredientIdNameMap.get(ingredientId);
+
+                    while ((ingredientDbName != null && !ingredient.equals(ingredientDbName)) ||
+                            (ingredientMapName != null && !ingredient.equals(ingredientMapName))) {      // TODO <-- This may not be needed anymore
                         // Keep incrementing to find a new ID if the ingredientName already exists
                         // and does not match the ingredient being queried
-                        ingredientId = Utilities.generateNewId(mContext, Utilities.INGREDIENT_TYPE);
-                        databaseIngredientName = Utilities.getIngredientNameFromId(mContext, ingredientId);
+                        if (ingredientId == 1000000) {
+                            ingredientId = Utilities.generateNewId(mContext, Utilities.INGREDIENT_TYPE);
+                        } else {
+                            ingredientId++;
+                        }
+                        ingredientMapName = ingredientIdNameMap.get(ingredientId);
+                        ingredientDbName = Utilities.getIngredientNameFromId(mContext, ingredientId);
                     }
                 }
 
-                /**
-                 * ** Hack for duplicate ingredients in a single recipe **
-                 * Increment the ingredientId until there are no more instances of it in the
-                 * ingredientIdList used to hold all ingredientIds in this recipe
-                 */
-                while (ingredientIdList.contains(ingredientId)) {
-                    // If ingredientId exists in List, then increment the ingredientId
-                    ingredientId++;
+                // Final check to see if ingredient already exists in database or ingredientIdNameMap
+                boolean skipAddIngredient = false;
+                ingredientDbName = Utilities.getIngredientNameFromId(mContext, ingredientId);
+                ingredientMapName = ingredientIdNameMap.get(ingredientId);
+
+                if (ingredient.equals(ingredientDbName) || ingredient.equals(ingredientMapName)) {
+                    // If it exists, there is no need to add a duplicate to the ingredient table
+                    skipAddIngredient = true;
                 }
-                ingredientIdList.add(ingredientId);
+                ingredientIdNameMap.put(ingredientId, ingredient);
+
+//                /**
+//                 * ** Hack for duplicate ingredients in a single recipe **
+//                 * Increment the ingredientId until there are no more instances of it in the
+//                 * ingredientIdList used to hold all ingredientIds in this recipe
+//                 */
+//                while (ingredientIdList.contains(ingredientId)) {
+//                    // If ingredientId exists in List, then increment the ingredientId
+//                    ingredientId++;
+//                }
+//                ingredientIdList.add(ingredientId);
 
                 // Create ContentValues from data
-                ContentValues ingredientValue = new ContentValues();
-                ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
-                ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_NAME, ingredient);
+                if (!skipAddIngredient) {
+                    ContentValues ingredientValue = new ContentValues();
+                    ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
+                    ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_NAME, ingredient);
 
-                ingredientCVList.add(ingredientValue);
+                    ingredientCVList.add(ingredientValue);
+                }
 
                 ContentValues linkValue = new ContentValues();
                 linkValue.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);

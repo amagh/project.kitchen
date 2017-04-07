@@ -7,10 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -23,12 +25,19 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Optional;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeDbHelper;
 import project.hnoct.kitchen.dialog.ImportRecipeDialog;
 import project.hnoct.kitchen.prefs.SettingsActivity;
@@ -158,6 +167,31 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
                 hideNavigationDrawer();
                 Intent intent = new Intent(this, RecipeBookActivity.class);
                 startActivity(intent);
+                break;
+            }
+            case R.id.action_copy_db: {
+                File sd = Environment.getExternalStorageDirectory();
+                File database = getApplicationContext().getDatabasePath(RecipeDbHelper.DATABASE_NAME + ".db");
+                Log.d(LOG_TAG, sd.toString());
+                if (sd.canWrite()) {
+                    Log.d(LOG_TAG, "Able to write to SD.");
+                    File dbCopy = new File(sd, RecipeDbHelper.DATABASE_NAME + ".db");
+                    if (database.exists()) {
+                        Log.d(LOG_TAG, "Database exists.");
+                        try {
+                            FileChannel src = new FileInputStream(database).getChannel();
+                            FileChannel dst = new FileInputStream(dbCopy).getChannel();
+                            dst.transferFrom(src, 0, src.size());
+
+                            src.close();
+                            dst.close();
+                            Toast.makeText(this, "Database copied to external storage!", Toast.LENGTH_SHORT).show();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
                 break;
             }
             case R.id.action_clear_data: {

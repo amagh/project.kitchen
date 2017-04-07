@@ -30,6 +30,7 @@ public class RecipeProvider extends ContentProvider {
     static final int RECIPE_AND_INGREDIENT_QUERY = 201;
     static final int INGREDIENT = 300;
     static final int INGREDIENT_WITH_ID = 301;
+    static final int INGREDIENT_SEARCH = 302;
     static final int RECIPE_BOOK = 400;
     static final int RECIPE_BOOK_WITH_ID = 401;
     static final int CHAPTER = 500;
@@ -96,14 +97,21 @@ public class RecipeProvider extends ContentProvider {
         // URIs to be matched
         uriMatcher.addURI(authority, RecipeContract.PATH_RECIPE, RECIPE);
         uriMatcher.addURI(authority, RecipeContract.PATH_RECIPE + "/#", RECIPE_WITH_ID);
+
         uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT, INGREDIENT);
         uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT + "/#", INGREDIENT_WITH_ID);
+        uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT + "/*", INGREDIENT_SEARCH);
+
         uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT_LINK, RECIPE_AND_INGREDIENT);      // Used for inserting into Link Table
-        uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT_LINK + "/*", RECIPE_AND_INGREDIENT_QUERY);
+        uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT_LINK + "/" + RecipeEntry.TABLE_NAME + "/#", RECIPE_AND_INGREDIENT_QUERY);
+        uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT_LINK + "/" + IngredientEntry.TABLE_NAME +  "/#", RECIPE_AND_INGREDIENT_QUERY);
+
         uriMatcher.addURI(authority, RecipeContract.PATH_BOOK, RECIPE_BOOK);
         uriMatcher.addURI(authority, RecipeContract.PATH_BOOK + "/#", RECIPE_BOOK_WITH_ID);
+
         uriMatcher.addURI(authority, RecipeContract.PATH_CHAPTER, CHAPTER);
         uriMatcher.addURI(authority, RecipeContract.PATH_CHAPTER + "/#", CHAPTER_WITH_ID);
+
         uriMatcher.addURI(authority, RecipeContract.PATH_BOOK_LINK, RECIPE_BOOK_LINK);
         uriMatcher.addURI(authority, RecipeContract.PATH_BOOK_LINK + "/#/" + ChapterEntry.TABLE_NAME, RECIPE_BOOK_LINK_QUERY_CHAPTERS);
         uriMatcher.addURI(authority, RecipeContract.PATH_BOOK_LINK + "/#/" + RecipeEntry.TABLE_NAME, RECIPE_BOOK_LINK_QUERY_RECIPES);
@@ -387,6 +395,9 @@ public class RecipeProvider extends ContentProvider {
                 // Filter query by a single ingredient
                 cursor = getIngredientById(uri, projection, sortOrder);
                 break;
+            }
+            case INGREDIENT_SEARCH: {
+
             }
             case RECIPE_AND_INGREDIENT: {
                 cursor = sRecipeAndIngredientQueryBuilder.query(

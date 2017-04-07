@@ -8,6 +8,7 @@
     <string name="favorite_title">Favorites</string>
     <string name="my_recipes_title">My Recipes</string>
     <string name="recipe_book_title">My Recipe Books</string>
+    <string name="transfer_db_title">Copy DB to SD</string>
     <string name="title_activity_recipe_details">RecipeDetailsActivity</string>
 
     <!-- Common key Strings -->

@@ -3,6 +3,7 @@ package project.hnoct.kitchen.ui;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
@@ -30,7 +31,7 @@ import butterknife.OnEditorAction;
 import butterknife.OnFocusChange;
 import butterknife.OnTextChanged;
 import project.hnoct.kitchen.R;
-import project.hnoct.kitchen.data.RecipeContract;
+import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.RecipeProvider;
 
 /**
@@ -271,22 +272,43 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
          */
         @OnTextChanged(R.id.list_add_ingredient_name_edit_text)
         void onNameChanged(CharSequence text) {
-            Bundle searchBundle = mContext.getContentResolver().call(
-                    RecipeContract.IngredientEntry.CONTENT_URI,
-                    RecipeContract.SEARCH_INGREDIENT,
-                    text.toString(),
-                    null
+            Uri ingredientUri = IngredientEntry.CONTENT_URI;
+            String[] projection = new String[] {"DISTINCT " + IngredientEntry.COLUMN_INGREDIENT_NAME};
+            String selection = "instr(" + IngredientEntry.COLUMN_INGREDIENT_NAME + ", '" + text + "')"; //GROUP BY " + IngredientEntry.COLUMN_INGREDIENT_NAME;
+            String[] selectionArgs = new String[] {text + "'"};
+            String sortOrder = IngredientEntry.COLUMN_INGREDIENT_NAME + " ASC";
+
+            Cursor cursor = mContext.getContentResolver().query(
+                    ingredientUri,
+                    projection,
+                    selection,
+                    null,
+                    sortOrder
             );
 
-            List<String> searchResults = null;
-            if (searchBundle != null) {
-                searchResults = searchBundle.getStringArrayList(RecipeContract.INGREDIENT_SEARCH_KEY);
+            String[] resultsArray = new String[cursor.getCount()];
+            if (cursor.moveToFirst()) {
+                for (int i = 0; i < resultsArray.length; i++) {
+                    resultsArray[i] = cursor.getString(0);
+                    cursor.moveToNext();
+                }
             }
 
-            if (searchResults != null) {
-                ArrayAdapter adapter = new ArrayAdapter(mContext, android.R.layout.simple_dropdown_item_1line, searchResults.toArray());
-                addIngredientNameEditText.setAdapter(adapter);
-            }
+
+//            Bundle searchBundle = mContext.getContentResolver().call(
+//                    IngredientEntry.CONTENT_URI,
+//                    SEARCH_INGREDIENT,
+//                    text.toString(),
+//                    null
+//            );
+//
+//            List<String> searchResults = null;
+//            if (searchBundle != null) {
+//                searchResults = searchBundle.getStringArrayList(INGREDIENT_SEARCH_KEY);
+//            }
+//
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(mContext, android.R.layout.simple_dropdown_item_1line, resultsArray);
+            addIngredientNameEditText.setAdapter(adapter);
 
             // Get the adapter's position
             int position = getAdapterPosition();

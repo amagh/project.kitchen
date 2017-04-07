@@ -128,7 +128,7 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
                 long bookId = cursor.getLong(RecipeBookEntry.IDX_BOOK_ID);
 
                 // Initialize the parameters to query the database
-                Uri bookUri = RecipeBookEntry.buildUriFromRecipeBookId(bookId);
+                Uri bookUri = LinkRecipeBookTable.buildChapterUriFromRecipeBookId(bookId);
                 String[] projection = LinkRecipeBookTable.PROJECTION;
                 String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC, " + ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
 

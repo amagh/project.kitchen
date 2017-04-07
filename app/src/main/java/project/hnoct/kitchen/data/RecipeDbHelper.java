@@ -63,7 +63,8 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 // Utilize the combination of unique index and ingredient as the primary key
                 "PRIMARY KEY (" + RecipeEntry.COLUMN_RECIPE_ID + "," +
                 RecipeEntry.COLUMN_SOURCE + ", " +
-                IngredientEntry.COLUMN_INGREDIENT_ID + ") " +
+                IngredientEntry.COLUMN_INGREDIENT_ID + "," +
+                LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + ") " +
                 // Foreign keys to recipes.unique_id_source & ingredients.ingredient_id
                 "FOREIGN KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ") REFERENCES " +
                 RecipeEntry.TABLE_NAME + " (" + RecipeEntry.COLUMN_RECIPE_ID + ") " +

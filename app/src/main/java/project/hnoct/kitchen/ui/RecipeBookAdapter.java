@@ -32,12 +32,16 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
     private RecipeBookAdapterOnClickHandler mClickHandler;
 
     RecipeBookAdapter(Context context, RecipeBookAdapterOnClickHandler clickHandler, CursorManager cursorManager) {
+        // Initialize member variables
         mContext = context;
         mClickHandler = clickHandler;
         mCursorManager = cursorManager;
+
+        // Register a listener to mCursorManager to listen for changes in its Cursors
         mCursorManager.setCursorChangeListener(new CursorManager.CursorChangeListener() {
             @Override
             public void onCursorChanged(int position) {
+                // Notify the correct ViewHolder of a change in its data
                 notifyItemChanged(position);
             }
         });
@@ -133,6 +137,7 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
 
     public void swapCursor(Cursor cursor) {
         mCursor = cursor;
+        notifyDataSetChanged();
     }
 
     class RecipeBookViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

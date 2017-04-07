@@ -94,7 +94,6 @@ public class RecipeContract {
                 COLUMN_PROTEIN,
                 COLUMN_CHOLESTEROL,
                 COLUMN_SODIUM,
-//                COLUMN_UNIQUE_IDX
         };
 
         public static final int IDX_RECIPE_ID = 0;
@@ -199,6 +198,12 @@ public class RecipeContract {
                     .build();
         }
 
+        public static Uri buildSearchUriForIngredient(String ingredient) {
+            return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(COLUMN_INGREDIENT_NAME, ingredient)
+                    .build();
+        }
+
         public static long getIngredientIdFromUri(Uri uri) {
             return Long.parseLong(uri.getPathSegments().get(1));
         }
@@ -283,26 +288,32 @@ public class RecipeContract {
 
         public static Uri buildRecipeUriFromIngredientId(long ingredientId) {
             return CONTENT_URI.buildUpon()
-                    .appendPath("ingredients")
-                    .appendQueryParameter(IngredientEntry.COLUMN_INGREDIENT_ID, Long.toString(ingredientId))
+                    .appendPath(IngredientEntry.TABLE_NAME)
+                    .appendPath(Long.toString(ingredientId))
                     .build();
         }
 
         public static Uri buildIngredientUriFromRecipe(long recipeId) {
             return CONTENT_URI.buildUpon()
-                    .appendPath("recipes")
-                    .appendQueryParameter(RecipeEntry.COLUMN_RECIPE_ID, Long.toString(recipeId))
+                    .appendPath(RecipeEntry.TABLE_NAME)
+                    .appendPath(Long.toString(recipeId))
                     .build();
         }
 
         public static long getRecipeIdFromUri(Uri uri) {
-            String recipeString  = uri.getQueryParameter(RecipeEntry.COLUMN_RECIPE_ID);
-            return (recipeString != null && recipeString.length() > 0) ? Long.parseLong(recipeString) : -1;
+            if (uri.getPathSegments().get(1).equals(RecipeEntry.TABLE_NAME)) {
+                return Long.parseLong(uri.getPathSegments().get(2));
+            } else {
+                return -1;
+            }
         }
 
         public static long getIngredientIdFromUri(Uri uri) {
-            String ingredientString = uri.getQueryParameter(IngredientEntry.COLUMN_INGREDIENT_ID);
-            return (ingredientString != null && ingredientString.length() > 0) ? Long.parseLong(ingredientString) : -1;
+            if (uri.getPathSegments().get(1).equals(IngredientEntry.TABLE_NAME)) {
+                return Long.parseLong(uri.getPathSegments().get(2));
+            } else {
+                return -1;
+            }
         }
     }
 
