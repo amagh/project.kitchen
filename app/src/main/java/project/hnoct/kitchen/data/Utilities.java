@@ -882,7 +882,7 @@ public class Utilities {
      * @param context Interface to global Context
      * @param linkCVList List of ContentValues to be inserted/updated into the Link Table
      */
-    public static void insertAndUpdateLinkValues(Context context, List<ContentValues> linkCVList) {
+    public static Pair<Integer, Integer> insertAndUpdateLinkValues(Context context, List<ContentValues> linkCVList) {
         // Create a new List and copy the contents of the parameter List into it
         List<ContentValues> workingList = new LinkedList<>();
         workingList.addAll(linkCVList);
@@ -900,7 +900,7 @@ public class Utilities {
                 IngredientEntry.COLUMN_INGREDIENT_ID + " = ? AND " +
                 RecipeEntry.COLUMN_SOURCE + " = ?";
 
-        // Iterate through the List of ContentValues and query the databse to see if an equivalent
+        // Iterate through the List of ContentValues and query the database to see if an equivalent
         // entry already exists
         for (ContentValues linkValue : workingList) {
             // Create the selection arguments for filtering the database from the ContentValues
@@ -935,25 +935,32 @@ public class Utilities {
                 linkCVList.remove(linkValue);
             }
         }
+        int valuesAdded, valuesUpdated;
 
         // Create an Array of ContentValues that need to be inserted
-        ContentValues[] linkValues = new ContentValues[linkCVList.size()];
-        for (int i = 0; i < linkCVList.size(); i++) {
-            linkValues[i] = linkCVList.get(i);
+        if ((valuesAdded = linkCVList.size()) > 0) {
+            ContentValues[] linkValues = new ContentValues[linkCVList.size()];
+            for (int i = 0; i < linkCVList.size(); i++) {
+                linkValues[i] = linkCVList.get(i);
+            }
+
+            // Bulk insert values into the database
+            context.getContentResolver().bulkInsert(
+                    LinkIngredientEntry.CONTENT_URI,
+                    linkValues
+            );
         }
 
-        // Bulk insert values into the database
-        context.getContentResolver().bulkInsert(
-                LinkIngredientEntry.CONTENT_URI,
-                linkValues
-        );
-
+        valuesUpdated = 0;
         try {
             // Batch update values from the updateList
+            valuesUpdated = updateList.size();
             context.getContentResolver().applyBatch(RecipeContract.CONTENT_AUTHORITY, updateList);
         } catch (RemoteException | OperationApplicationException e) {
             e.printStackTrace();
             Log.d(LOG_TAG, "Batch update failed!");
         }
+
+        return new Pair<>(valuesAdded, valuesUpdated);
     }
 }

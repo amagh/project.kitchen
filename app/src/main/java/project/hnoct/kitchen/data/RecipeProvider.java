@@ -103,7 +103,7 @@ public class RecipeProvider extends ContentProvider {
         uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT + "/*", INGREDIENT_SEARCH);
 
         uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT_LINK, RECIPE_AND_INGREDIENT);      // Used for inserting into Link Table
-        uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT_LINK + "/" + RecipeEntry.TABLE_NAME + "/#", RECIPE_AND_INGREDIENT_QUERY);
+        uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT_LINK + "/" + RecipeEntry.TABLE_NAME + "/*", RECIPE_AND_INGREDIENT_QUERY);
         uriMatcher.addURI(authority, RecipeContract.PATH_INGREDIENT_LINK + "/" + IngredientEntry.TABLE_NAME +  "/#", RECIPE_AND_INGREDIENT_QUERY);
 
         uriMatcher.addURI(authority, RecipeContract.PATH_BOOK, RECIPE_BOOK);

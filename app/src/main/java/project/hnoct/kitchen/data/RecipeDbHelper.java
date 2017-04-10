@@ -55,15 +55,17 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
 
         // Table for relating the amount of ingredients in each recipe
         final String SQL_CREATE_LINK_TABLE = "CREATE TABLE " + LinkIngredientEntry.TABLE_NAME + " (" +
+                LinkRecipeBookTable._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 RecipeEntry.COLUMN_RECIPE_ID + " REAL NOT NULL, " +
                 RecipeEntry.COLUMN_SOURCE + " TEXT NOT NULL, " +
                 IngredientEntry.COLUMN_INGREDIENT_ID + " REAL NOT NULL, " +
                 LinkIngredientEntry.COLUMN_QUANTITY + " TEXT NOT NULL, " +
                 LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + " INTEGER NOT NULL, " +
                 // Utilize the combination of unique index and ingredient as the primary key
-                "PRIMARY KEY (" + RecipeEntry.COLUMN_RECIPE_ID + "," +
+//                "PRIMARY KEY (" + RecipeEntry.COLUMN_RECIPE_ID + "," +
+//                RecipeEntry.COLUMN_SOURCE + ") " +
+                "UNIQUE (" + RecipeEntry.COLUMN_RECIPE_ID + ", " +
                 RecipeEntry.COLUMN_SOURCE + ", " +
-                IngredientEntry.COLUMN_INGREDIENT_ID + "," +
                 LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + ") " +
                 // Foreign keys to recipes.unique_id_source & ingredients.ingredient_id
                 "FOREIGN KEY (" + RecipeEntry.COLUMN_RECIPE_ID + ") REFERENCES " +

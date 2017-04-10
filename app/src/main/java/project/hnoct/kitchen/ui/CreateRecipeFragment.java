@@ -1,5 +1,6 @@
 package project.hnoct.kitchen.ui;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
@@ -29,8 +30,10 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -511,6 +514,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         // Store data from EditText to member variables
         mRecipeDescription = mRecipeDescriptionEditText.getText().toString();
         mRecipeName = mRecipeNameEditText.getText().toString();
+        mIngredientList = mIngredientAdapter.getIngredientList();
+        mDirectionList = mDirectionAdapter.getDirectionList();
 
         // Check to make sure all database requirements are satisfied prior to attempting to save
         if (mRecipeAuthor == null || mRecipeAuthor.trim().equals("") ||
@@ -615,6 +620,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         recipeValues.put(RecipeEntry.COLUMN_DIRECTIONS, directions);
 
         // Create Lists to hold ingredientIds, ingredient ContentValues, and link ContentValues
+        @SuppressLint("UseSparseArrays") Map<Long, String> ingredientIdNameMap = new HashMap<>();
         List<Long> ingredientIdList = new ArrayList<>();
         List<ContentValues> ingredientCVList = new LinkedList<>();
         ContentValues[] linkValues = new ContentValues[mIngredientList.size()];
@@ -634,27 +640,36 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
                 String ingredient = ingredientPair.second;
 
                 // Check to see if ingredient already exists in database, if so, set the ingredientId correctly
+                boolean newIngredient = true;
                 long ingredientId = Utilities.getIngredientIdFromName(mContext, ingredient);
 
                 if (ingredientId == -1) {
                     // If no ingredientId exists, then generate a new Id for the ingredient
                     ingredientId = Utilities.generateNewId(mContext, Utilities.INGREDIENT_TYPE);
+                } else {
+                    // If ingredient is already found in database, there is no need to add this
+                    // ingredient to the ingredient table
+                    newIngredient = false;
                 }
 
                 // Check to make sure ingredientId isn't already contained in this recipe's list of
                 // ingredient IDs
-                while (ingredientIdList.contains(ingredientId)) {
+                while (newIngredient && ingredientIdNameMap.keySet().contains(ingredientId) && !ingredient.equals(ingredientIdNameMap.get(ingredientId))) {
                     // If it does, iterate the ingredientId until a new one is generated
                     ingredientId++;
                 }
 
                 // Add the ingredientId to the List of ingredientIds to check against subsequent ingredients
+                ingredientIdNameMap.put(ingredientId, ingredient);
                 ingredientIdList.add(ingredientId);
 
                 // Add the values to the ContentValues for ingredients
-                ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
-                ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_NAME, ingredient);
-                ingredientCVList.add(ingredientValue);
+                if (newIngredient) {
+                    // If ingredient is not found in database, add it
+                    ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
+                    ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_NAME, ingredient);
+                    ingredientCVList.add(ingredientValue);
+                }
 
                 // Add the values to the ContentValues for the Link table
                 linkValue.put(RecipeEntry.COLUMN_RECIPE_ID, mRecipeId);
@@ -674,10 +689,12 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
                     recipeValues
             );
 
-            mContext.getContentResolver().bulkInsert(
+            int inserted = mContext.getContentResolver().bulkInsert(
                     LinkIngredientEntry.CONTENT_URI,
                     linkValues
             );
+
+            Toast.makeText(mContext, "New recipe updated! " + inserted + " link values inserted!", Toast.LENGTH_SHORT).show();
         } else {
             // Otherwise, update the existing values in the database
             mContext.getContentResolver().update(
@@ -692,7 +709,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
             linkCVList.addAll(Arrays.asList(linkValues));
 
             /** @see Utilities#insertAndUpdateLinkValues(Context, List) **/
-            Utilities.insertAndUpdateLinkValues(mContext, linkCVList);
+            Pair<Integer, Integer> insertionUpdatePair = Utilities.insertAndUpdateLinkValues(mContext, linkCVList);
+            Toast.makeText(mContext, "Recipe updated! " + insertionUpdatePair.first + " values inserted & " + insertionUpdatePair.second + " values updated!", Toast.LENGTH_SHORT).show();
         }
 
         // Insert missing ingredient values to the database

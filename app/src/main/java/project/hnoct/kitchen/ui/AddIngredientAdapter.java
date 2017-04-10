@@ -206,7 +206,7 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
         mAddList.remove(position);
 
         // Notify the Adapter of the change
-        notifyDataSetChanged();
+        notifyItemRemoved(position);
     }
 
     public class AddIngredientViewHolder extends RecyclerView.ViewHolder {
