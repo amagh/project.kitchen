@@ -28,6 +28,7 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
 
     /** Member Variables **/
     private long mBookId;
+    private ChapterListener mChapterListener;
 
     // Views bound by ButterKnife
     @BindView(R.id.chapter_fab) FloatingActionButton mFab;
@@ -60,6 +61,14 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
                     .add(R.id.chapter_container, fragment)
                     .commit();
         }
+    }
+
+    interface ChapterListener {
+        void onNewChapter();
+    }
+
+    public void setChapterListener(ChapterListener listener) {
+        mChapterListener = listener;
     }
 
     @OnClick (R.id.chapter_fab)
@@ -116,6 +125,10 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
                 chapterUri,
                 values
         );
+
+        if (mChapterListener != null) {
+            mChapterListener.onNewChapter();
+        }
     }
 
     @Override
@@ -155,7 +168,6 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
                 int recipeOrder;
                 if (cursor !=  null && cursor.moveToFirst()) {
                     recipeOrder = cursor.getInt(LinkRecipeBookTable.IDX_RECIPE_ORDER) + 1;
-
                     // Close the Cursor
                     cursor.close();
                 } else {

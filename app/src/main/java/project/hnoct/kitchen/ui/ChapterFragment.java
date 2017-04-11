@@ -16,6 +16,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.Arrays;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
@@ -84,7 +86,18 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
             }
         });
 
+        ((ChapterActivity) getActivity()).setChapterListener(new ChapterActivity.ChapterListener() {
+            @Override
+            public void onNewChapter() {
+                restartLoader();
+            }
+        });
+
         return view;
+    }
+
+    private void restartLoader() {
+        getLoaderManager().restartLoader(CHAPTER_LOADER, null, this);
     }
 
     @Override
@@ -133,48 +146,63 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        mCursor = cursor;
+        if (loader.getId() == CHAPTER_LOADER) {
+            if (cursor != null && cursor.moveToFirst()) {
+                mCursor = cursor;
+                for (int i = 0; i < cursor.getCount(); i++) {
+                    // Retrieve the parameters for generating the URI for querying the database
+                    long chapterId = cursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+                    long recipeBookId = cursor.getLong(ChapterEntry.IDX_BOOK_ID);
 
-        if (loader.getId() == CHAPTER_LOADER && cursor != null && cursor.moveToFirst()) {
-            for (int i = 0; i < cursor.getCount(); i++) {
-                // Retrieve the parameters for generating the URI for querying the database
-                long chapterId = cursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
-                long recipeBookId = cursor.getLong(ChapterEntry.IDX_BOOK_ID);
+                    // Instantiate the Cursor by querying for the recipes of the chapter
+                    Uri recipesOfChapterUri = LinkRecipeBookTable.buildRecipeUriFromBookAndChapterId(
+                            recipeBookId,
+                            chapterId
+                    );
 
-                // Instantiate the Cursor by querying for the recipes of the chapter
-                Uri recipesOfChapterUri = LinkRecipeBookTable.buildRecipeUriFromBookAndChapterId(
-                        recipeBookId,
-                        chapterId
-                );
+                    // Initialize parameters for querying the database
+                    String[] projection = RecipeEntry.RECIPE_PROJECTION;
+                    String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
+                    String[] selectionArgs = new String[] {Long.toString(chapterId)};
+                    String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC";
 
-                // Initialize parameters for querying the database
-                String[] projection = RecipeEntry.RECIPE_PROJECTION;
-                String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
-                String[] selectionArgs = new String[] {Long.toString(chapterId)};
-                String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC";
+                    // Pass the parameters to a Bundle to be passed to the new CursorLoaders
+                    Bundle args = new Bundle();
+                    args.putParcelable(getString(R.string.uri_key), recipesOfChapterUri);
+                    args.putStringArray(getString(R.string.projection_key), projection);
+                    args.putString(getString(R.string.selection_key), selection);
+                    args.putStringArray(getString(R.string.selection_args_key), selectionArgs);
+                    args.putString(getString(R.string.sort_order_key), sortOrder);
 
-                // Pass the parameters to a Bundle to be passed to the new CursorLoaders
-                Bundle args = new Bundle();
-                args.putParcelable(getString(R.string.uri_key), recipesOfChapterUri);
-                args.putStringArray(getString(R.string.projection_key), projection);
-                args.putString(getString(R.string.selection_key), selection);
-                args.putStringArray(getString(R.string.selection_args_key), selectionArgs);
-                args.putString(getString(R.string.sort_order_key), sortOrder);
+                    // Initialize a new Loader and add 10 to the Id so that the position can be maintained
+                    // when passing the Cursor to the CursorManager
+                    generateHelperLoader(i, args);
 
-                // Initialize a new Loader and add 10 to the Id so that the position can be maintained
-                // when passing the Cursor to the CursorManager
-                getLoaderManager().initLoader(i + POSITION_MODIFIER, args, this);
-
-                cursor.moveToNext();
-                Log.d(LOG_TAG, "Initializing CursorLoader for position: " + i);
+                    cursor.moveToNext();
+                }
             }
 
             // After all the other required Cursors have been initialized, swap the Cursor into
             // ChapterAdapter
             mChapterAdapter.swapCursor(mCursor);
-        } else if (cursor != null && cursor.moveToFirst()) {
+        } else {
             mCursorManager.addManagedCursor(loader.getId() - POSITION_MODIFIER, cursor);
-            Log.d(LOG_TAG, "Cursor for position: " + (loader.getId() - POSITION_MODIFIER) + " loaded into Manager");
+        }
+    }
+
+    /**
+     * Generates a CursorLoader for the embedded RecyclerViews
+     * @param position Position of the ViewHolder requesting the Cursor
+     * @param args Parameters used to generate the CursorLoader
+     */
+    void generateHelperLoader(int position, Bundle args) {
+        // Check whether the CursorLoader has already been started
+        if (getLoaderManager().getLoader(position + POSITION_MODIFIER) != null) {
+            // If it has already been started, restart it
+            getLoaderManager().restartLoader(position + POSITION_MODIFIER, args, this);
+        } else {
+            // If it has not been started, initialize a new CursorLoader
+            getLoaderManager().initLoader(position + POSITION_MODIFIER, args, this);
         }
     }
 

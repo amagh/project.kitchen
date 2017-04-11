@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ import project.hnoct.kitchen.data.RecipeContract.*;
 
 public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.RecipeBookViewHolder> {
     /** Constants **/
+    private static final String LOG_TAG = RecipeBookAdapter.class.getSimpleName();
 
     /** Member Variables **/
     private Context mContext;
@@ -71,9 +73,6 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
         holder.recipeBookTitleText.setText(bookTitle);
         holder.recipeBookDescriptionText.setText(bookDescription);
 
-        // Get the URI for the recipe book within the table so its chapters can be retrieved
-        Uri recipeBookUri = LinkRecipeBookTable.buildRecipeUriFromRecipeBookId(bookId);
-
         // Retrieve the Cursor from mCursorManager
         Cursor cursor = mCursorManager.getCursor(position);
 
@@ -82,21 +81,26 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
             // book layout
             String image0Url = cursor.getString(LinkRecipeBookTable.IDX_IMG_URL);
             String image1Url, image2Url, image3Url;
+            holder.image0.setVisibility(View.VISIBLE);
+            holder.gradient.setVisibility(View.VISIBLE);
             Glide.with(mContext)
                     .load(image0Url)
                     .into(holder.image0);
             if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookTable.IDX_RECIPE_ORDER) <= 0) {
                 image1Url = cursor.getString(LinkRecipeBookTable.IDX_IMG_URL);
+                holder.image1.setVisibility(View.VISIBLE);
                 Glide.with(mContext)
                         .load(image1Url)
                         .into(holder.image1);
                 if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookTable.IDX_RECIPE_ORDER) <= 0) {
                     image2Url = cursor.getString(LinkRecipeBookTable.IDX_IMG_URL);
+                    holder.image2.setVisibility(View.VISIBLE);
                     Glide.with(mContext)
                             .load(image2Url)
                             .into(holder.image2);
                     if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookTable.IDX_RECIPE_ORDER) <= 0) {
                         image3Url = cursor.getString(LinkRecipeBookTable.IDX_IMG_URL);
+                        holder.image3.setVisibility(View.VISIBLE);
                         Glide.with(mContext)
                                 .load(image3Url)
                                 .into(holder.image3);
@@ -114,6 +118,7 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
                 holder.image3.setVisibility(View.GONE);
             }
         } else {
+            Log.d(LOG_TAG, "Hiding all views for position " + position);
             holder.image0.setVisibility(View.GONE);
             holder.image1.setVisibility(View.GONE);
             holder.image2.setVisibility(View.GONE);

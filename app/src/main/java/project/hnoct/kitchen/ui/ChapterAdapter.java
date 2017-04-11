@@ -52,7 +52,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             @Override
             public void onCursorChanged(int position) {
                 Log.d(LOG_TAG, "Cursor changed!");
-                if (mRecipeAdapterArray != null) {
+                if (mRecipeAdapterArray != null && mRecipeAdapterArray[position] != null) {
                     mRecipeAdapterArray[position].swapCursor(mCursorManager.getCursor(position));
                     mRecipeAdapterArray[position].notifyDataSetChanged();
                 }

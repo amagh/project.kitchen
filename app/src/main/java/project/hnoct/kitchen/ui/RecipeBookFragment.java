@@ -17,6 +17,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.Arrays;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
@@ -120,39 +122,57 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        Log.v(LOG_TAG, "in onLoadFinished");
-        if ((mCursor = cursor) != null && mCursor.moveToFirst() && loader.getId() == RECIPE_BOOK_LOADER) {
+        if (loader.getId() == RECIPE_BOOK_LOADER) {
             // Main Cursor for the RecipeBookAdapter
-            for (int i = 0; i < cursor.getCount(); i++) {
-                // Retrieve the bookId to query for chapters
-                long bookId = cursor.getLong(RecipeBookEntry.IDX_BOOK_ID);
+            if (cursor != null && cursor.moveToFirst()) {
+                for (int i = 0; i < cursor.getCount(); i++) {
+                    // Retrieve the bookId to query for chapters
+                    long bookId = cursor.getLong(RecipeBookEntry.IDX_BOOK_ID);
 
-                // Initialize the parameters to query the database
-                Uri bookUri = LinkRecipeBookTable.buildChapterUriFromRecipeBookId(bookId);
-                String[] projection = LinkRecipeBookTable.PROJECTION;
-                String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC, " + ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
+                    // Initialize the parameters to query the database
+                    Uri bookUri = LinkRecipeBookTable.buildChapterUriFromRecipeBookId(bookId);
+                    String[] projection = LinkRecipeBookTable.PROJECTION;
+                    String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC, " + ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
 
-                // Create a Bundle and add the arguments needed to generate the Cursor for the
-                // requesting recipe book
-                Bundle args = new Bundle();
-                args.putParcelable(getString(R.string.uri_key), bookUri);
-                args.putStringArray(getString(R.string.projection_key), projection);
-                args.putString(getString(R.string.sort_order_key), sortOrder);
+                    // Create a Bundle and add the arguments needed to generate the Cursor for the
+                    // requesting recipe book
+                    Bundle args = new Bundle();
+                    args.putParcelable(getString(R.string.uri_key), bookUri);
+                    args.putStringArray(getString(R.string.projection_key), projection);
+                    args.putString(getString(R.string.sort_order_key), sortOrder);
 
-                // Initialize a new Loader with a position modifier so that its position in the
-                // Adapter is maintained
-                getLoaderManager().initLoader(i + POSITION_MODIFIER, args, this);
+                    // Initialize a new Loader with a position modifier so that its position in the
+                    // Adapter is maintained
+                    generateHelperLoader(i, args);
 
-                // Move the Cursor to the next position to prepare for the next iteration
-                cursor.moveToNext();
+                    // Move the Cursor to the next position to prepare for the next iteration
+                    cursor.moveToNext();
+                }
             }
 
             // Swap the Cursor into the RecipeBookAdapter
+            mCursor = cursor;
             mRecipeBookAdapter.swapCursor(mCursor);
 
-        } else if (cursor != null) {
+        } else {
             // If Cursor is for an embedded RecyclerView, add the Cursor to the CursorManager
             mCursorManager.addManagedCursor(loader.getId() - POSITION_MODIFIER, cursor);
+        }
+    }
+
+    /**
+     * Generates a CursorLoader for the embedded RecyclerViews
+     * @param position Position of the ViewHolder requesting the Cursor
+     * @param args Parameters used to generate the CursorLoader
+     */
+    void generateHelperLoader(int position, Bundle args) {
+        // Check whether the CursorLoader has already been started
+        if (getLoaderManager().getLoader(position + POSITION_MODIFIER) != null) {
+            // If it has already been started, restart it
+            getLoaderManager().restartLoader(position + POSITION_MODIFIER, args, this);
+        } else {
+            // If it has not been started, initialize a new CursorLoader
+            getLoaderManager().initLoader(position + POSITION_MODIFIER, args, this);
         }
     }
 
@@ -168,6 +188,12 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
 
         // Initialize the CursorLoader for the mRecipeBookAdapter
         getLoaderManager().initLoader(RECIPE_BOOK_LOADER, null, this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getLoaderManager().restartLoader(RECIPE_BOOK_LOADER, null, this);
     }
 
     /**

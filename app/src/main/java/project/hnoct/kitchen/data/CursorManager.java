@@ -110,7 +110,7 @@ public class CursorManager {
      * @param cursor Cursor to be managed
      */
     public void addManagedCursor(int position, Cursor cursor) {
-        Log.d(LOG_TAG, "Cursor has been added to the Map!");
+//        Log.d(LOG_TAG, "Cursor has been added to the Map!");
         mCursorMap.put(position, cursor);
         mReverseMap.put(cursor, position);
 
