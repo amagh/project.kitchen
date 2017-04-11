@@ -168,7 +168,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
 
                     // If the recipe is not user added, set the recipeId as the negative of the recipe
                     // so the original can be easily referenced
-                    mRecipeId = mSource.equals("user-added")
+                    mRecipeId = mSource.equals(getString(R.string.attribution_custom))
                             ? cursor.getLong(RecipeEntry.IDX_RECIPE_ID)
                             : -cursor.getLong(RecipeEntry.IDX_RECIPE_ID);
 
@@ -838,38 +838,46 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
     ItemTouchHelper.SimpleCallback directionIthCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
         @Override
         public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            // Get the positions of the view holder's current position and its target position
             int fromPosition = viewHolder.getAdapterPosition();
             int toPosition = target.getAdapterPosition();
-            List<String> newDirectionList = mDirectionAdapter.getRawDirectionList();
 
             if (fromPosition < toPosition) {
+                // If item is moved downwards
                 for (int i = fromPosition; i < toPosition; i++) {
+                    // The item needs to be swapped through every item in the direction list until
+                    // it reaches its new position
                     Collections.swap(mDirectionAdapter.getRawDirectionList(), i, i + 1);
                 }
             } else {
+                // If item is being moved upwards
                 for (int i = fromPosition; i > toPosition; i--) {
                     Collections.swap(mDirectionAdapter.getRawDirectionList(), i, i - 1);
                 }
             }
 
+            // Notify mDirectionAdapter of the change in position
             mDirectionAdapter.notifyItemMoved(fromPosition, toPosition);
             return true;
         }
 
         @Override
         public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            // Remove the swiped item from mDirectionAdapter
             int removedPosition = viewHolder.getAdapterPosition();
             mDirectionAdapter.removeDirection(removedPosition);
         }
 
         @Override
         public boolean isLongPressDragEnabled() {
+            // Disable long press to drag
             return false;
         }
 
         @Override
         public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
             super.clearView(recyclerView, viewHolder);
+            // When item is set down, notify mDirectionAdapter to refresh the data
             mDirectionAdapter.notifyDataSetChanged();
         }
     };

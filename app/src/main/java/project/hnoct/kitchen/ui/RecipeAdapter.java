@@ -188,6 +188,14 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
 
         String recipeUrl = mCursor.getString(RecipeEntry.IDX_RECIPE_URL);
 
+        if (recipeAttribution.equals(mContext.getString(R.string.attribution_custom)) ||
+                mCursor.getLong(RecipeEntry.IDX_RECIPE_ID) < 0) {
+            // If displaying a custom-recipe, then show the overlay to make it stand out
+            holder.overlay.setVisibility(View.VISIBLE);
+        } else {
+            holder.overlay.setVisibility(View.GONE);
+        }
+
         if (useDetailView && position == mDetailCardPosition) {
             // Instantiate a new RecipeDetailsFragmeent
             RecipeDetailsFragment fragment = new RecipeDetailsFragment();
@@ -324,6 +332,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
         @Nullable @BindView(R.id.fragment_container) FrameLayout container;
         @Nullable @BindView(R.id.list_recipe_image_container) RelativeLayout imageContainer;
         @Nullable @BindView(R.id.list_recipe_text_container) android.support.v7.widget.GridLayout textContainer;
+        @Nullable @BindView(R.id.list_recipe_overlay) FrameLayout overlay;
 
         @Optional
         @OnClick(R.id.list_recipe_favorite_button)

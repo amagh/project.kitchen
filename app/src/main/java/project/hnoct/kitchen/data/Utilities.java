@@ -424,8 +424,8 @@ public class Utilities {
     /**
      * Generates a new ID given that there are conflicting IDs that already exist in the database
      * @param context Interface to global Context
-     * @param type
-     * @return
+     * @param type Type of Id that needs to be generated (Recipe or Ingredient)
+     * @return Unused Id for the given type
      */
     public static long generateNewId(Context context, int type) {
         long id = -1;
@@ -440,16 +440,16 @@ public class Utilities {
                         new String[] {RecipeEntry.COLUMN_RECIPE_ID},
                         null,
                         null,
-                        RecipeEntry.COLUMN_RECIPE_ID + " DESC"
+                        RecipeEntry.COLUMN_RECIPE_ID + " ASC"
                 );
 
                 // Add all recipeIds to the List // TODO: Replace this explanation
                 if (cursor != null && cursor.moveToFirst()) {
-                    id = cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_RECIPE_ID)) + 1;
+                    id = cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_RECIPE_ID)) - 1;
                 }
 
                 // Close the cursor
-                cursor.close();
+                if (cursor!= null) cursor.close();
 
                 // Return the new ID
                 return id;
@@ -472,7 +472,7 @@ public class Utilities {
                     id = cursor.getLong(cursor.getColumnIndex(IngredientEntry.COLUMN_INGREDIENT_ID)) + 1;
                 }
 
-                cursor.close();
+                if (cursor!= null) cursor.close();
                 return id;
             }
 
