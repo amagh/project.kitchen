@@ -9,12 +9,12 @@
     android:gravity="top">
 
     <ImageView
-        android:id="@+id/list_add_direction_button"
+        android:id="@+id/list_add_direction_touchpad"
         android:layout_width="@dimen/list_add_direction_button_size"
         android:layout_height="@dimen/list_add_direction_button_size"
         android:padding="@dimen/list_add_direction_button_margin"
-        android:tint="@color/colorPrimaryDark"
-        android:src="@drawable/ic_menu_add_custom"
+        android:tint="@color/tertiary_grey_text"
+        android:src="@drawable/ic_touchpad_custom"
         />
 
     <TextView

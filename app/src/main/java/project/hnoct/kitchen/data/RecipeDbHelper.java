@@ -95,6 +95,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
 
         // Table for relating recipe books, chapters, and recipes
         final String SQL_CREATE_RECIPE_BOOK_LINK_TABLE = "CREATE TABLE " + LinkRecipeBookTable.TABLE_NAME + " (" +
+                RecipeBookEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
 //                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " REAL NOT NULL, " +
                 RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " INTEGER NOT NULL, " +
 //                ChapterEntry.COLUMN_CHAPTER_ID + " REAL NOT NULL, " +
@@ -104,7 +105,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 // Utilize a combination of all three columns as the primary key because each
                 // chapter in the recipe book should be unique and each recipe should only occupy
                 // a spot in the ordering within the chapter
-                "PRIMARY KEY (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ", " +
+                "UNIQUE (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ", " +
                 ChapterEntry.COLUMN_CHAPTER_ID + ", " +
                 LinkRecipeBookTable.COLUMN_RECIPE_ORDER + ") " +
                 // Foreign keys to recipe_books.recipe_book_id & chapters.chapter_id

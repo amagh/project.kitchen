@@ -1,14 +1,14 @@
 package project.hnoct.kitchen.ui;
 
 import android.content.Context;
-import android.support.v4.util.Pair;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -18,9 +18,9 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import butterknife.OnTextChanged;
+import butterknife.OnTouch;
 import project.hnoct.kitchen.R;
 
 /**
@@ -34,17 +34,14 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
     /** Member Variables **/
     private Context mContext;               // Interface to global Context
     private List<String> mDirectionList;    // List of all directions
-    private List<Boolean> mAddList;         // Holds the boolean value for what the button in the ViewHolder should do: add or remove
     private RecyclerView mRecyclerView;     // References the Recycler containing this adapter for use in searching other ViewHolders
+    private OnStartDragListener mDragListener;
 
-    public AddDirectionAdapter(Context context) {
+    public AddDirectionAdapter(Context context, OnStartDragListener dragListener) {
         // Initialize member variables
         mContext = context;
         mDirectionList = new LinkedList<>();
-        mAddList = new LinkedList<>();
-
-        // Add a new direction to allow for user input
-        addDirection();
+        mDragListener = dragListener;
     }
 
     @Override
@@ -69,8 +66,6 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
         String direction  = mDirectionList.get(position);
 
         // Check whether the resources should be set to allow for user input or add another direction
-        boolean add = mAddList.get(position);
-
         if (direction!= null) {
             // Set the text to the retrieved value from mDirectionList
             holder.directionEditText.setText(direction, TextView.BufferType.EDITABLE);
@@ -78,23 +73,11 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
             // If no data exists for this position, set it to an empty String so prevent text from
             // memory being loaded
             holder.directionEditText.setText("", TextView.BufferType.EDITABLE);
+            holder.directionEditText.requestFocus();
         }
 
         // Set the text indicating what step the user is inputting
         holder.directionStepText.setText(mContext.getString(R.string.direction_step, position + 1));
-
-        // Check whether the list item should be ready to accept user input or add another direction
-        if (add) {
-            // Set layout resources to allow for adding another direction
-            holder.directionStepText.setVisibility(View.GONE);
-            holder.directionEditText.setVisibility(View.GONE);
-            holder.addDirectionButton.setImageResource(R.drawable.ic_menu_add_custom);
-        } else {
-            // Set layout resources to accept user input
-            holder.directionStepText.setVisibility(View.VISIBLE);
-            holder.directionEditText.setVisibility(View.VISIBLE);
-            holder.addDirectionButton.setImageResource(R.drawable.ic_menu_close_clear_cancel);
-        }
     }
 
     @Override
@@ -109,37 +92,31 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
     /**
      * Adds a direction
      */
-    private void addDirection() {
+    public void addDirection() {
         // Add null value to mDirectionList
         mDirectionList.add(null);
 
-        // Set the action of the newly created list item to allow for adding another direction
-        mAddList.add(true);
-
         // Notify Adapter of the change in data
-        notifyItemChanged(mDirectionList.size() - 1);
+        notifyItemInserted(mDirectionList.size() - 1);
     }
 
     /**
      * Remove a direction at a given position in mDirectionList
      * @param position Position of the item to be removed
      */
-    private void removeDirection(int position) {
+    public void removeDirection(int position) {
         // Remove the item from mDirectionList
         mDirectionList.remove(position);
 
-        // Remove the button value from mAddList
-        mAddList.remove(position);
-
         // Notify the Adapter of the change
-        notifyDataSetChanged();
+        notifyItemRemoved(position);
     }
 
     /**
      * Returns the user-added directions
      * @return All non-null & non-empty values in List form
      */
-    public List<String> getDirectionList() {
+    public List<String> getCorrectedDirectionList() {
         // Final check for whether to return a null List or the values contained
         boolean nullList = true;
 
@@ -166,6 +143,10 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
         }
     }
 
+    public List<String> getRawDirectionList() {
+        return mDirectionList;
+    }
+
     /**
      * Set mDirectionList to the inputString
      * @param directionList List of Directions to set as mDirectionList
@@ -174,8 +155,6 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
         if (directionList == null || directionList.isEmpty()) {
             // If a null or empty list is added, reset the Adapter to initial conditions
             mDirectionList = new LinkedList<>();
-            mAddList = new LinkedList<>();
-            addDirection();
             notifyDataSetChanged();
             return;
         }
@@ -184,57 +163,40 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
         mDirectionList = new LinkedList<>();
         mDirectionList.addAll(directionList);
 
-        for (int i = 0; i < mDirectionList.size(); i++) {
-            // For each value in the new direction list, add a button value
-            mAddList.add(true);
+        // Notify Adapter of change in data
+        notifyDataSetChanged();
+    }
 
-            // Set the button value to false to ensure that the data is shown
-            mAddList.set(i, false);
+    public void setDirectionListWithoutNotify(List<String> directionList) {
+        if (directionList == null || directionList.isEmpty()) {
+            // If a null or empty list is added, reset the Adapter to initial conditions
+            mDirectionList = new LinkedList<>();
+            notifyDataSetChanged();
+            return;
         }
 
-        // Add a null value to allow for additional input
-        addDirection();
+        // Set mDirectionList equal to the input direction list
+        mDirectionList = new LinkedList<>();
+        mDirectionList.addAll(directionList);
+    }
+
+    interface OnStartDragListener {
+        void onStartDrag(AddDirectionViewHolder viewHolder);
     }
 
     class AddDirectionViewHolder extends RecyclerView.ViewHolder {
         // ButterKnife bound views
         @BindView(R.id.list_add_direction_step_text) TextView directionStepText;
         @BindView(R.id.list_add_direction_edit_text) EditText directionEditText;
-        @BindView(R.id.list_add_direction_button) ImageView addDirectionButton;
+        @BindView(R.id.list_add_direction_touchpad) ImageView addDirectionTouchpad;
 
-        @OnClick(R.id.list_add_direction_button)
-        void onAddDirection() {
-            // Get the Adapter's position
-            int position = getAdapterPosition();
-
-            // Check if layout should allow for addition of another direction or user input
-            boolean add = mAddList.get(position);
-
-            if (add) {
-                // Set the layout to receive user-input
-                directionStepText.setVisibility(View.VISIBLE);
-                directionEditText.setVisibility(View.VISIBLE);
-                addDirectionButton.setImageResource(R.drawable.ic_menu_close_clear_cancel);
-
-                // Add another direction to be ready set to allow for addition of another direction
-                addDirection();
-
-                // Set the button value for the newly added direction
-                mAddList.set(position, false);
-
-                // Set the focus on the EditText and open the virtual keyboard
-                directionEditText.requestFocus();
-                InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.showSoftInput(directionEditText, InputMethodManager.SHOW_IMPLICIT);
-            } else {
-                // Set the layout to allow for addition of another direction
-                directionStepText.setVisibility(View.GONE);
-                directionEditText.setVisibility(View.GONE);
-                addDirectionButton.setImageResource(R.drawable.ic_menu_add_custom);
-
-                // Remove the direction from mDirectionList
-                removeDirection(position);
+        @OnTouch(R.id.list_add_direction_touchpad)
+        boolean onTouch(View view, MotionEvent event) {
+            if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
+                mDragListener.onStartDrag(this);
+                return true;
             }
+            return false;
         }
 
         @OnTextChanged(R.id.list_add_direction_edit_text)
@@ -254,20 +216,6 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
             if (actionId == EditorInfo.IME_ACTION_NEXT) {
                 // Add a new direction
                 addDirection();
-
-                // Get the ViewHolder of the newly created item
-                AddDirectionViewHolder viewHolder =
-                        (AddDirectionViewHolder) mRecyclerView.findViewHolderForAdapterPosition(position + 1);
-
-                // Set the view of the newly created direction item to be ready for user input
-                viewHolder.directionStepText.setVisibility(View.VISIBLE);
-                viewHolder.directionEditText.setVisibility(View.VISIBLE);
-                viewHolder.addDirectionButton.setImageResource(R.drawable.ic_menu_close_clear_cancel);
-
-                mAddList.set(position + 1, false);
-
-                // Set the focus on the direction EditText of the new item
-                viewHolder.directionEditText.requestFocus();
                 return true;
             }
             return false;

@@ -883,6 +883,34 @@ public class Utilities {
      * @param linkCVList List of ContentValues to be inserted/updated into the Link Table
      */
     public static Pair<Integer, Integer> insertAndUpdateLinkValues(Context context, List<ContentValues> linkCVList) {
+        boolean bypass = true;
+        if (bypass) {
+            ContentValues values = linkCVList.get(0);
+            // Selection for querying the Link Table
+            String selection =  RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " +
+                    RecipeEntry.COLUMN_SOURCE + " = ?";
+
+            String[] selectionArgs = new String[] {
+                    values.getAsString(RecipeEntry.COLUMN_RECIPE_ID),
+                    values.getAsString(RecipeEntry.COLUMN_SOURCE)
+            };
+
+            int deleted = context.getContentResolver().delete(
+                    LinkIngredientEntry.CONTENT_URI,
+                    selection,
+                    selectionArgs
+            );
+
+            ContentValues[] linkInsertionValues = new ContentValues[linkCVList.size()];
+            linkCVList.toArray(linkInsertionValues);
+
+            int inserted = context.getContentResolver().bulkInsert(
+                    LinkIngredientEntry.CONTENT_URI,
+                    linkInsertionValues
+            );
+
+            return new Pair<>(deleted, inserted);
+        }
         // Create a new List and copy the contents of the parameter List into it
         List<ContentValues> workingList = new LinkedList<>();
         workingList.addAll(linkCVList);

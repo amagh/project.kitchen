@@ -100,6 +100,27 @@
             android:paddingRight="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin" />
 
+        <LinearLayout
+            android:id="@+id/create_recipe_add_ingredient"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="@dimen/list_add_direction_button_size"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_menu_add_custom"
+                android:tint="@color/tertiary_grey_text"/>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="24dp"
+                android:gravity="center_vertical"
+                android:text="@string/list_add_ingredient_text"
+                android:textColor="@color/tertiary_grey_text" />
+        </LinearLayout>
+
         <TextView
             android:id="@+id/create_recipe_direction_title_text"
             android:layout_width="match_parent"
@@ -115,9 +136,31 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:layout_marginTop="@dimen/default_text_vertical_padding"
             android:paddingRight="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin" />
+
+        <LinearLayout
+            android:id="@+id/create_recipe_add_direction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="@dimen/list_add_direction_button_size"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_menu_add_custom"
+                android:tint="@color/tertiary_grey_text"/>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="24dp"
+                android:gravity="center_vertical"
+                android:text="@string/list_add_direction_text"
+                android:textColor="@color/tertiary_grey_text" />
+        </LinearLayout>
+
     </LinearLayout>
 
 </ScrollView>

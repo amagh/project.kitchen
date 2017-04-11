@@ -136,9 +136,11 @@
     <!-- List Item Add Ingredient Layout -->
     <string name="list_add_ingredient_quantity_hint">Quantity</string>
     <string name="list_add_ingredient_name_hint">Ingredient</string>
+    <string name="list_add_ingredient_text">Add an ingredient</string>
 
     <!-- List Item Add Directions Layout -->
     <string name="list_add_direction_hint">Start writing!</string>
+    <string name="list_add_direction_text">Add a direction</string>
 
     <!-- Attribution -->
     <string name="attribution_custom">user-added</string>

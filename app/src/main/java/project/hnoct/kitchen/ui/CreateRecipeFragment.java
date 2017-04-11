@@ -15,11 +15,14 @@ import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,6 +64,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
     private String mRecipeName;
     private String mRecipeAuthor = "testUser";
     private String mSource;
+    private ItemTouchHelper mIngredientIth;
+    private ItemTouchHelper mDirectionIth;
 
     // Required to be added to database
     private boolean mFavorite = false;
@@ -84,6 +90,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
     @BindView(R.id.create_recipe_ingredient_recycler_view) NonScrollingRecyclerView mIngredientRecyclerView;
     @BindView(R.id.create_recipe_direction_recycler_view) NonScrollingRecyclerView mDirectionRecyclerView;
     @BindView(R.id.create_recipe_clear_image) ImageView mClearImageButton;
+    @BindView(R.id.create_recipe_add_ingredient) LinearLayout addIngredientButton;
 
     /**
      * Opens Activity that allows for selection of photo to be used for recipe
@@ -113,6 +120,16 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
     }
 
     public CreateRecipeFragment() {
+    }
+
+    @OnClick(R.id.create_recipe_add_ingredient)
+    void addIngredient() {
+        mIngredientAdapter.addIngredient();
+    }
+
+    @OnClick(R.id.create_recipe_add_direction)
+    void addDirection() {
+        mDirectionAdapter.addDirection();
     }
 
     @Override
@@ -230,8 +247,20 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         }
 
         // Instantiate the RecyclerAdapters
-        mIngredientAdapter = new AddIngredientAdapter(mContext);
-        mDirectionAdapter = new AddDirectionAdapter(mContext);
+        mIngredientAdapter = new AddIngredientAdapter(mContext, new AddIngredientAdapter.OnStartDragListener() {
+            @Override
+            public void onStartDrag(AddIngredientAdapter.AddIngredientViewHolder holder) {
+                // Begin listening for drag events initiated from the ViewHolder's handler
+                mIngredientIth.startDrag(holder);
+            }
+        });
+
+        mDirectionAdapter = new AddDirectionAdapter(mContext, new AddDirectionAdapter.OnStartDragListener() {
+            @Override
+            public void onStartDrag(AddDirectionAdapter.AddDirectionViewHolder viewHolder) {
+                mDirectionIth.startDrag(viewHolder);
+            }
+        });
 
         // Set the Adapter's Lists if applicable
         if (mIngredientList != null) {
@@ -262,6 +291,12 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
 
         mIngredientRecyclerView.setAdapter(mIngredientAdapter);
         mDirectionRecyclerView.setAdapter(mDirectionAdapter);
+
+        mIngredientIth = new ItemTouchHelper(ingredientIthCallback);
+        mIngredientIth.attachToRecyclerView(mIngredientRecyclerView);
+
+        mDirectionIth = new ItemTouchHelper(directionIthCallback);
+        mDirectionIth.attachToRecyclerView(mDirectionRecyclerView);
 
         return rootView;
     }
@@ -371,8 +406,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         // Get the String entered by the user into the EditText Views
         mRecipeName = mRecipeNameEditText.getText().toString();
         mRecipeDescription = mRecipeDescriptionEditText.getText().toString();
-        mIngredientList = mIngredientAdapter.getIngredientList();
-        mDirectionList = mDirectionAdapter.getDirectionList();
+        mIngredientList = mIngredientAdapter.getCorrectedIngredientList();
+        mDirectionList = mDirectionAdapter.getCorrectedDirectionList();
 
         // Initialize SharedPreferences and its Editor
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -514,8 +549,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         // Store data from EditText to member variables
         mRecipeDescription = mRecipeDescriptionEditText.getText().toString();
         mRecipeName = mRecipeNameEditText.getText().toString();
-        mIngredientList = mIngredientAdapter.getIngredientList();
-        mDirectionList = mDirectionAdapter.getDirectionList();
+        mIngredientList = mIngredientAdapter.getCorrectedIngredientList();
+        mDirectionList = mDirectionAdapter.getCorrectedDirectionList();
 
         // Check to make sure all database requirements are satisfied prior to attempting to save
         if (mRecipeAuthor == null || mRecipeAuthor.trim().equals("") ||
@@ -747,4 +782,95 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         // Delete all auto-saved data
         deleteAutosavedData();
     }
+
+    /**
+     * A Callback for dragging and swiping items in mIngredientAdapter
+     */
+    ItemTouchHelper.SimpleCallback ingredientIthCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+        /**
+         * Long press to drag is disabled as it is handled through the ViewHolder's handle
+         * @return Boolean value for whether it is enabled
+         */
+        @Override
+        public boolean isLongPressDragEnabled() {
+            return false;
+        }
+
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            // Get the positions of the view holder that is being moved and where its target location
+            int fromPosition = viewHolder.getAdapterPosition();
+            int toPosition = target.getAdapterPosition();
+
+            if (fromPosition < toPosition) {
+                // If the item is being moved downwards
+                for (int i = fromPosition; i < toPosition; i++) {
+                    // The item needs to be swapped through each item in the ingredient list until
+                    // it reaches its new position
+                    Collections.swap(mIngredientAdapter.getRawIngredientList(), i, i + 1);
+                }
+            } else {
+                // If the item is being moved upwards
+                for (int i = fromPosition; i > toPosition; i--) {
+                    // The item needs to be swapped through each item in the ingredient list until
+                    // it reaches its new position
+                    Collections.swap(mIngredientAdapter.getRawIngredientList(), i, i - 1);
+                }
+            }
+
+            // Set the modified ingredient list as the new list for mIngredientAdapter to use
+//            mIngredientAdapter.setIngredientListWithoutNotify(newIngredientList);
+
+            // Notify mIngredientAdapter of the change in position
+            mIngredientAdapter.notifyItemMoved(fromPosition, toPosition);
+            return true;
+        }
+
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            // Remove the item from the adapter that is being swiped
+            int removedPosition = viewHolder.getAdapterPosition();
+            mIngredientAdapter.deleteIngredient(removedPosition);
+        }
+    };
+
+    ItemTouchHelper.SimpleCallback directionIthCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            int fromPosition = viewHolder.getAdapterPosition();
+            int toPosition = target.getAdapterPosition();
+            List<String> newDirectionList = mDirectionAdapter.getRawDirectionList();
+
+            if (fromPosition < toPosition) {
+                for (int i = fromPosition; i < toPosition; i++) {
+                    Collections.swap(mDirectionAdapter.getRawDirectionList(), i, i + 1);
+                }
+            } else {
+                for (int i = fromPosition; i > toPosition; i--) {
+                    Collections.swap(mDirectionAdapter.getRawDirectionList(), i, i - 1);
+                }
+            }
+
+            mDirectionAdapter.notifyItemMoved(fromPosition, toPosition);
+            return true;
+        }
+
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            int removedPosition = viewHolder.getAdapterPosition();
+            mDirectionAdapter.removeDirection(removedPosition);
+        }
+
+        @Override
+        public boolean isLongPressDragEnabled() {
+            return false;
+        }
+
+        @Override
+        public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+            super.clearView(recyclerView, viewHolder);
+            mDirectionAdapter.notifyDataSetChanged();
+        }
+    };
 }

@@ -9,12 +9,11 @@
     android:minHeight="@dimen/list_ingredient_min_height">
 
     <ImageView
-        android:id="@+id/list_add_ingredient_button"
+        android:id="@+id/list_add_ingredient_touchpad"
         android:layout_height="@dimen/list_add_direction_button_size"
         android:layout_width="@dimen/list_add_direction_button_size"
         android:padding="@dimen/list_add_direction_button_margin"
-        android:src="@drawable/ic_menu_close_clear_cancel"
-        android:tint="@color/colorPrimaryDark"
+        android:src="@drawable/ic_touchpad_custom"
         />
 
     <EditText
@@ -24,22 +23,20 @@
         android:minHeight="@dimen/list_add_direction_button_size"
         android:inputType="textAutoComplete|textAutoCorrect"
         android:hint="@string/list_add_ingredient_quantity_hint"
-        android:visibility="gone"
         style="@style/listEditText"
         android:gravity="center_vertical"
-        tools:visibility="visible"/>
+        />
 
     <AutoCompleteTextView
         android:id="@+id/list_add_ingredient_name_edit_text"
         android:gravity="center_vertical"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:minHeight="@dimen/list_add_direction_button_size"
         android:inputType="textAutoCorrect|textAutoComplete"
         android:hint="@string/list_add_ingredient_name_hint"
-        android:visibility="gone"
         style="@style/listEditText"
-        tools:visibility="visible"
         tools:text="This ingredient happens to be more than one line long"/>
 
 </LinearLayout>

@@ -54,7 +54,7 @@
 
     <!-- Add Direction List Item -->
     <dimen name="list_add_direction_keyline">80dp</dimen>
-    <dimen name="list_add_direction_button_size">48dp</dimen>
+    <dimen name="list_add_direction_button_size">36dp</dimen>
     <dimen name="list_add_direction_button_top_margin">12dp</dimen>
     <dimen name="list_add_direction_button_margin">8dp</dimen>
 

@@ -201,8 +201,18 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         mRecipeTitleText.setText(recipeTitle);
         mRecipeAuthorText.setText(Utilities.formatAuthor(mContext, recipeAuthor));
         mRecipeAttributionText.setText(recipeSource);
-        mRecipeRatingText.setText(Utilities.formatRating(recipeRating));
-        mRecipeReviewsText.setText(Utilities.formatReviews(mContext, recipeReviews));
+
+        if (recipeId < 0) {
+            // Recipes with a negative recipe ID are user-created or user-modified recipes and
+            // therefore have no ratings or reviews
+            mRecipeRatingText.setVisibility(View.GONE);
+            mRecipeReviewsText.setVisibility(View.GONE);
+        } else {
+            mRecipeRatingText.setText(Utilities.formatRating(recipeRating));
+            mRecipeReviewsText.setText(Utilities.formatReviews(mContext, recipeReviews));
+        }
+
+
         mRecipeShortDescriptionText.setText(recipeDescription);
 
 
