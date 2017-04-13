@@ -2,7 +2,6 @@ package project.hnoct.kitchen.ui;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -79,27 +78,27 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
         if (cursor != null && cursor.moveToFirst()) {
             // Set the first recipe image of each chapter to the correct thumbnail in the recipe
             // book layout
-            String image0Url = cursor.getString(LinkRecipeBookTable.IDX_IMG_URL);
+            String image0Url = cursor.getString(LinkRecipeBookEntry.IDX_IMG_URL);
             String image1Url, image2Url, image3Url;
             holder.image0.setVisibility(View.VISIBLE);
             holder.gradient.setVisibility(View.VISIBLE);
             Glide.with(mContext)
                     .load(image0Url)
                     .into(holder.image0);
-            if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookTable.IDX_RECIPE_ORDER) <= 0) {
-                image1Url = cursor.getString(LinkRecipeBookTable.IDX_IMG_URL);
+            if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookEntry.IDX_RECIPE_ORDER) <= 0) {
+                image1Url = cursor.getString(LinkRecipeBookEntry.IDX_IMG_URL);
                 holder.image1.setVisibility(View.VISIBLE);
                 Glide.with(mContext)
                         .load(image1Url)
                         .into(holder.image1);
-                if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookTable.IDX_RECIPE_ORDER) <= 0) {
-                    image2Url = cursor.getString(LinkRecipeBookTable.IDX_IMG_URL);
+                if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookEntry.IDX_RECIPE_ORDER) <= 0) {
+                    image2Url = cursor.getString(LinkRecipeBookEntry.IDX_IMG_URL);
                     holder.image2.setVisibility(View.VISIBLE);
                     Glide.with(mContext)
                             .load(image2Url)
                             .into(holder.image2);
-                    if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookTable.IDX_RECIPE_ORDER) <= 0) {
-                        image3Url = cursor.getString(LinkRecipeBookTable.IDX_IMG_URL);
+                    if (cursor.moveToNext() && cursor.getInt(LinkRecipeBookEntry.IDX_RECIPE_ORDER) <= 0) {
+                        image3Url = cursor.getString(LinkRecipeBookEntry.IDX_IMG_URL);
                         holder.image3.setVisibility(View.VISIBLE);
                         Glide.with(mContext)
                                 .load(image3Url)

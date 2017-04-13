@@ -4,6 +4,7 @@
     <string name="action_clear_data">Clear Data \u0026 Restart</string>
     <string name="action_save">Save Recipe</string>
     <string name="action_edit">Edit Recipe</string>
+    <string name="action_edit_mode">Recipe Order and Removal</string>
     <string name="action_clear_recipe">Clear Recipe</string>
     <string name="favorite_title">Favorites</string>
     <string name="my_recipes_title">My Recipes</string>

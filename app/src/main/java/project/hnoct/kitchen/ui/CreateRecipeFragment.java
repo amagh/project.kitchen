@@ -45,6 +45,7 @@ import butterknife.OnClick;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.view.NonScrollingRecyclerView;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -88,7 +89,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
     @BindView(R.id.create_recipe_description_edit_text) EditText mRecipeDescriptionEditText;
     @BindView(R.id.create_recipe_image) ImageView mRecipeImage;
     @BindView(R.id.create_recipe_ingredient_recycler_view) NonScrollingRecyclerView mIngredientRecyclerView;
-    @BindView(R.id.create_recipe_direction_recycler_view) NonScrollingRecyclerView mDirectionRecyclerView;
+    @BindView(R.id.create_recipe_direction_recycler_view)
+    NonScrollingRecyclerView mDirectionRecyclerView;
     @BindView(R.id.create_recipe_clear_image) ImageView mClearImageButton;
     @BindView(R.id.create_recipe_add_ingredient) LinearLayout addIngredientButton;
 

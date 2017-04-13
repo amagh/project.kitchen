@@ -10,8 +10,8 @@
 
     <ImageView
         android:id="@+id/list_add_ingredient_touchpad"
-        android:layout_height="@dimen/list_add_direction_button_size"
-        android:layout_width="@dimen/list_add_direction_button_size"
+        android:layout_height="@dimen/touchpad_size"
+        android:layout_width="@dimen/touchpad_size"
         android:padding="@dimen/list_add_direction_button_margin"
         android:src="@drawable/ic_touchpad_custom"
         />
@@ -20,7 +20,7 @@
         android:id="@+id/list_add_ingredient_quantity_edit_text"
         android:layout_width="@dimen/list_ingredient_keyline"
         android:layout_height="wrap_content"
-        android:minHeight="@dimen/list_add_direction_button_size"
+        android:minHeight="@dimen/touchpad_size"
         android:inputType="textAutoComplete|textAutoCorrect"
         android:hint="@string/list_add_ingredient_quantity_hint"
         style="@style/listEditText"
@@ -33,7 +33,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:minHeight="@dimen/list_add_direction_button_size"
+        android:minHeight="@dimen/touchpad_size"
         android:inputType="textAutoCorrect|textAutoComplete"
         android:hint="@string/list_add_ingredient_name_hint"
         style="@style/listEditText"

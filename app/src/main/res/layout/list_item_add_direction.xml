@@ -10,8 +10,8 @@
 
     <ImageView
         android:id="@+id/list_add_direction_touchpad"
-        android:layout_width="@dimen/list_add_direction_button_size"
-        android:layout_height="@dimen/list_add_direction_button_size"
+        android:layout_width="@dimen/touchpad_size"
+        android:layout_height="@dimen/touchpad_size"
         android:padding="@dimen/list_add_direction_button_margin"
         android:tint="@color/tertiary_grey_text"
         android:src="@drawable/ic_touchpad_custom"
@@ -20,7 +20,7 @@
     <TextView
         android:id="@+id/list_add_direction_step_text"
         android:layout_width="@dimen/list_direction_keyline"
-        android:layout_height="@dimen/list_add_direction_button_size"
+        android:layout_height="@dimen/touchpad_size"
         android:gravity="center_vertical"
         style="@style/listEditText"
         tools:text="Step 1" />
@@ -29,7 +29,7 @@
         android:id="@+id/list_add_direction_edit_text"
         android:inputType="textAutoCorrect|textCapSentences"
         android:hint="@string/list_add_direction_hint"
-        android:minHeight="@dimen/list_add_direction_button_size"
+        android:minHeight="@dimen/touchpad_size"
         android:imeOptions="actionNext"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

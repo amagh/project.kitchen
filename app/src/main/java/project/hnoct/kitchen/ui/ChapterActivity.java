@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.widget.Toast;
 
 import butterknife.BindView;
@@ -150,11 +149,11 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
             @Override
             public void onRecipeSelected(long recipeId) {
                 // Initialize parameters for querying the database for recipe order
-                Uri linkRecipeBookUri = LinkRecipeBookTable.CONTENT_URI;
-                String[] projection = LinkRecipeBookTable.PROJECTION;
+                Uri linkRecipeBookUri = LinkRecipeBookEntry.CONTENT_URI;
+                String[] projection = LinkRecipeBookEntry.PROJECTION;
                 String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
                 String[] selectionArgs = new String[] {Long.toString(chapterId)};
-                String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " DESC";
+                String sortOrder = LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + " DESC";
 
                 // Query the database to determine the new recipe's order in the chapter
                 Cursor cursor = getContentResolver().query(
@@ -167,7 +166,7 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
 
                 int recipeOrder;
                 if (cursor !=  null && cursor.moveToFirst()) {
-                    recipeOrder = cursor.getInt(LinkRecipeBookTable.IDX_RECIPE_ORDER) + 1;
+                    recipeOrder = cursor.getInt(LinkRecipeBookEntry.IDX_RECIPE_ORDER) + 1;
                     // Close the Cursor
                     cursor.close();
                 } else {
@@ -179,7 +178,7 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
                 values.put(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID, mBookId);
                 values.put(ChapterEntry.COLUMN_CHAPTER_ID, chapterId);
                 values.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
-                values.put(LinkRecipeBookTable.COLUMN_RECIPE_ORDER, recipeOrder);
+                values.put(LinkRecipeBookEntry.COLUMN_RECIPE_ORDER, recipeOrder);
 
                 // Insert values into database
                 getContentResolver().insert(

@@ -55,7 +55,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
 
         // Table for relating the amount of ingredients in each recipe
         final String SQL_CREATE_LINK_TABLE = "CREATE TABLE " + LinkIngredientEntry.TABLE_NAME + " (" +
-                LinkRecipeBookTable._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                LinkRecipeBookEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 RecipeEntry.COLUMN_RECIPE_ID + " REAL NOT NULL, " +
                 RecipeEntry.COLUMN_SOURCE + " TEXT NOT NULL, " +
                 IngredientEntry.COLUMN_INGREDIENT_ID + " REAL NOT NULL, " +
@@ -94,20 +94,20 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 RecipeBookEntry.TABLE_NAME + " (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + "));";
 
         // Table for relating recipe books, chapters, and recipes
-        final String SQL_CREATE_RECIPE_BOOK_LINK_TABLE = "CREATE TABLE " + LinkRecipeBookTable.TABLE_NAME + " (" +
+        final String SQL_CREATE_RECIPE_BOOK_LINK_TABLE = "CREATE TABLE " + LinkRecipeBookEntry.TABLE_NAME + " (" +
                 RecipeBookEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
 //                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " REAL NOT NULL, " +
                 RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " INTEGER NOT NULL, " +
 //                ChapterEntry.COLUMN_CHAPTER_ID + " REAL NOT NULL, " +
                 ChapterEntry.COLUMN_CHAPTER_ID + " INTEGER NOT NULL, " +
-                LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " INTEGER NOT NULL, " +
+                LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + " INTEGER NOT NULL, " +
                 RecipeEntry.COLUMN_RECIPE_ID + " REAL NOT NULL, " +
                 // Utilize a combination of all three columns as the primary key because each
                 // chapter in the recipe book should be unique and each recipe should only occupy
                 // a spot in the ordering within the chapter
                 "UNIQUE (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ", " +
                 ChapterEntry.COLUMN_CHAPTER_ID + ", " +
-                LinkRecipeBookTable.COLUMN_RECIPE_ORDER + ") " +
+                LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + ") " +
                 // Foreign keys to recipe_books.recipe_book_id & chapters.chapter_id
                 "FOREIGN KEY (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ") REFERENCES " +
                 RecipeBookEntry.TABLE_NAME + " (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ") " +
@@ -136,7 +136,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LinkIngredientEntry.TABLE_NAME);
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RecipeBookEntry.TABLE_NAME);
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + ChapterEntry.TABLE_NAME);
-            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LinkRecipeBookTable.TABLE_NAME);
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LinkRecipeBookEntry.TABLE_NAME);
             onCreate(sqLiteDatabase);
         }
     }

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/card_compact_vertical_separation"
+    android:layout_marginRight="@dimen/card_horizontal_margin"
+    android:layout_marginLeft="@dimen/card_horizontal_margin"
+    android:layout_marginBottom="@dimen/card_compact_vertical_separation"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/list_recipe_touchpad"
+            android:layout_width="@dimen/touchpad_size"
+            android:layout_height="@dimen/touchpad_size"
+            android:padding="@dimen/card_text_horizontal_margin"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_touchpad_custom"/>
+
+        <ImageView
+            android:id="@+id/list_thumbnail"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:layout_marginRight="@dimen/card_text_horizontal_margin"
+            android:layout_marginEnd="@dimen/card_text_horizontal_margin"
+            android:layout_marginTop="@dimen/card_text_horizontal_margin"
+            android:layout_marginBottom="@dimen/card_text_horizontal_margin"
+            app:layout_rowSpan="2"
+            tools:src="@drawable/placeholder"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:paddingRight="@dimen/card_text_horizontal_margin"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/list_recipe_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_gravity="fill_horizontal"
+                android:maxLines="1"
+                android:paddingRight="@dimen/card_text_horizontal_margin"
+                android:paddingBottom="4dp"
+                style="@style/titleTextCompact"
+                tools:text="Fried Chicken"/>
+
+            <TextView
+                android:id="@+id/list_recipe_description_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingRight="@dimen/card_text_horizontal_margin"
+                android:textSize="12sp"
+                android:maxLines="2"
+                app:layout_gravity="fill_horizontal"
+                tools:text="Simple fried chicken from Kentucky. This is just some filler text to make it go to multiple lines" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+
+    <FrameLayout
+        android:id="@+id/list_recipe_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="@drawable/user_card_overlay"/>
+
+</android.support.v7.widget.CardView>

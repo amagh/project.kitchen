@@ -92,7 +92,7 @@
             android:layout_marginTop="@dimen/activity_vertical_margin"
             style="@style/subtitleText" />
 
-        <project.hnoct.kitchen.ui.NonScrollingRecyclerView
+        <project.hnoct.kitchen.view.NonScrollingRecyclerView
             android:id="@+id/create_recipe_ingredient_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -107,7 +107,7 @@
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="@dimen/list_add_direction_button_size"
+                android:layout_width="@dimen/touchpad_size"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_menu_add_custom"
                 android:tint="@color/tertiary_grey_text"/>
@@ -131,7 +131,7 @@
             android:layout_marginTop="@dimen/activity_vertical_margin"
             style="@style/subtitleText" />
 
-        <project.hnoct.kitchen.ui.NonScrollingRecyclerView
+        <project.hnoct.kitchen.view.NonScrollingRecyclerView
             android:id="@+id/create_recipe_direction_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -147,7 +147,7 @@
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="@dimen/list_add_direction_button_size"
+                android:layout_width="@dimen/touchpad_size"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_menu_add_custom"
                 android:tint="@color/tertiary_grey_text"/>

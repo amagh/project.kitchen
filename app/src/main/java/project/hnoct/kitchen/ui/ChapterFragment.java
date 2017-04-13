@@ -11,12 +11,12 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
-import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -53,6 +53,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
                              Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_chapter, container, false);
         ButterKnife.bind(this, view);
+        setHasOptionsMenu(true);
 
         // Instantiate member variables
         mContext = getActivity();
@@ -94,6 +95,26 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
         });
 
         return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_chapter_fragment, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_edit_mode: {
+                if (mChapterAdapter.isInEditMode()) {
+                    mChapterAdapter.exitEditMode();
+                } else {
+                    mChapterAdapter.enterEditMode();
+                }
+            }
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void restartLoader() {
@@ -155,7 +176,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
                     long recipeBookId = cursor.getLong(ChapterEntry.IDX_BOOK_ID);
 
                     // Instantiate the Cursor by querying for the recipes of the chapter
-                    Uri recipesOfChapterUri = LinkRecipeBookTable.buildRecipeUriFromBookAndChapterId(
+                    Uri recipesOfChapterUri = LinkRecipeBookEntry.buildRecipeUriFromBookAndChapterId(
                             recipeBookId,
                             chapterId
                     );
@@ -164,7 +185,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
                     String[] projection = RecipeEntry.RECIPE_PROJECTION;
                     String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
                     String[] selectionArgs = new String[] {Long.toString(chapterId)};
-                    String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC";
+                    String sortOrder = LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + " ASC";
 
                     // Pass the parameters to a Bundle to be passed to the new CursorLoaders
                     Bundle args = new Bundle();
@@ -174,8 +195,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
                     args.putStringArray(getString(R.string.selection_args_key), selectionArgs);
                     args.putString(getString(R.string.sort_order_key), sortOrder);
 
-                    // Initialize a new Loader and add 10 to the Id so that the position can be maintained
-                    // when passing the Cursor to the CursorManager
+                    // Initialize a new Loader
                     generateHelperLoader(i, args);
 
                     cursor.moveToNext();

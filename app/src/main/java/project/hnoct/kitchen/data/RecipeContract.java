@@ -410,7 +410,7 @@ public class RecipeContract {
         }
     }
 
-    public static class LinkRecipeBookTable implements BaseColumns {
+    public static class LinkRecipeBookEntry implements BaseColumns {
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_BOOK_LINK).build();
 
         public static final String CONTENT_TYPE =

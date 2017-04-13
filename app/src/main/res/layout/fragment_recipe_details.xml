@@ -116,7 +116,7 @@
                 style="@style/subtitleText"
                 tools:visibility="visible" />
 
-            <project.hnoct.kitchen.ui.NonScrollingRecyclerView
+            <project.hnoct.kitchen.view.NonScrollingRecyclerView
                 android:id="@+id/details_ingredient_recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -135,7 +135,7 @@
                 style="@style/subtitleText"
                 tools:visibility="visible" />
 
-            <project.hnoct.kitchen.ui.NonScrollingRecyclerView
+            <project.hnoct.kitchen.view.NonScrollingRecyclerView
                 android:id="@+id/details_direction_recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

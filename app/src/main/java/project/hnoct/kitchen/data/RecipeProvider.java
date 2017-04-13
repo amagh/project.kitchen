@@ -64,14 +64,14 @@ public class RecipeProvider extends ContentProvider {
         sRecipeBookChapterAndRecipeQueryBuilder = new SQLiteQueryBuilder();
         sRecipeBookChapterAndRecipeQueryBuilder.setTables(
                 RecipeEntry.TABLE_NAME + " INNER JOIN " +
-                        LinkRecipeBookTable.TABLE_NAME + " ON " +
+                        LinkRecipeBookEntry.TABLE_NAME + " ON " +
                         RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = " +
-                        LinkRecipeBookTable.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " INNER JOIN " +
+                        LinkRecipeBookEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " INNER JOIN " +
                         RecipeBookEntry.TABLE_NAME + " ON " +
-                        LinkRecipeBookTable.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = " +
+                        LinkRecipeBookEntry.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = " +
                         RecipeBookEntry.TABLE_NAME + "." + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " INNER JOIN " +
                         ChapterEntry.TABLE_NAME + " ON " +
-                        LinkRecipeBookTable.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = " +
+                        LinkRecipeBookEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = " +
                         ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID
         );
     }
@@ -262,7 +262,7 @@ public class RecipeProvider extends ContentProvider {
 
     /** @see #getRecipeById(Uri, String[], String) **/
     private Cursor getChaptersFromRecipeBook(Uri uri, String[] projection, String sortOrder) {
-        long recipeBookId = LinkRecipeBookTable.getRecipeBookIdFromUri(uri);
+        long recipeBookId = LinkRecipeBookEntry.getRecipeBookIdFromUri(uri);
 
         String selection = sRecipeBookSelection;
         String[] selectionArgs = new String[] {Long.toString(recipeBookId)};
@@ -280,7 +280,7 @@ public class RecipeProvider extends ContentProvider {
 
     /** @see #getRecipeById(Uri, String[], String) **/
     private Cursor getRecipesFromRecipeBook(Uri uri, String[] projection, String sortOrder) {
-        long recipeBookId = LinkRecipeBookTable.getRecipeBookIdFromUri(uri);
+        long recipeBookId = LinkRecipeBookEntry.getRecipeBookIdFromUri(uri);
 
         String selection = sRecipeBookSelection;
         String[] selectionArgs = new String[] {Long.toString(recipeBookId)};
@@ -298,8 +298,8 @@ public class RecipeProvider extends ContentProvider {
 
     /** @see #getRecipeById(Uri, String[], String) **/
     private Cursor getRecipesFromRecipeBookWithChapter(Uri uri, String[] projection, String sortOrder) {
-        long recipeBookId = LinkRecipeBookTable.getRecipeBookIdFromUri(uri);
-        long chapterId = LinkRecipeBookTable.getChapterIdFromUri(uri);
+        long recipeBookId = LinkRecipeBookEntry.getRecipeBookIdFromUri(uri);
+        long chapterId = LinkRecipeBookEntry.getChapterIdFromUri(uri);
 
         String selection = sRecipeBookSelection + " AND " + sChapterSelection;
         String[] selectionArgs = new String[] {Long.toString(recipeBookId), Long.toString(chapterId)};
@@ -559,12 +559,12 @@ public class RecipeProvider extends ContentProvider {
             case RECIPE_BOOK_LINK: {
                 // Inserting recipe order into the recipe_book_link table
                 long _id = mDbHelper.getWritableDatabase().insert(
-                        LinkRecipeBookTable.TABLE_NAME,
+                        LinkRecipeBookEntry.TABLE_NAME,
                         null,
                         contentValues
                 );
                 if (_id > 0) {
-                    returnUri = LinkRecipeBookTable.buildRecipeBookLinkUri(_id);
+                    returnUri = LinkRecipeBookEntry.buildRecipeBookLinkUri(_id);
                 } else {
                     throw new SQLException("Error inserting recipe order into recipe book link table.");
                 }
@@ -635,7 +635,7 @@ public class RecipeProvider extends ContentProvider {
             case RECIPE_BOOK_LINK: {
                 // Delete from Recipe Book Link Table
                 rowsDeleted = db.delete(
-                        LinkRecipeBookTable.TABLE_NAME,
+                        LinkRecipeBookEntry.TABLE_NAME,
                         selection,
                         selectionArgs
                 );
@@ -710,7 +710,7 @@ public class RecipeProvider extends ContentProvider {
             case RECIPE_BOOK_LINK: {
                 // Updating rows in the recipe book link table
                 rowsUpdated = db.update(
-                        LinkRecipeBookTable.TABLE_NAME,
+                        LinkRecipeBookEntry.TABLE_NAME,
                         contentValues,
                         selection,
                         selectionArgs
@@ -913,7 +913,7 @@ public class RecipeProvider extends ContentProvider {
                 try {
                     for (ContentValues value : values) {
                         long _id = db.insert(
-                                LinkRecipeBookTable.TABLE_NAME,
+                                LinkRecipeBookEntry.TABLE_NAME,
                                 null,
                                 value
                         );

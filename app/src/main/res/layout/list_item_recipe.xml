@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/list_thumbnail"
             android:maxLines="2"
-            android:id="@+id/list_title"
+            android:id="@+id/list_recipe_title"
             android:paddingLeft="@dimen/card_text_horizontal_margin"
             android:paddingRight="@dimen/card_text_horizontal_margin"
             android:paddingBottom="@dimen/default_text_vertical_padding"
@@ -43,7 +43,6 @@
             tools:text="Fried Chicken"/>
 
     </RelativeLayout>
-
 
     <android.support.v7.widget.GridLayout
         android:id="@+id/list_recipe_text_container"

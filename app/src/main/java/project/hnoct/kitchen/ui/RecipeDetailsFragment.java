@@ -172,6 +172,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
                 RecipeImporter.importRecipeFromUrl(mContext, new RecipeImporter.UtilitySyncer() {
                     @Override
                     public void onFinishLoad() {
+                        if (getActivity() != null)
                         getLoaderManager().restartLoader(DETAILS_LOADER, null, RecipeDetailsFragment.this);
                         mSyncing = false;
                     }

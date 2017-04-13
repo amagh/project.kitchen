@@ -12,12 +12,9 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -130,9 +127,9 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
                     long bookId = cursor.getLong(RecipeBookEntry.IDX_BOOK_ID);
 
                     // Initialize the parameters to query the database
-                    Uri bookUri = LinkRecipeBookTable.buildChapterUriFromRecipeBookId(bookId);
-                    String[] projection = LinkRecipeBookTable.PROJECTION;
-                    String sortOrder = LinkRecipeBookTable.COLUMN_RECIPE_ORDER + " ASC, " + ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
+                    Uri bookUri = LinkRecipeBookEntry.buildChapterUriFromRecipeBookId(bookId);
+                    String[] projection = LinkRecipeBookEntry.PROJECTION;
+                    String sortOrder = LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + " ASC, " + ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
 
                     // Create a Bundle and add the arguments needed to generate the Cursor for the
                     // requesting recipe book
@@ -186,7 +183,7 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        // Initialize the CursorLoader for the mRecipeBookAdapter
+        // Initialize the CursorLoader for mRecipeBookAdapter
         getLoaderManager().initLoader(RECIPE_BOOK_LOADER, null, this);
     }
 
