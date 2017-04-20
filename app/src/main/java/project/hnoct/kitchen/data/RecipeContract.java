@@ -18,7 +18,7 @@ public class RecipeContract {
     /** Constants **/
     // For accessing the database
     public static final String CONTENT_AUTHORITY = "project.hnoct.kitchen";
-    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    private static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
     public static final String PATH_RECIPE = "recipe";
     public static final String PATH_INGREDIENT = "ingredient";
     public static final String PATH_INGREDIENT_LINK = "ingredient_link";

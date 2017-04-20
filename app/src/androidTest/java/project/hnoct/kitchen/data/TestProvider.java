@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 public class TestProvider extends ProviderTestCase2<RecipeProvider> {
     private final String LOG_TAG = TestProvider.class.getSimpleName();
     /** Constants **/
-    MockContentResolver mMockContentResolver;
+    private MockContentResolver mMockContentResolver;
 
     public TestProvider() {
         super(RecipeProvider.class, RecipeContract.CONTENT_AUTHORITY);

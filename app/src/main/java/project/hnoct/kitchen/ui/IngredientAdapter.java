@@ -32,10 +32,10 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
     /** Constants **/
 
     /** Member Variables **/
-    Context mContext;                   // Interface for global context
-    Cursor mCursor;
-    ContentResolver mContentResolver;   // Reference to ContentResolver
-    List<String> mIngredientList;       // TODO: For storing ingredients that need to be added to shopping list
+    private Context mContext;                   // Interface for global context
+    private Cursor mCursor;
+    private ContentResolver mContentResolver;   // Reference to ContentResolver
+    private List<String> mIngredientList;       // TODO: For storing ingredients that need to be added to shopping list
 
     public IngredientAdapter(Context context) {
         mContext = context;

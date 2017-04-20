@@ -32,11 +32,11 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
     private static final int POSITION_MODIFIER = 100000;
 
     /** Member Variables **/
-    Context mContext;
-    Cursor mCursor;
-    RecipeBookAdapter mRecipeBookAdapter;
-    CursorManager mCursorManager;
-    int mPosition;
+    private Context mContext;
+    private Cursor mCursor;
+    private RecipeBookAdapter mRecipeBookAdapter;
+    private CursorManager mCursorManager;
+    private int mPosition;
 
     @BindView(R.id.recipe_book_recyclerview) RecyclerView mRecyclerView;
 
@@ -162,7 +162,7 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
      * @param position Position of the ViewHolder requesting the Cursor
      * @param args Parameters used to generate the CursorLoader
      */
-    void generateHelperLoader(int position, Bundle args) {
+    private void generateHelperLoader(int position, Bundle args) {
         // Check whether the CursorLoader has already been started
         if (getLoaderManager().getLoader(position + POSITION_MODIFIER) != null) {
             // If it has already been started, restart it
@@ -196,7 +196,7 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
     /**
      * Sets the number columns used by the StaggeredGridLayoutManager
      */
-    void setLayoutColumns() {
+    private void setLayoutColumns() {
         // Retrieve the number of columns needed by the device/orientation
         int columns;
         if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {

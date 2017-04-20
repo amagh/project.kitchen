@@ -27,15 +27,13 @@ import project.hnoct.kitchen.data.Utilities;
  * Fragment for the main view displaying all recipes loaded from web
  */
 public class RecipeListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-    /** Constants **/
-    private final int RECIPE_LOADER = 0;
 
     /** Member Variables **/
-    Context mContext;                   // Interface for global context
+    private Context mContext;                   // Interface for global context
     Cursor mCursor;
-    ContentResolver mResolver;          // Reference to ContentResolver
+    private ContentResolver mResolver;          // Reference to ContentResolver
     RecipeAdapter mRecipeAdapter;
-    int mPosition;                      // Position of mCursor
+    private int mPosition;                      // Position of mCursor
 
     // Views bound by ButterKnife
     @BindView(R.id.recipe_recycler_view) RecyclerView mRecipeRecyclerView;
@@ -134,6 +132,8 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         super.onActivityCreated(savedInstanceState);
         mContext = getActivity();
         mResolver = mContext.getContentResolver();
+        /* Constants */
+        int RECIPE_LOADER = 0;
         getLoaderManager().initLoader(RECIPE_LOADER, null, this);
     }
 

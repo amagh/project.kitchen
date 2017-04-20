@@ -78,7 +78,6 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
     private String RECIPE_REVIEWS = "recipeReviews";
     private String RECIPE_RATING = "recipeRating";
     private String RECIPE_FAVORITE = "favorite";
-    private String RECIPE_URL = "recipeUrl";
 
     int[] editInstructions = new int[] {-1, -1, -1};
 
@@ -97,8 +96,9 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
     public Cursor swapCursor(Cursor newCursor) {
         if (mCursor != newCursor) {
             mCursor = newCursor;
-            mList = new ArrayList<>(mCursor.getCount());
+
             if (mCursor != null && mCursor.moveToFirst()) {
+                mList = new ArrayList<>(mCursor.getCount());
                 do {
                     long recipeId = mCursor.getLong(RecipeEntry.IDX_RECIPE_ID);
                     String recipeTitle = mCursor.getString(RecipeEntry.IDX_RECIPE_NAME);
@@ -122,6 +122,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
                     map.put(RECIPE_REVIEWS, recipeReviews);
                     map.put(RECIPE_RATING, recipeRating);
                     map.put(RECIPE_FAVORITE, favorite);
+                    String RECIPE_URL = "recipeUrl";
                     map.put(RECIPE_URL, recipeUrl);
 
                     mList.add(map);

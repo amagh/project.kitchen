@@ -41,18 +41,17 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
     private static final String ALPHABET = "0ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     /** Member Variables **/
-    Context mContext;
-    RecipeAdapter mRecipeAdapter;
-    Cursor mCursor;
-    int mPosition;
-    Map<String, Integer> mRecipeIndex;
-    LayoutInflater mInflater;       // Used to inflate the list_item_alphabet_index layout
-    StaggeredGridLayoutManager mLayoutManager;
+    private Context mContext;
+    private RecipeAdapter mRecipeAdapter;
+    private Cursor mCursor;
+    private int mPosition;
+    private Map<String, Integer> mRecipeIndex;
+    private LayoutInflater mInflater;       // Used to inflate the list_item_alphabet_index layout
+    private StaggeredGridLayoutManager mLayoutManager;
 
     // Views bound by ButterKnife
     @BindView(R.id.favorites_index) SlidingAlphabeticalIndex mIndex;
     @BindView(R.id.favorites_recycler_view) RecyclerView mRecipeRecyclerView;
-    ;
 
     public FavoritesFragment() {
     }
@@ -109,37 +108,17 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
         mIndex.setOnValueChangedListener(new SlidingAlphabeticalIndex.OnValueChangedListener() {
             @Override
             public void onValueChanged(int value) {
-                scrollToIndex(Character.toString(ALPHABET.charAt(value)));
+                scrollToIndex(Character.toString(ALPHABET.charAt(value))
+                );
             }
         });
 
-        populateIndex();
+        // Set the Alphabet to be used by the ScrollingAlphabeticalIndex
+        mIndex.setAlphabet(ALPHABET);
 
         return rootView;
     }
 
-    /**
-     * Initializes the index on the right side of the screen to be used for fast scrolling through
-     * the list of favorites
-     */
-    private void populateIndex() {
-        // Set LayoutParams so that height is set to 0 and uses layout weight instead of evenly distribute
-        // index the entire length of mIndex
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1.0f);
-        for (int i = 0; i < ALPHABET.length(); i++) {
-            // Inflate the view from the layout file
-            TextView textView = (TextView) mInflater.inflate(R.layout.list_item_alphabet_index, null);
-
-            // Set the character as the text to show
-            textView.setText(Character.toString(ALPHABET.charAt(i)));
-            textView.setTag(Character.toString(ALPHABET.charAt(i)));
-            textView.setLayoutParams(params);
-
-            // Add the View to mIndex
-            mIndex.addView(textView);
-            mRecipeIndex.put(Character.toString(ALPHABET.charAt(i)), -1);
-        }
-    }
 
     /**
      * Used to interpreting the position of the scroll indicator to find the correct letter to
@@ -173,6 +152,9 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
         if (cursor != null && cursor.moveToFirst()) {
             // Instantiate the member variable mCursor
             mCursor = cursor;
+
+            // Retrieved the index populated by the ScrollingAlphabeticalIndex
+            mRecipeIndex = mIndex.getIndex();
 
             // Create the Map used as the index
             do {
@@ -236,7 +218,7 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
     /**
      * Sets the number columns used by the StaggeredGridLayoutManager
      */
-    void setLayoutColumns() {
+    private void setLayoutColumns() {
         // Retrieve the number of columns needed by the device/orientation
         int columns;
         if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {

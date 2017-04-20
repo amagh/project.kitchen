@@ -9,7 +9,7 @@ import android.util.Log;
  * Created by hnoct on 2/17/2017.
  */
 
-public class TestUtilities {
+class TestUtilities {
     /** Constants **/
     private static final long TEST_RECIPE_ID = 000001;
     private static final long TEST_INGREDIENT_ID = 123;

@@ -41,7 +41,7 @@ public class Utilities {
     public static final int RECIPE_TYPE = 0;
     public static final int INGREDIENT_TYPE = 1;
 
-    public static final int CUSTOM_RECIPE_URI = 0;
+    private static final int CUSTOM_RECIPE_URI = 0;
     public static final int ALLRECIPES_URI = 1;
 
     public static final String URI = "uri";
@@ -560,39 +560,33 @@ public class Utilities {
 
         switch (nutrientType) {
             case RecipeEntry.NUTRIENT_CALORIE: {
-                double calorieDV = nutrientValue / dailyCalories;
-                return calorieDV;
+                return nutrientValue / dailyCalories;
             }
             case RecipeEntry.NUTRIENT_FAT: {
                 double fatPercentage = Double.parseDouble(context.getString(R.string.fat_percent_float_default));
                 double calFromFat = dailyCalories * fatPercentage;
                 double gramsOfFat = calFromFat / Double.parseDouble(context.getString(R.string.fat_cal_per_gram));
-                double fatDV = nutrientValue / gramsOfFat;
-                return fatDV;
+                return nutrientValue / gramsOfFat;
             }
             case RecipeEntry.NUTRIENT_CARB: {
                 double carbPercentage = Double.parseDouble(context.getString(R.string.carb_percent_float_default));
                 double calFromCarbs = dailyCalories * carbPercentage;
                 double gramsOfCarbs = calFromCarbs / Double.parseDouble(context.getString(R.string.carb_cal_per_gram));
-                double carbsDV = nutrientValue / gramsOfCarbs;
-                return carbsDV;
+                return nutrientValue / gramsOfCarbs;
             }
             case RecipeEntry.NUTRIENT_PROTEIN: {
                 double proteinPercentage = Double.parseDouble(context.getString(R.string.protein_percent_float_default));
                 double calFromProtein = dailyCalories * proteinPercentage;
                 double gramsOfProtein = calFromProtein / Double.parseDouble(context.getString(R.string.protein_cal_per_gram));
-                double proteinDV = nutrientValue / gramsOfProtein;
-                return proteinDV;
+                return nutrientValue / gramsOfProtein;
             }
             case RecipeEntry.NUTRIENT_CHOLESTEROL: {
                 double mgOfCholesterol = Double.parseDouble(context.getString(R.string.cholesterol_mg_default));
-                double cholesterolDV = nutrientValue / mgOfCholesterol;
-                return cholesterolDV;
+                return nutrientValue / mgOfCholesterol;
             }
             case RecipeEntry.NUTRIENT_SODIUM: {
                 double mgOfSodium = Double.parseDouble(context.getString(R.string.sodium_mg_default));
-                double sodiumDV = nutrientValue / mgOfSodium;
-                return sodiumDV;
+                return nutrientValue / mgOfSodium;
             }
         }
         return 0;

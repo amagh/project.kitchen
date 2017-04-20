@@ -227,7 +227,7 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
         test();
     }
 
-    void test() {
+    private void test() {
         for (int i = 0; i < mIngredientList.size(); i++) {
             Log.d(LOG_TAG, "This fucking thing: " + mRecyclerView.findViewHolderForAdapterPosition(i));
         }

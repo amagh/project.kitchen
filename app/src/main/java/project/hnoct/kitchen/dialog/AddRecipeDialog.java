@@ -28,11 +28,9 @@ import project.hnoct.kitchen.ui.RecipeListActivity;
 public class AddRecipeDialog extends DialogFragment {
     /** Constants **/
 
-    /** Member Variables **/
-    FragmentManager mFragmentManager;
-    RecipeAdapter mRecipeAdapter;
-    SelectionListener mListener;
-    Cursor mCursor;
+    private RecipeAdapter mRecipeAdapter;
+    private SelectionListener mListener;
+    private Cursor mCursor;
     Context mContext;
 
     // Views Bound by ButterKnife

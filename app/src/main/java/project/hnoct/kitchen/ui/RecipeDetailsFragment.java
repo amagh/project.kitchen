@@ -39,21 +39,21 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     /** Constants **/
     private static final String LOG_TAG = RecipeDetailsFragment.class.getSimpleName();
     private static final int DETAILS_LOADER = 1;
-    public static final String RECIPE_DETAILS_URI = "recipe_and_ingredients_uri";
+    private static final String RECIPE_DETAILS_URI = "recipe_and_ingredients_uri";
     public static final String RECIPE_DETAILS_URL = "recipe_url";
 
     /** Member Variables **/
-    Uri mRecipeUri;
-    String mRecipeUrl;
-    long mRecipeId;
-    Context mContext;
-    Cursor mCursor;
-    ContentResolver mContentResolver;
-    IngredientAdapter mIngredientAdapter;
-    DirectionAdapter mDirectionAdapter;
-    CursorLoaderListener listener;
+    private Uri mRecipeUri;
+    private String mRecipeUrl;
+    private long mRecipeId;
+    private Context mContext;
+    private Cursor mCursor;
+    private ContentResolver mContentResolver;
+    private IngredientAdapter mIngredientAdapter;
+    private DirectionAdapter mDirectionAdapter;
+    private CursorLoaderListener listener;
 
-    boolean mSyncing = false;
+    private boolean mSyncing = false;
 
     // Views bound by ButterKnife
     @BindView(R.id.details_ingredient_recycler_view) RecyclerView mIngredientsRecyclerView;
@@ -262,7 +262,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
                 null
         );
 
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             // Instantiate the menu-item associated with favorites
             MenuItem menuFavorite = menu.findItem(R.id.detail_favorites);
 
@@ -270,6 +270,9 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
             menuFavorite.setIcon(cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1 ?
                     R.drawable.favorite_star_enabled : R.drawable.favorite_star_disabled);
         }
+
+        // Close the Cursor
+        if (cursor != null) cursor.close();
 
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -300,8 +303,6 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
 
         return super.onOptionsItemSelected(item);
     }
-
-
 
     interface CursorLoaderListener {
         void onCursorLoaded(Cursor cursor, int recipeServings);

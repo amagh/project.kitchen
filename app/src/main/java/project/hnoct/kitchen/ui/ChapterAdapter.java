@@ -1,35 +1,45 @@
 package project.hnoct.kitchen.ui;
 
 import android.content.ContentProviderOperation;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.RemoteException;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnTextChanged;
+import butterknife.OnTouch;
+import butterknife.Optional;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.CursorManager;
 import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.view.NonScrollingRecyclerView;
 
 /**
@@ -46,13 +56,30 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
     private CursorManager mCursorManager;
     private FragmentManager mFragmentManager;
     private RecipeClickListener mListener;
+    private OnStartDragListener mDragListener;
     private RecipeAdapter[] mRecipeAdapterArray;
     private ItemTouchHelper[] mItemTouchHelperArray;
+    private List<Map<String, Object>> mList;
     private boolean editMode = false;
+    public int[] editOperations = {-1, -1, -1};
+    private List<Integer> editChapters;
+
+    // ViewTypes
+    private static final int CHAPTER_VIEW_NORMAL = 0;
+    private static final int CHAPTER_VIEW_EDIT = 1;
+    private static final int CHAPTER_VIEW_EDIT_LAST = 2;
+
+    // Map key values
+    private String CHAPTER_ID = "chapterId";
+    private String BOOK_ID = "bookId";
+    private String CHAPTER_NAME = "chapterName";
+    private String CHAPTER_DESCRIPTION = "chapterDescription";
+    private String CHAPTER_ORDER = "chapterOrder";
 
     public ChapterAdapter(Context context, FragmentManager fragmentManager, CursorManager cursorManager) {
         mContext = context;
         mFragmentManager = fragmentManager;
+        editChapters = new ArrayList<>();
         // Get the CursorManager passed from the activity so all the Cursors being managed can be
         // properly closed in onStop of the Activity
         mCursorManager = cursorManager;
@@ -81,6 +108,33 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             // Set the member Cursor to the new Cursor
             mCursor = newCursor;
 
+            if (mCursor.moveToFirst()) {
+                // Initialize a new List to hold all values used to populate ViewHolder
+                mList = new ArrayList<>(mCursor.getCount());
+
+                do {
+                    // Retrieve the chapter information from the Cursor
+                    long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+                    long bookId = mCursor.getLong(ChapterEntry.IDX_BOOK_ID);
+                    String chapterName = mCursor.getString(ChapterEntry.IDX_CHAPTER_NAME);
+                    String chapterDescription = mCursor.getString(ChapterEntry.IDX_CHAPTER_DESCRIPTION);
+                    int chapterOrder = mCursor.getInt(ChapterEntry.IDX_CHAPTER_ORDER);
+
+                    // Initialize HashMap to hold all the values
+                    Map<String, Object> map = new HashMap<>();
+
+                    // Insert all values into HashMap
+                    map.put(CHAPTER_ID, chapterId);
+                    map.put(BOOK_ID, bookId);
+                    map.put(CHAPTER_NAME, chapterName);
+                    map.put(CHAPTER_DESCRIPTION, chapterDescription);
+                    map.put(CHAPTER_ORDER, chapterOrder);
+
+                    // Add the HashMap to mList
+                    mList.add(map);
+                } while (mCursor.moveToNext());
+            }
+
             // Reset the Array holding the RecipeAdapters being used
             mRecipeAdapterArray = new RecipeAdapter[mCursor.getCount()];
             mItemTouchHelperArray = new ItemTouchHelper[mCursor.getCount()];
@@ -93,17 +147,18 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
 
     void enterEditMode() {
         editMode = true;
-        for (RecipeAdapter adapter : mRecipeAdapterArray) {
-            // adapter.enterEditMode();
-        }
+        editChapters = new ArrayList<>();
         notifyDataSetChanged();
     }
 
     void exitEditMode() {
         editMode = false;
-        for (RecipeAdapter adapter : mRecipeAdapterArray) {
-            // adapter.exitEditMode();
+
+        if (editChapters.size() > 0) {
+            EditChaptersAsyncTask asyncTask = new EditChaptersAsyncTask();
+            asyncTask.execute();
         }
+
         notifyDataSetChanged();
     }
 
@@ -111,11 +166,27 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         return editMode;
     }
 
+    public List<Map<String, Object>> getList() {
+        return mList;
+    }
+
     @Override
     public ChapterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (parent instanceof RecyclerView) {
-            // Inflate the layout to be used for the chapter list item
-            View view = LayoutInflater.from(mContext).inflate(R.layout.list_item_chapter, parent, false);
+            View view;
+            switch (viewType) {
+                // Inflate the layout to be used for the chapter list item
+                case CHAPTER_VIEW_NORMAL: {
+                    view = LayoutInflater.from(mContext).inflate(R.layout.list_item_chapter, parent, false);
+                    break;
+                }
+                case CHAPTER_VIEW_EDIT: {
+                    view = LayoutInflater.from(mContext).inflate(R.layout.list_item_chapter_edit, parent, false);
+                    break;
+                }
+                default:
+                    return null;
+            }
             return new ChapterViewHolder(view);
         } else {
             throw new RuntimeException("Not bound to RecyclerViewSelection!");
@@ -123,13 +194,22 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
     }
 
     @Override
+    public int getItemViewType(int position) {
+        if (editMode) {
+            return CHAPTER_VIEW_EDIT;
+        } else {
+            return CHAPTER_VIEW_NORMAL;
+        }
+    }
+
+    @Override
     public void onBindViewHolder(ChapterViewHolder holder, final int position) {
-        // Move the Cursor to the correct entry in the database
-        mCursor.moveToPosition(position);
+        // Retrieve the HashMap holding all the values
+        Map<String, Object> map = mList.get(position);
 
         // Retrieve the information to be used to populate the views within the view holder
-        String chapterTitleText = mCursor.getString(ChapterEntry.IDX_CHAPTER_NAME);
-        String chapterDescriptionText = mCursor.getString(ChapterEntry.IDX_CHAPTER_DESCRIPTION);
+        String chapterTitleText = (String) map.get(CHAPTER_NAME);
+        String chapterDescriptionText = (String) map.get(CHAPTER_DESCRIPTION);
 
         // Populate the views of the view holder
         holder.titleText.setText(chapterTitleText);
@@ -184,10 +264,21 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                     mItemTouchHelperArray[position] :
                     new ItemTouchHelper(ithCallback);
 
-            Log.d(LOG_TAG, mItemTouchHelperArray[position].toString());
-
             // Attach the ItemTouchHelper to the ViewHolder's RecyclerView
             mItemTouchHelperArray[position].attachToRecyclerView(holder.recipeRecyclerView);
+
+            if (position == getItemCount() - 1) {
+                // If the item is the last one in the Adapter, modify LayoutParams to increase the
+                // bottom margin for uniformity
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.addRecipeButton.getLayoutParams();
+                int px4 = (int) Utilities.convertDpToPixels(4);
+                int px16 = (int) Utilities.convertDpToPixels(16);
+                params.setMargins(px16, px4, px16, px16);
+
+                // Set the new LayoutParams
+                holder.addRecipeButton.setLayoutParams(params);
+            }
+
         } else {
             // If not in edit mode, check to see if an ItemTouchHelper exists for the ViewHolder's
             // position.
@@ -228,6 +319,14 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         void onAddRecipeClicked(long chapterId);
     }
 
+    interface OnStartDragListener {
+        void onStartDrag(ChapterViewHolder viewHolder);
+    }
+
+    void setOnStartDragListener(OnStartDragListener listener) {
+        mDragListener = listener;
+    }
+
     /**
      * Registers an observer to be notified of user interaction with the Adapter
      * @param listener
@@ -239,7 +338,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
     @Override
     public int getItemCount() {
         if (mCursor != null) {
-            return mCursor.getCount();
+            return mList.size();
         }
         return 0;
     }
@@ -248,18 +347,20 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
     public long getItemId(int position) {
         // ItemId will be the recipeId since it is a UNIQUE primary key
         // Allows for smoother scrolling with StaggeredGridLayout and less shuffling
-        mCursor.moveToPosition(position);
-        return mCursor.getLong(LinkRecipeBookEntry.IDX_CHAPTER_ID);
+        return (long) mList.get(position).get(CHAPTER_ID);
     }
 
     class ChapterViewHolder extends RecyclerView.ViewHolder {
         // Views bound by ButterKnife
         @BindView(R.id.list_chapter_title) TextView titleText;
         @BindView(R.id.list_chapter_description) TextView descriptionText;
-        @BindView(R.id.list_chapter_recipe_recyclerview)
-        NonScrollingRecyclerView recipeRecyclerView;
-        @BindView(R.id.list_chapter_add_recipe) CardView addRecipeButton;
+        @BindView(R.id.list_chapter_recipe_recyclerview) NonScrollingRecyclerView recipeRecyclerView;
+        @Nullable @BindView(R.id.list_chapter_add_recipe) CardView addRecipeButton;
+        @Nullable @BindView(R.id.list_chapter_touchpad) ImageView touchpad;
+//        @BindView(R.id.list_chapter_title) EditText titleText;
+//        @BindView(R.id.list_chapter_description) EditText descriptionText;
 
+        @Optional
         @OnClick(R.id.list_chapter_add_recipe)
         /**
          * Notifies the registered observer that the user has selected to add a recipe to the chapter
@@ -276,13 +377,51 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             if (mListener != null) mListener.onAddRecipeClicked(chapterId);
         }
 
+        @Optional
+        @OnTouch(R.id.list_chapter_touchpad)
+        boolean onTouch(View view, MotionEvent event) {
+            if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
+                // Set the drag handle to handle the drag event for moving chapters
+                if (mDragListener != null) {
+                    mDragListener.onStartDrag(this);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Optional
+        @OnTextChanged(R.id.list_chapter_title)
+        void onTitleChanged(CharSequence text) {
+            int position = getAdapterPosition();
+
+            // Add the new title to mList
+            mList.get(position).put(CHAPTER_NAME, text.toString());
+
+            // Add the entry to list of items to be updated
+            if (!editChapters.contains(position)) editChapters.add(position);
+        }
+
+        @Optional
+        @OnTextChanged(R.id.list_chapter_description)
+        void onDescriptionChanged(CharSequence text) {
+            int position = getAdapterPosition();
+
+            // Add the new description to mList
+            mList.get(position).put(CHAPTER_DESCRIPTION, text.toString());
+
+            // Add the entry to list of items to be updated
+            if (!editChapters.contains(position)) editChapters.add(position);
+        }
+
+
         public ChapterViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }
     }
 
-    ItemTouchHelper.Callback ithCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+    private ItemTouchHelper.Callback ithCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
         @Override
         public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
             // Get the positions of the ViewHolder's current and target position
@@ -376,9 +515,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                     // Execute the AsyncTask with the removal parameter
                     ModifyDatabaseAsyncTask asyncTask = new ModifyDatabaseAsyncTask(cursor, remove);
                     asyncTask.execute();
-                }
-
-                if (adapter.editInstructions[0] != -1 && adapter.editInstructions[1] != -1) {
+                } else if (adapter.editInstructions[0] != -1 && adapter.editInstructions[1] != -1) {
                     // Get the start and end positions
                     int start = adapter.editInstructions[0];
                     int end = adapter.editInstructions[1];
@@ -459,8 +596,10 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                                     mChapterId = cursor.getLong(LinkRecipeBookEntry.IDX_CHAPTER_ID);
                                     mRecipeId = cursor.getLong(LinkRecipeBookEntry.IDX_RECIPE_ID);
                                 } else if (oldPosition <= end) {
+                                    // Move each recipe down one in ordering
                                     newPosition = oldPosition - 1;
                                 } else {
+                                    // Skip recipes that do not need to be moved
                                     continue;
                                 }
 
@@ -588,7 +727,6 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                 try {
                     // Apply all update operations for entries affected by the change
                     mContext.getContentResolver().applyBatch(RecipeContract.CONTENT_AUTHORITY, operations);
-
                 } catch (RemoteException | OperationApplicationException e) {
                     e.printStackTrace();
                 }
@@ -599,4 +737,60 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             }
         }
     };
+
+    /**
+     * AsyncTask for updating the database with new chapter title and descriptions
+     */
+    class EditChaptersAsyncTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            // Check to see if the chapters have been edited
+            if (editChapters.size() > 0) {
+                // Initialize an ArrayList to hold the operations to perform
+                ArrayList<ContentProviderOperation> operations = new ArrayList<>(editChapters.size());
+
+                // Selection for update
+                String selection = ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
+
+                // Iterate through each entry
+                for (int i : editChapters) {
+                    // If Cursor is null or invalid, then do nothing
+                    if (mCursor == null || !mCursor.moveToFirst()) return null;
+
+                    // Move the Cursor to position being edited
+                    mCursor.moveToPosition(i);
+
+                    // Retrieve the chapterId of the entry to be edited
+                    long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+
+                    // Selection argument for the update selection
+                    String[] selectionArgs = new String[] {Long.toString(chapterId)};
+
+                    // Get the new title and description to update the database
+                    String newName = (String) mList.get(i).get(CHAPTER_NAME);
+                    String newDescription = (String) mList.get(i).get(CHAPTER_DESCRIPTION);
+
+                    // Create the update operation
+                    ContentProviderOperation operation = ContentProviderOperation
+                            .newUpdate(ChapterEntry.CONTENT_URI)
+                            .withSelection(selection, selectionArgs)
+                            .withValue(ChapterEntry.COLUMN_CHAPTER_NAME, newName)
+                            .withValue(ChapterEntry.COLUMN_CHAPTER_DESCRIPTION, newDescription)
+                            .build();
+
+                    // Add the operation to the list
+                    operations.add(operation);
+                }
+
+                try {
+                    // Batch apply all update operations
+                    mContext.getContentResolver().applyBatch(RecipeContract.CONTENT_AUTHORITY, operations);
+                } catch (RemoteException | OperationApplicationException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+    }
 }

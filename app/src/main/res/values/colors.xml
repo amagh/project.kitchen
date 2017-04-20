@@ -17,6 +17,8 @@
     <color name="direction_overlay_disabled">#009E9E9E</color>
     <color name="direction_overlay_enabled">#7F9E9E9E</color>
 
+    <color name="background_light">#FAFAFA</color>
+
     <!-- Generic Colors -->
     <color name="tertiary_grey_text">#808080</color>
     <color name="grey_300">#E0E0E0</color>

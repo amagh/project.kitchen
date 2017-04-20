@@ -21,9 +21,10 @@ public class NutrientDialogPreference extends DialogPreference {
     /** Constants **/
 
     /** Member Variables **/
-    Context mContext;                               // Interface for global context
-    String[] mDisplayValues;                        // Values to display in NumberPicker
-    @RecipeEntry.NutrientType int mNutrientType;    // Used for getting information from SharedPrefs
+    private Context mContext;                               // Interface for global context
+    private String[] mDisplayValues;                        // Values to display in NumberPicker
+    @RecipeEntry.NutrientType
+    private int mNutrientType;    // Used for getting information from SharedPrefs
 
     // Views bound by ButterKnife
     @BindView(R.id.pref_dialog_nutrient_picker) NumberPicker mNumberPicker;

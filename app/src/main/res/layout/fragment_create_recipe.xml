@@ -27,11 +27,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right|end|top"
-                android:padding="@dimen/list_add_direction_button_margin"
+                android:padding="@dimen/button_margin"
                 android:src="@drawable/ic_menu_close_clear_cancel"/>
         </FrameLayout>
-
-
 
         <LinearLayout
             android:id="@+id/content_create_recipe"

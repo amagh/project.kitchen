@@ -47,7 +47,6 @@ import project.hnoct.kitchen.sync.RecipeImporter;
 public class RecipeListActivity extends AppCompatActivity implements RecipeListFragment.RecipeCallBack, ImportRecipeDialog.ImportRecipeDialogListener {
     /** Constants **/
     private static final String LOG_TAG = RecipeListActivity.class.getSimpleName();
-    private final String IMPORT_DIALOG = "ImportRecipeDialog";
     private final String DETAILS_FRAGMENT = "DFTAG";
 
     /** Member Variables **/
@@ -145,7 +144,7 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
         syncTask.execute();
     }
 
-    public void selectDrawerItem(MenuItem item) {
+    private void selectDrawerItem(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_favorites: {
                 startActivity(new Intent(this, FavoritesActivity.class));
@@ -216,14 +215,14 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     /**
      * Hides the Navigation Drawer
      */
-    void hideNavigationDrawer() {
+    private void hideNavigationDrawer() {
         mDrawerLayout.closeDrawer(Gravity.LEFT);
     }
 
     /**
      * Opens the FAB Menu
      */
-    void showFabMenu() {
+    private void showFabMenu() {
         // Set the boolean to true
         mFabMenuOpen = true;
 
@@ -241,7 +240,7 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     /**
      * Closes the FAB Menu
      */
-    void closeFabMenu() {
+    private void closeFabMenu() {
         // Set the boolean to false
         mFabMenuOpen = false;
 
@@ -259,8 +258,9 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     /**
      * Shows a Dialog with an EditText to allow copy-pasting of a recipe URL so it can be imported
      */
-    void showImportDialog() {
+    private void showImportDialog() {
         ImportRecipeDialog dialog = new ImportRecipeDialog();
+        String IMPORT_DIALOG = "ImportRecipeDialog";
         dialog.show(getFragmentManager(), IMPORT_DIALOG);
     }
 

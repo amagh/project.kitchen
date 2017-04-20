@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/background_light"
+    android:orientation="vertical"
+    android:layout_marginTop="@dimen/default_list_item_vertical_separation">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/list_chapter_touchpad"
+            android:layout_width="@dimen/touchpad_size"
+            android:layout_height="@dimen/touchpad_size"
+            android:padding="@dimen/button_margin"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_touchpad_custom"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/list_chapter_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:hint="@string/dialog_chapter_details_title_hint"
+                android:inputType="textAutoCorrect|textCapWords|textMultiLine"
+                android:maxLines="2"
+                style="@style/titleText"
+                tools:text="Chapter One"/>
+
+            <EditText
+                android:id="@+id/list_chapter_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/text_vertical_padding_small"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:hint="@string/dialog_chapter_details_description_hint"
+                android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
+                style="@style/descriptionText"
+                tools:text="This is the first chapter of my book and it contains some decent recipes... I think."/>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <project.hnoct.kitchen.view.NonScrollingRecyclerView
+        android:id="@+id/list_chapter_recipe_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/list_chapter_add_recipe"
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:layout_marginTop="@dimen/card_compact_vertical_separation"
+        android:layout_marginRight="@dimen/card_horizontal_margin"
+        android:layout_marginLeft="@dimen/card_horizontal_margin"
+        android:layout_marginBottom="@dimen/card_compact_vertical_separation"
+        app:cardCornerRadius="@dimen/card_corner_radius">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_menu_add_custom"/>
+
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>

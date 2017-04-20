@@ -10,6 +10,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,8 +19,9 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
+import java.util.HashMap;
+import java.util.Map;
+
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.materialdesign.Utils;
@@ -30,21 +32,24 @@ import project.hnoct.kitchen.materialdesign.Utils;
 
 public class SlidingAlphabeticalIndex extends LinearLayout {
     /** Constants **/
-    private final static String ALPHABET = "0ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    int max = 26;
-    int min = 0;
+    private static String mAlphabet = "0ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private int max = 26;
+    private int min = 0;
 
     /** Member Variables **/
-    int viewHeight = 0;
-    int value = 0;
-    Ball ball;
+    private int viewHeight = 0;
+    private int value = 0;
+    private Ball ball;
+    private Context mContext;
+    private Map<String, Integer> mIndex = new HashMap<>();
 
-    OnValueChangedListener listener;
-    LetterIndicator letterIndicator;
+    private OnValueChangedListener listener;
+    private LetterIndicator letterIndicator;
 
     public SlidingAlphabeticalIndex(Context context, AttributeSet attrs) {
         super(context, attrs);
         // Instantiate member variables
+        mContext = context;
         ball = new Ball(context);
         letterIndicator = new LetterIndicator(context);
 
@@ -70,7 +75,7 @@ public class SlidingAlphabeticalIndex extends LinearLayout {
             if (event.getY() < getHeight() && event.getY() >= 0) {
                 // If TouchEvent is within bounds of the View...
                 // Set the ratio to divide by to ascertain which letter the touch is on (i.e.(x/y) = (a/b))
-                float division = viewHeight / max;
+                float division = viewHeight / (max + 1);
 
                 // Instantiate the value to be calculated
                 int newValue = 0;
@@ -82,10 +87,10 @@ public class SlidingAlphabeticalIndex extends LinearLayout {
                     newValue = min;
                 } else {
                     // Set by getting the y-position of the TouchEvent, divided by the ratio above
-                    newValue = (int) (event.getY() / division);
+                    newValue = (int) ((event.getY()) / division);
                 }
 
-                if (value != newValue) {
+                if (value != newValue && newValue <= max) {
                     value = newValue;
                     // CallBack to the Activity implementing the View
                     listener.onValueChanged(value);
@@ -110,6 +115,55 @@ public class SlidingAlphabeticalIndex extends LinearLayout {
             letterIndicator.dismiss();
         }
         return true;
+    }
+
+    public Map<String, Integer> getIndex() {
+        return mIndex;
+    }
+
+    /**
+     * Sets the alphabet to be used for display and scrolling values
+     * @param alphabet Alphabet to be used
+     */
+    public void setAlphabet(String alphabet) {
+        // Set the member alphabet to the user-input String
+        mAlphabet = alphabet;
+
+        // Set the max
+        max = mAlphabet.length() - 1;
+
+        // Remove all other TextViews previously added
+        removeAllViews();
+
+        // Re-add the ball
+        addView(ball);
+
+        // Generate the TextViews for displaying the values used
+        populateIndex();
+    }
+
+    /**
+     * Initializes the index on the right side of the screen to be used for fast scrolling through
+     * the list of favorites
+     */
+    private void populateIndex() {
+        // Set LayoutParams so that height is set to 0 and uses layout weight instead to evenly
+        // distribute index the entire length of mIndex
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1.0f);
+
+        for (int i = 0; i < mAlphabet.length(); i++) {
+            // Inflate the view from the layout file
+            TextView textView = new TextView(mContext);
+
+            // Set the character as the text to show
+            textView.setText(Character.toString(mAlphabet.charAt(i)));
+            textView.setTag(Character.toString(mAlphabet.charAt(i)));
+            textView.setLayoutParams(params);
+
+            // Add the View to mIndex
+            addView(textView);
+            mIndex.put(Character.toString(mAlphabet.charAt(i)), -1);
+        }
     }
 
     // CallBack to the Activity implementing this View
@@ -180,7 +234,7 @@ public class SlidingAlphabeticalIndex extends LinearLayout {
             // Set the text of the letter indicator with the same parameters as the background Circle
             letterIndicator.text.setY(ball.getY() + Utils.getRelativeTop((View) ball.getParent()) - size);
             letterIndicator.text.setX(x - size / 2);
-            letterIndicator.text.setText(Character.toString(ALPHABET.charAt(value))); // Text should be updated as the indicator is drawn
+            letterIndicator.text.setText(Character.toString(mAlphabet.charAt(value))); // Text should be updated as the indicator is drawn
 
             invalidate();
         }

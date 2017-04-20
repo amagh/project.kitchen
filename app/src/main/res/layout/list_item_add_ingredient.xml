@@ -12,7 +12,7 @@
         android:id="@+id/list_add_ingredient_touchpad"
         android:layout_height="@dimen/touchpad_size"
         android:layout_width="@dimen/touchpad_size"
-        android:padding="@dimen/list_add_direction_button_margin"
+        android:padding="@dimen/button_margin"
         android:src="@drawable/ic_touchpad_custom"
         />
 

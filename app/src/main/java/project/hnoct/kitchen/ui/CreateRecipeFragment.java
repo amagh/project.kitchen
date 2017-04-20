@@ -58,8 +58,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
 
 
     /** Member Variables **/
-    Context mContext;
-    long mRecipeId;
+    private Context mContext;
+    private long mRecipeId;
     private Uri mRecipeImageUri;
     private String mRecipeDescription;
     private String mRecipeName;
@@ -72,25 +72,22 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
     private boolean mFavorite = false;
     private long mDateAdded = Utilities.getCurrentTime();
 
-    private String mRecipeUrl = "content://user.custom/";
+    private List<Pair<String, String>> mIngredientList;
+    private List<String> mDirectionList;
 
-    List<Pair<String, String>> mIngredientList;
-    List<String> mDirectionList;
+    private AddIngredientAdapter mIngredientAdapter;
+    private AddDirectionAdapter mDirectionAdapter;
 
-    AddIngredientAdapter mIngredientAdapter;
-    AddDirectionAdapter mDirectionAdapter;
+    private boolean mSaved = false;     // Check if the user has saved the data manually
 
-    boolean mSaved = false;     // Check if the user has saved the data manually
-
-    Bitmap mImageBitmap;
+    private Bitmap mImageBitmap;
 
     // ButterKnife Binding
     @BindView(R.id.create_recipe_name_edit_text) EditText mRecipeNameEditText;
     @BindView(R.id.create_recipe_description_edit_text) EditText mRecipeDescriptionEditText;
     @BindView(R.id.create_recipe_image) ImageView mRecipeImage;
     @BindView(R.id.create_recipe_ingredient_recycler_view) NonScrollingRecyclerView mIngredientRecyclerView;
-    @BindView(R.id.create_recipe_direction_recycler_view)
-    NonScrollingRecyclerView mDirectionRecyclerView;
+    @BindView(R.id.create_recipe_direction_recycler_view) NonScrollingRecyclerView mDirectionRecyclerView;
     @BindView(R.id.create_recipe_clear_image) ImageView mClearImageButton;
     @BindView(R.id.create_recipe_add_ingredient) LinearLayout addIngredientButton;
 
@@ -110,7 +107,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
      * Removes the image from File and sets the image URI to null
      */
     @OnClick(R.id.create_recipe_clear_image)
-    public void clearImage() {
+    void clearImage() {
         // Delete the image from File
         Utilities.deleteImageFromFile(mContext, mRecipeImageUri);
 
@@ -637,6 +634,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         recipeValues.put(RecipeEntry.COLUMN_IMG_URL, mRecipeImageUri.toString());
         recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, mRecipeDescription);
         recipeValues.put(RecipeEntry.COLUMN_SOURCE, mSource);
+        String mRecipeUrl = "content://user.custom/";
         recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, mRecipeUrl + mRecipeId);
         recipeValues.put(RecipeEntry.COLUMN_FAVORITE, mFavorite);
         recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, mDateAdded);
@@ -788,7 +786,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
     /**
      * A Callback for dragging and swiping items in mIngredientAdapter
      */
-    ItemTouchHelper.SimpleCallback ingredientIthCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+    private ItemTouchHelper.SimpleCallback ingredientIthCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
         /**
          * Long press to drag is disabled as it is handled through the ViewHolder's handle
@@ -837,7 +835,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         }
     };
 
-    ItemTouchHelper.SimpleCallback directionIthCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+    private ItemTouchHelper.SimpleCallback directionIthCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
         @Override
         public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
             // Get the positions of the view holder's current position and its target position

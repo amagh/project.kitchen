@@ -34,7 +34,6 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
     /** Member Variables **/
     private Context mContext;               // Interface to global Context
     private List<String> mDirectionList;    // List of all directions
-    private RecyclerView mRecyclerView;     // References the Recycler containing this adapter for use in searching other ViewHolders
     private OnStartDragListener mDragListener;
 
     public AddDirectionAdapter(Context context, OnStartDragListener dragListener) {
@@ -47,7 +46,7 @@ public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapte
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         // Set the member variable equal to the RecyclerView the Adapter is attached to
-        mRecyclerView = recyclerView;
+        RecyclerView mRecyclerView = recyclerView;
         super.onAttachedToRecyclerView(recyclerView);
     }
 

@@ -27,14 +27,13 @@ import project.hnoct.kitchen.data.RecipeContract.*;
  * Created by hnoct on 2/20/2017.
  */
 
-public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
+class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
     /** Constants **/
     private static final String LOG_TAG = AllRecipesAsyncTask.class.getSimpleName();
 
     /** Member Variables **/
     private Context mContext;                       // Interface for global context
     private RecipeSyncCallback mSyncCallback;       // For letting the UI thread know finished loading
-    private boolean mNewRecipe;                      // For setting whether the data should be inserted or updated
 
     public AllRecipesAsyncTask(Context context, RecipeSyncCallback syncCallback) {
         mContext = context;
@@ -58,7 +57,7 @@ public class AllRecipesAsyncTask extends AsyncTask<String, Void, Void> {
         );
 
         // Set the parameter indicating if this is a new recipe
-        mNewRecipe = !cursor.moveToFirst();
+        boolean mNewRecipe = !cursor.moveToFirst();
 
 //        List<Long> ingredientIdList = new ArrayList<>();        // Hack for duplicate ingredients. See below.
         List<ContentValues> ingredientCVList = new ArrayList<>();

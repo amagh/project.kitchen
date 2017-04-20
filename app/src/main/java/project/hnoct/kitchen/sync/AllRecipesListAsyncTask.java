@@ -27,12 +27,11 @@ import java.util.List;
 public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
     /** Constants **/
     private final String LOG_TAG = AllRecipesListAsyncTask.class.getSimpleName();
-    private final String ALL_RECIPES_BASE_URL = "http://www.allrecipes.com";
     public static final String ALL_RECIPES_ATTRIBUTION = "Allrecipes.com";
 
     /** Member Variables **/
-    Context mContext;       // Interface to global context
-    ContentResolver mContentResolver;
+    private Context mContext;       // Interface to global context
+    private ContentResolver mContentResolver;
 
     public AllRecipesListAsyncTask(Context context) {
         mContext = context;
@@ -48,6 +47,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
         try {
             List<ContentValues> recipeCVList = new ArrayList<>();
             // Connect and downloading the HTML document
+            String ALL_RECIPES_BASE_URL = "http://www.allrecipes.com";
             Document document = Jsoup.connect(ALL_RECIPES_BASE_URL).get();
 
             // Select the elements from the document to add to the database as part of the recipe

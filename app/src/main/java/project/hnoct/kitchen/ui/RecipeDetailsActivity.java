@@ -32,8 +32,8 @@ public class RecipeDetailsActivity extends AppCompatActivity implements RecipeDe
     /** Member Variables **/
     long mRecipeId;
     MenuItem mMenuFavorite;
-    RecipeDetailsFragment mDetailsFragment;
-    NutritionAdapter mNutritionAdapter;
+    private RecipeDetailsFragment mDetailsFragment;
+    private NutritionAdapter mNutritionAdapter;
 
     // Views bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -94,7 +94,7 @@ public class RecipeDetailsActivity extends AppCompatActivity implements RecipeDe
      * Doubles the touch field for dragging out the DrawerLayout when in landscape for easier
      * access for phones with on-screen keys
      */
-    void extendDrawerTouchMargin() {
+    private void extendDrawerTouchMargin() {
         try {
             // Get the Field referring to the Dragger of the DrawerLayout
             Field mDragger = mNutritionDrawer.getClass().getDeclaredField("mRightDragger");

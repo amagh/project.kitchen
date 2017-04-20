@@ -23,7 +23,7 @@ public class ImportRecipeDialog extends DialogFragment {
     /** Constants **/
 
     /** Member Variables **/
-    ImportRecipeDialogListener mlistener;
+    private ImportRecipeDialogListener mlistener;
 
     // Bound by ButterKnife
     @BindView(R.id.dialog_import_text_input) EditText mEditText;

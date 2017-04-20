@@ -24,21 +24,21 @@ import project.hnoct.kitchen.data.RecipeContract.*;
 public class RecipeProvider extends ContentProvider {
     /** Constants **/
     // Return values for the {@link #sUriMatcher}
-    static final int RECIPE = 100;
-    static final int RECIPE_WITH_ID = 101;
-    static final int RECIPE_AND_INGREDIENT = 200;
-    static final int RECIPE_AND_INGREDIENT_QUERY = 201;
-    static final int INGREDIENT = 300;
-    static final int INGREDIENT_WITH_ID = 301;
-    static final int INGREDIENT_SEARCH = 302;
-    static final int RECIPE_BOOK = 400;
-    static final int RECIPE_BOOK_WITH_ID = 401;
-    static final int CHAPTER = 500;
-    static final int CHAPTER_WITH_ID = 501;
-    static final int RECIPE_BOOK_LINK = 600;
-    static final int RECIPE_BOOK_LINK_QUERY_CHAPTERS = 601;
-    static final int RECIPE_BOOK_LINK_QUERY_RECIPES = 602;
-    static final int RECIPE_BOOK_LINK_QUERY_RECIPES_WITH_CHAPTER = 603;
+    private static final int RECIPE = 100;
+    private static final int RECIPE_WITH_ID = 101;
+    private static final int RECIPE_AND_INGREDIENT = 200;
+    private static final int RECIPE_AND_INGREDIENT_QUERY = 201;
+    private static final int INGREDIENT = 300;
+    private static final int INGREDIENT_WITH_ID = 301;
+    private static final int INGREDIENT_SEARCH = 302;
+    private static final int RECIPE_BOOK = 400;
+    private static final int RECIPE_BOOK_WITH_ID = 401;
+    private static final int CHAPTER = 500;
+    private static final int CHAPTER_WITH_ID = 501;
+    private static final int RECIPE_BOOK_LINK = 600;
+    private static final int RECIPE_BOOK_LINK_QUERY_CHAPTERS = 601;
+    private static final int RECIPE_BOOK_LINK_QUERY_RECIPES = 602;
+    private static final int RECIPE_BOOK_LINK_QUERY_RECIPES_WITH_CHAPTER = 603;
 
     private static final SQLiteQueryBuilder sRecipeAndIngredientQueryBuilder;
     static {
@@ -87,7 +87,7 @@ public class RecipeProvider extends ContentProvider {
      * Matches URIs to the content provider can access the correct database and rows
      * @return UriMatcher that will match the query to the operation
      */
-    static UriMatcher buildUriMatcher() {
+    private static UriMatcher buildUriMatcher() {
         /** Constants **/
         final String authority = RecipeContract.CONTENT_AUTHORITY;
 
@@ -724,7 +724,7 @@ public class RecipeProvider extends ContentProvider {
         return rowsUpdated;
     }
 
-    public ArrayList<String> searchIngredient(String searchTerm) {
+    private ArrayList<String> searchIngredient(String searchTerm) {
         final SQLiteDatabase db = mDbHelper.getReadableDatabase();
         if (searchTerm != null &&  searchTerm.length() > 2) {
             ArrayList<String> searchResults = new ArrayList<>();
@@ -753,7 +753,7 @@ public class RecipeProvider extends ContentProvider {
         return null;
     }
 
-    public ArrayList<String> searchRecipeFavorites(String searchTerm) {
+    private ArrayList<String> searchRecipeFavorites(String searchTerm) {
         final SQLiteDatabase db = mDbHelper.getReadableDatabase();
         if (searchTerm != null &&  searchTerm.length() > 2) {
             ArrayList<String> searchResults = new ArrayList<>();

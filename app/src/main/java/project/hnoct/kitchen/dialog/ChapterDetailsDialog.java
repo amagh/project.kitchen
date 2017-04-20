@@ -21,7 +21,7 @@ public class ChapterDetailsDialog extends DialogFragment {
     /** Constants **/
 
     /** Member Variables **/
-    ChapterDetailsListener mListener;
+    private ChapterDetailsListener mListener;
 
     @BindView(R.id.dialog_chapter_title_edit_text) EditText titleEditText;
     @BindView(R.id.dialog_chapter_description_edit_text) EditText descriptionEditText;

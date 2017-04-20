@@ -21,7 +21,7 @@ public class RecipeBookDetailsDialog extends DialogFragment {
     /** Constants **/
 
     /** Member Variables **/
-    RecipeBookDetailsListener mListener;
+    private RecipeBookDetailsListener mListener;
 
     @BindView(R.id.dialog_recipebook_title_edit_text) EditText titleEditText;
     @BindView(R.id.dialog_recipebook_description_edit_text) EditText descriptionEditText;

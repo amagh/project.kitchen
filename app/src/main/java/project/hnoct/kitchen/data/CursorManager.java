@@ -46,7 +46,7 @@ public class CursorManager {
      * @param projection column projection to for query
      * @param sortOrder column sort order for query
      */
-    public void addCursor(int position, final Cursor cursor, final Uri notificationUri, final String[] projection, final String sortOrder) {
+    private void addCursor(int position, final Cursor cursor, final Uri notificationUri, final String[] projection, final String sortOrder) {
         // Get a reference to the Cursor in the map to be replaced
         Cursor thisCursor = mCursorMap.get(position);
 

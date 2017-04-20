@@ -48,7 +48,7 @@ public class RecipeBookActivity extends AppCompatActivity implements RecipeBookD
     /**
      * Shows the dialog for creating/editing the details of the recipe book
      */
-    void showRecipeBookDetailDialog() {
+    private void showRecipeBookDetailDialog() {
         RecipeBookDetailsDialog dialog = new RecipeBookDetailsDialog();
         dialog.show(getFragmentManager(), RECIPE_BOOK_DETAILS_DIALOG);
         dialog.setPositiveClickListener(this);

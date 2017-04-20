@@ -24,6 +24,7 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
     private static final String LOG_TAG = ChapterActivity.class.getSimpleName();
     private static final String CHAPTER_DETAILS_DIALOG = "chapter_details_dialog";
     private static final String ADD_RECIPE_DIALOG = "add_recipe_dialog";
+    private static final String CHAPTER_FRAGMENT_TAG = "chapter_fragment";
 
     /** Member Variables **/
     private long mBookId;
@@ -57,9 +58,24 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
         // Inflate ChapterFragment into the container
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.chapter_container, fragment)
+                    .add(R.id.chapter_container, fragment, CHAPTER_FRAGMENT_TAG)
                     .commit();
         }
+    }
+
+    /**
+     * Override the back-button so that when in edit-mode, edit mode is exited instead
+     */
+    @Override
+    public void onBackPressed() {
+        ChapterFragment fragment = (ChapterFragment) getSupportFragmentManager().findFragmentByTag(CHAPTER_FRAGMENT_TAG);
+
+        if (fragment.mChapterAdapter.isInEditMode()) {
+            fragment.mChapterAdapter.exitEditMode();
+            return;
+        }
+
+        super.onBackPressed();
     }
 
     interface ChapterListener {
@@ -78,7 +94,7 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
     /**
      * Show the dialog for adding chapters
      */
-    void showAddChapterDialog() {
+    private void showAddChapterDialog() {
         // Instantiate the dialog
         ChapterDetailsDialog dialog = new ChapterDetailsDialog();
         dialog.show(getFragmentManager(), CHAPTER_DETAILS_DIALOG);

@@ -1,16 +1,24 @@
 package project.hnoct.kitchen.ui;
 
+import android.content.ContentProviderOperation;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,12 +26,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.CursorManager;
+import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
+import project.hnoct.kitchen.view.SlidingAlphabeticalIndex;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -36,14 +51,20 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
     private static final int POSITION_MODIFIER = 10000;
 
     /** Member Variables **/
-    Context mContext;
-    Cursor mCursor;
-    CursorManager mCursorManager;
-    Uri mRecipeBookUri;
     ChapterAdapter mChapterAdapter;
-    int mPosition;
+
+    private Context mContext;
+    private Cursor mCursor;
+    private CursorManager mCursorManager;
+    private Uri mRecipeBookUri;
+    private int mPosition;
+    private ItemTouchHelper mHelper;
+    private Map<String, Integer> mIndex;
+    private StaggeredGridLayoutManager mLayoutManager;
+    private String alphabet;
 
     @BindView(R.id.chapter_recyclerview) RecyclerView mRecyclerView;
+    @BindView(R.id.chapter_alphabetical_index) SlidingAlphabeticalIndex mSlidingIndex;
 
     public ChapterFragment() {
     }
@@ -74,6 +95,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
         setLayoutColumns();
 
         mRecyclerView.setAdapter(mChapterAdapter);
+        mRecyclerView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
         mChapterAdapter.setRecipeClickListener(new ChapterAdapter.RecipeClickListener() {
             @Override
             public void onRecipeClicked(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
@@ -87,11 +109,38 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
             }
         });
 
+        // Set a listener to restart the CursorLoader when a new chapter has been added
         ((ChapterActivity) getActivity()).setChapterListener(new ChapterActivity.ChapterListener() {
             @Override
             public void onNewChapter() {
                 restartLoader();
             }
+        });
+
+        // Initialize the Listener to observe when the drag handle has been touched
+        mChapterAdapter.setOnStartDragListener(new ChapterAdapter.OnStartDragListener() {
+            @Override
+            public void onStartDrag(ChapterAdapter.ChapterViewHolder viewHolder) {
+                mHelper.startDrag(viewHolder);
+            }
+        });
+
+        // Initialize the ItemTouchHelper for interacting with mRecyclerView
+        mHelper = new ItemTouchHelper(ithCallback);
+
+        // Attach the ItemTouchHelper to mRecyclerView
+        mHelper.attachToRecyclerView(null);
+
+        // Override the back key so that when in edit-mode it returns to regular mode
+        view.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+                if (mChapterAdapter.isInEditMode() && keyCode == KeyEvent.KEYCODE_BACK) {
+                    mChapterAdapter.exitEditMode();
+                    return false;
+                }
+                return false;
+            };
         });
 
         return view;
@@ -109,8 +158,14 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
             case R.id.action_edit_mode: {
                 if (mChapterAdapter.isInEditMode()) {
                     mChapterAdapter.exitEditMode();
+
+                    // Attach the ItemTouchHelper to a null RecyclerView
+                    mHelper.attachToRecyclerView(null);
                 } else {
                     mChapterAdapter.enterEditMode();
+
+                    // Attach the ItemTouchHelper to mRecyclerView
+                    mHelper.attachToRecyclerView(mRecyclerView);
                 }
             }
         }
@@ -169,8 +224,35 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         if (loader.getId() == CHAPTER_LOADER) {
             if (cursor != null && cursor.moveToFirst()) {
+                mIndex = mSlidingIndex.getIndex();
                 mCursor = cursor;
+
+                // After all the other required Cursors have been initialized, swap the Cursor into
+                // ChapterAdapter
+                mChapterAdapter.swapCursor(mCursor);
+
+                // Build a String containing an entry for each chapter
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < mCursor.getCount(); i++) {
+                    builder.append(i);
+                }
+
+                // Set the alphabet to be used for fast-scrolling to the built String
+                alphabet = builder.toString();
+
+                // Set the alphabet to be used by the SlidingAlphabeticalIndex
+                mSlidingIndex.setAlphabet(alphabet);
+
+                // Set the Listener for when the user interacts with mSlidingIndex
+                mSlidingIndex.setOnValueChangedListener(new SlidingAlphabeticalIndex.OnValueChangedListener() {
+                    @Override
+                    public void onValueChanged(int value) {
+                        scrollToIndex(Character.toString(alphabet.charAt(value)));
+                    }
+                });
+
                 for (int i = 0; i < cursor.getCount(); i++) {
+                    cursor.moveToPosition(i);
                     // Retrieve the parameters for generating the URI for querying the database
                     long chapterId = cursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
                     long recipeBookId = cursor.getLong(ChapterEntry.IDX_BOOK_ID);
@@ -195,19 +277,32 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
                     args.putStringArray(getString(R.string.selection_args_key), selectionArgs);
                     args.putString(getString(R.string.sort_order_key), sortOrder);
 
+                    // Add the position to mIndex used for scrolling
+                    mIndex.put(Integer.toString(i), i);
+
                     // Initialize a new Loader
                     generateHelperLoader(i, args);
-
-                    cursor.moveToNext();
                 }
             }
 
-            // After all the other required Cursors have been initialized, swap the Cursor into
-            // ChapterAdapter
-            mChapterAdapter.swapCursor(mCursor);
         } else {
             mCursorManager.addManagedCursor(loader.getId() - POSITION_MODIFIER, cursor);
         }
+    }
+
+    /**
+     * Fast scrolls to the chapter selected by mSlidingIndex
+     * @param value The number of the chapter to scroll to
+     */
+    void scrollToIndex(String value) {
+        // Get the position within the index of the chapter
+        int position = mIndex.get(value);
+
+        // Request focus to prevent the EditText from stopping the scrolling
+        mRecyclerView.requestFocus();
+
+        // Scroll the view
+        mLayoutManager.scrollToPositionWithOffset(position, 0);
     }
 
     /**
@@ -215,7 +310,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
      * @param position Position of the ViewHolder requesting the Cursor
      * @param args Parameters used to generate the CursorLoader
      */
-    void generateHelperLoader(int position, Bundle args) {
+    private void generateHelperLoader(int position, Bundle args) {
         // Check whether the CursorLoader has already been started
         if (getLoaderManager().getLoader(position + POSITION_MODIFIER) != null) {
             // If it has already been started, restart it
@@ -243,15 +338,28 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
         getLoaderManager().initLoader(CHAPTER_LOADER, null, this);
     }
 
+    /**
+     * Callback Interface to notify ChapterActivity of user interactions
+     */
     interface RecipeCallBack {
+        /**
+         * Adds a recipe to a chapter
+         * @param recipeUrl URL of the recipe to be added
+         * @param viewHolder ViewHolder holding the recipe's information
+         */
         void onRecipeSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder);
+
+        /**
+         * For opening a dialog allowing the user to select a recipe to add
+         * @param chapterId ID of the chapter that is adding a new recipe
+         */
         void onAddRecipeClicked(long chapterId);
     }
 
     /**
      * Sets the number columns used by the StaggeredGridLayoutManager
      */
-    void setLayoutColumns() {
+    private void setLayoutColumns() {
         // Retrieve the number of columns needed by the device/orientation
         int columns;
         if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {
@@ -261,13 +369,13 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
         }
 
         // Instantiate the LayoutManager
-        StaggeredGridLayoutManager sglm = new StaggeredGridLayoutManager(
+        mLayoutManager = new StaggeredGridLayoutManager(
                 columns,
                 StaggeredGridLayoutManager.VERTICAL
         );
 
         // Set the LayoutManager for the RecyclerView
-        mRecyclerView.setLayoutManager(sglm);
+        mRecyclerView.setLayoutManager(mLayoutManager);
 
         RecipeAdapter adapter = ((RecipeAdapter) mRecyclerView.getAdapter());
         if (adapter != null) {
@@ -276,6 +384,246 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
 
         // Scroll to the position of the recipe last clicked due to change in visibility of the
         // Detailed View in Master-Flow layout
-        sglm.scrollToPositionWithOffset(mPosition, 0);
+        mLayoutManager.scrollToPositionWithOffset(mPosition, 0);
     }
+
+    ItemTouchHelper.SimpleCallback ithCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            // Retrieve the List being used to by the ChapterAdapter
+            List<Map<String, Object>> chapterList = mChapterAdapter.getList();
+
+            // Get the start and end positions for the swap
+            int start = viewHolder.getAdapterPosition();
+            int end = target.getAdapterPosition();
+
+            // Swap the items in the position from start to end
+            if (start < end) {
+                for (int i = start; i < end; i++) {
+                    Collections.swap(chapterList, i, i + 1);
+                }
+            } else {
+                for (int i = start; i > end; i--) {
+                    Collections.swap(chapterList, i, i - 1);
+                }
+            }
+
+            // Set the database operations within mChapterAdapter
+            if (mChapterAdapter.editOperations[0] == -1) {
+                // Start operation is only set if it hasn't already been set
+                mChapterAdapter.editOperations[0] = start;
+            }
+            mChapterAdapter.editOperations[1] = end;
+
+            // Notify mChapterAdapter of the chagne
+            mChapterAdapter.notifyItemMoved(start, end);
+            return true;
+        }
+
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            // Get the position of the ViewHolder swiped to remove
+            int position = viewHolder.getAdapterPosition();
+
+            // Remove the entry from mChapterAdapter's list
+            mChapterAdapter.getList().remove(position);
+
+            // Set the edit operation in mChapterAdapter
+            mChapterAdapter.editOperations[2] = position;
+
+            // Notify the Adapter of the change
+            mChapterAdapter.notifyItemRemoved(position);
+        }
+
+        @Override
+        public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+            super.clearView(recyclerView, viewHolder);
+
+            // Retrieve the edit operation initiated by the user
+            int start = mChapterAdapter.editOperations[0];
+            int end = mChapterAdapter.editOperations[1];
+            int remove = mChapterAdapter.editOperations[2];
+
+            // Initialize the AsyncTask for editing the database
+            ModifyDatabase asyncTask;
+
+            // Check whether the user has initiated as a swap or removal operation
+            if (start != -1 && end != -1) {
+                if (start == end) {
+                    // If start and end positions are the same, do nothing
+                    return;
+                }
+                // Swap procedure
+                asyncTask = new ModifyDatabase(start, end);
+            } else if (remove != -1) {
+                // Removal procedure
+                asyncTask = new ModifyDatabase(remove);
+            } else {
+                // No edit operations initiated by the user, do nothing
+                return;
+            }
+
+            // Execute the AsyncTask for modifying the database
+            asyncTask.execute();
+
+            // Reset the edit operations
+            mChapterAdapter.editOperations = new int[] {-1, -1, -1};
+        }
+
+        @Override
+        public boolean isLongPressDragEnabled() {
+            // Disable long-press drag. Utilizing drag handle
+            return false;
+        }
+
+        class ModifyDatabase extends AsyncTask<Void, Void, Void> {
+            // Member variables
+            int start = -1;
+            int end = -1;
+            int remove = -1;
+
+            /**
+             * Constructor for a swap procedure
+             * @param start Position of the entry to be moved
+             * @param end Position that the entry should end in
+             */
+            ModifyDatabase(int start, int end) {
+                this.start = start;
+                this.end = end;
+            }
+
+            /**
+             * Constructor for a removal procedure
+             * @param remove Position of the entry to be removed
+             */
+            ModifyDatabase(int remove) {
+                this.remove = remove;
+            }
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                // Initialize the ArrayList that will hold all operations that need to be applied in
+                // batch
+                ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+
+                // Selection for update
+                String selection = ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
+
+                // Determine whether an entry needs to be moved or removed from the database
+                if (start != -1 && end != -1) {
+                    // Move the cursor to the position of the item that needs to be moved
+                    mCursor.moveToPosition(start);
+
+                    // Create variable to hold the chapterId of the entry that needs to be moved
+                    long mChapterId = -1;
+
+                    for (int i = 0; i < Math.abs(end - start) + 1; i++) {
+                        // Initialize variables
+                        int newPosition;
+                        int oldPosition = mCursor.getInt(ChapterEntry.IDX_CHAPTER_ORDER);
+
+                        if (oldPosition == start) {
+                            // Move the selected entry to the end of the database
+                            newPosition = mCursor.getCount() + 10;
+
+                            mChapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+                        } else if (start < end) {
+                            // Moving an entry to a higher sort order
+                            if (oldPosition > start && oldPosition <= end) {
+                                newPosition = oldPosition - 1;
+                            } else {
+                                continue;
+                            }
+                        } else {
+                            // Moving an entry to a lower sort order
+                            if (oldPosition < start && oldPosition >= end) {
+                                newPosition = oldPosition + 1;
+                            } else {
+                                continue;
+                            }
+                        }
+
+                        // Retrieve the ChapterId of the entry being modified
+                        long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+
+                        // Update arguments
+                        String[] selectionArgs = new String[] {Long.toString(chapterId)};
+
+                        // Create the update operation
+                        ContentProviderOperation operation = ContentProviderOperation
+                                .newUpdate(ChapterEntry.CONTENT_URI)
+                                .withSelection(selection, selectionArgs)
+                                .withValue(ChapterEntry.COLUMN_CHAPTER_ORDER, newPosition)
+                                .build();
+
+                        // Add the update operation to the list of operations to be performed
+                        operations.add(operation);
+
+                        // Depending on whether items need to be shifted up or down, move the Cursor
+                        if (start < end ) {
+                            mCursor.moveToNext();
+                        } else {
+                            mCursor.moveToPrevious();
+                        }
+                    }
+                    // Update arguments
+                    String[] selectionArgs = new String[] {Long.toString(mChapterId)};
+
+                    // Add the final update operation that will place the selected entry at the
+                    // 'end' position
+                    ContentProviderOperation operation = ContentProviderOperation
+                            .newUpdate(ChapterEntry.CONTENT_URI)
+                            .withSelection(selection, selectionArgs)
+                            .withValue(ChapterEntry.COLUMN_CHAPTER_ORDER, end)
+                            .build();
+
+                    operations.add(operation);
+                } else if (remove != -1) {
+                    // Move the Cursor into position
+                    mCursor.moveToPosition(remove);
+                    do {
+                        // Initialize variables
+                        int newPosition;
+                        int oldPosition = mCursor.getInt(ChapterEntry.IDX_CHAPTER_ORDER);
+                        long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+
+                        // Populate the selection argument for the update/removal operation
+                        String[] selectionArgs = new String[] {Long.toString(chapterId)};
+
+                        if (oldPosition == remove) {
+                            // Remove the entry selected by the user
+                            ContentProviderOperation operation = ContentProviderOperation
+                                    .newDelete(ChapterEntry.CONTENT_URI)
+                                    .withSelection(selection, selectionArgs)
+                                    .build();
+
+                            // Add the operation to the list
+                            operations.add(operation);
+                        } else {
+                            // Move all following entries up one
+                            newPosition = oldPosition - 1;
+                            ContentProviderOperation operation = ContentProviderOperation
+                                    .newUpdate(ChapterEntry.CONTENT_URI)
+                                    .withSelection(selection, selectionArgs)
+                                    .withValue(ChapterEntry.COLUMN_CHAPTER_ORDER, newPosition)
+                                    .build();
+
+                            // Add the operation to the list
+                            operations.add(operation);
+                        }
+                    } while (mCursor.moveToNext());
+                } else {
+                    return null;
+                }
+
+                try {
+                    // Perform the update/removal operations
+                    mContext.getContentResolver().applyBatch(RecipeContract.CONTENT_AUTHORITY, operations);
+                } catch (RemoteException | OperationApplicationException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }
+    };
 }

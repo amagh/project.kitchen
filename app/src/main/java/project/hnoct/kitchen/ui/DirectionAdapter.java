@@ -73,7 +73,6 @@ public class DirectionAdapter extends RecyclerView.Adapter<DirectionAdapter.Dire
         @BindView(R.id.list_direction_step_text) TextView directionStepText;
         @BindView(R.id.list_direction_text) TextView directionText;
         @BindView(R.id.list_direction_overlay) ImageView directionOverlay;
-        boolean overlayEnabled = false;
 
         /** Might be able to do this with touch selector instead **/
         @Override
