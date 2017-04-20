@@ -11,6 +11,9 @@
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:descendantFocusability="beforeDescendants"
         android:fitsSystemWindows="true">
 
         <android.support.design.widget.AppBarLayout
@@ -23,7 +26,63 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"
-                app:popupTheme="@style/AppTheme.PopupOverlay" />
+                app:popupTheme="@style/AppTheme.PopupOverlay">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingRight="@dimen/activity_vertical_margin"
+                    android:paddingEnd="@dimen/activity_vertical_margin"
+                    >
+                    <TextView
+                        android:id="@+id/app_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:text="kitchen"
+                        android:textColor="@color/opaque_white"
+                        style="@style/titleText"/>
+
+                    <ImageView
+                        android:id="@+id/search_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:padding="@dimen/button_margin"
+                        android:src="@drawable/ic_menu_search"/>
+
+                    <!--<View-->
+                        <!--android:id="@+id/left_bound"-->
+                        <!--android:layout_width="0dp"-->
+                        <!--android:layout_height="0dp"-->
+                        <!--android:layout_alignRight="@id/app_title"-->
+                        <!--android:layout_alignEnd="@id/app_title" />-->
+
+                    <View
+                        android:id="@+id/right_bound"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_alignLeft="@id/search_icon"
+                        android:layout_alignStart="@id/search_icon" />
+
+                    <EditText
+                        android:id="@+id/searchview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textAutoCorrect"
+                        android:imeOptions="actionSearch"
+                        android:hint="@string/search_hint"
+
+                        android:layout_alignRight="@id/right_bound"
+                        android:layout_alignEnd="@id/right_bound"
+                        android:visibility="gone"/>
+
+                </RelativeLayout>
+
+
+
+            </android.support.v7.widget.Toolbar>
 
         </android.support.design.widget.AppBarLayout>
 

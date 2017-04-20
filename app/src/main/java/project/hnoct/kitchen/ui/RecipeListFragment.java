@@ -27,6 +27,8 @@ import project.hnoct.kitchen.data.Utilities;
  * Fragment for the main view displaying all recipes loaded from web
  */
 public class RecipeListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    /** Constants **/
+    private static final int RECIPE_LOADER = 0;
 
     /** Member Variables **/
     private Context mContext;                   // Interface for global context
@@ -91,7 +93,23 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         // Set the adapter to the RecyclerView
         mRecipeRecyclerView.setAdapter(mRecipeAdapter);
 
+        ((RecipeListActivity) getActivity()).setSearchListener(new RecipeListActivity.SearchListener() {
+            @Override
+            public void onSearch(String searchTerm) {
+                search(searchTerm);
+            }
+        });
+
         return rootView;
+    }
+
+    private void search(String searchTerm) {
+        String[] selectionArgs = new String[] {"%" + searchTerm + "%"};
+
+        Bundle args = new Bundle();
+        args.putStringArray(getString(R.string.selection_args_key), selectionArgs);
+
+        getLoaderManager().restartLoader(RECIPE_LOADER, args, this);
     }
 
     @Override
@@ -105,12 +123,20 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         // Set the sort order to newest recipes first
         String sortOrder = RecipeEntry.COLUMN_DATE_ADDED + " DESC";
 
+        String selection = null;
+        String[] selectionArgs = null;
+
+        if (args != null) {
+            selection = RecipeEntry.COLUMN_RECIPE_NAME + " LIKE ?";
+            selectionArgs = args.getStringArray(getString(R.string.selection_args_key));
+        }
+
         // Return CursorLoader set to recipe table
         return new CursorLoader(mContext,
                 recipeUri,
                 projection,
-                null,
-                null,
+                selection,
+                selectionArgs,
                 sortOrder
         );
     }
@@ -133,7 +159,7 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         mContext = getActivity();
         mResolver = mContext.getContentResolver();
         /* Constants */
-        int RECIPE_LOADER = 0;
+
         getLoaderManager().initLoader(RECIPE_LOADER, null, this);
     }
 

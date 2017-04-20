@@ -158,4 +158,7 @@
     <string name="selection_key">selection</string>
     <string name="selection_args_key">selectionArgs</string>
     <string name="sort_order_key">sortOrder</string>
+
+    <!-- Search -->
+    <string name="search_hint">Search</string>
 </resources>

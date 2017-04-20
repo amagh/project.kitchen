@@ -8,19 +8,25 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.renderscript.ScriptGroup;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.MenuItem;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -35,6 +41,7 @@ import java.nio.channels.FileChannel;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnEditorAction;
 import butterknife.Optional;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract;
@@ -54,6 +61,7 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     public static boolean mTwoPane = false;
     public static boolean mDetailsVisible = false;
     private static int mPosition;
+    private SearchListener mSearchListener;
 
     // Bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -68,6 +76,9 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     @Nullable @BindView(R.id.recipe_detail_container) FrameLayout mDetailsContainer;
     @Nullable @BindView(R.id.detail_fragment_container) RelativeLayout mContainer;
     @Nullable @BindView(R.id.temp_button) ImageView mTempButton;
+    @Nullable @BindView(R.id.searchview) EditText mSearchView;
+    @Nullable @BindView(R.id.search_icon) ImageView mSearchIcon;
+    @Nullable @BindView(R.id.app_title) TextView mTitle;
 
     @Optional
     @OnClick(R.id.temp_button)
@@ -77,6 +88,54 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
         RecipeListFragment fragment = (RecipeListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
         fragment.setLayoutColumns();
 //        fragment.mRecipeRecyclerView.scrollToPosition(mPosition);
+    }
+
+    @Optional
+    @OnEditorAction(R.id.searchview)
+    boolean onEditorAction(int actionId) {
+        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            String searchTerm = mSearchView != null ? mSearchView.getText().toString() : null;
+            if (mSearchListener != null && searchTerm != null) mSearchListener.onSearch(searchTerm);
+
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
+            return true;
+        }
+        return false;
+    }
+
+    @Optional
+    @OnClick(R.id.search_icon)
+    void onClick() {
+        if (mSearchView.getVisibility() == View.GONE) {
+            showSearch();
+        } else {
+            hideSearch();
+        }
+
+    }
+
+    void showSearch() {
+        mSearchView.setVisibility(View.VISIBLE);
+        mSearchView.requestFocus();
+        mSearchIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_close_clear_cancel));
+        mTitle.setVisibility(View.GONE);
+
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(this.getCurrentFocus(), 0);
+    }
+
+    void hideSearch() {
+        mSearchView.setVisibility(View.GONE);
+        mSearchIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_search));
+        mTitle.setVisibility(View.VISIBLE);
+        if (mSearchListener != null) {
+            mSearchView.setText("");
+            mSearchListener.onSearch("");
+        }
+
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
     }
 
     @OnClick(R.id.main_menu_fab)
@@ -336,6 +395,14 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
             recipeListFragment.setLayoutColumns();
         }
 
+    }
+
+    interface SearchListener {
+        void onSearch(String searchTerm);
+    }
+
+    public void setSearchListener(SearchListener listener) {
+        mSearchListener = listener;
     }
 
 }
