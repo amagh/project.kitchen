@@ -14,4 +14,10 @@
         android:title="@string/action_edit"
         android:icon="@drawable/ic_menu_edit"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/detail_menu_add_to_recipebook"
+        android:title="@string/action_add_to_recipebook"
+        android:icon="@drawable/perm_group_bookmarks"
+        app:showAsAction="ifRoom" />
 </menu>

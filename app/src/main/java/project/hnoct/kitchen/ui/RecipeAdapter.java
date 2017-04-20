@@ -6,11 +6,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.util.Pair;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -475,7 +473,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
         mDragListener = listener;
     }
 
-    public class RecipeViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class RecipeViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         @Nullable @BindView(R.id.list_recipe_title) TextView recipeTitle;
         @Nullable @BindView(R.id.list_recipe_author_text) TextView recipeAuthor;
         @Nullable @BindView(R.id.list_recipe_attribution_text) TextView recipeAttribution;
@@ -491,7 +489,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
 
         @Optional
         @OnTouch(R.id.list_recipe_touchpad)
-        boolean onTouch(View view, MotionEvent event) {
+        boolean onTouchPadTouch(View view, MotionEvent event) {
             if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
                 // If the handle is touched, inform the observer to initiate the drag action
                 if (mDragListener != null) {
@@ -526,7 +524,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
             super(view);
             ButterKnife.bind(this, view);
 
-            // Set the onClickListener to the ViewHolder
+            // Set the listeners to the ViewHolder
             view.setOnClickListener(this);
         }
 

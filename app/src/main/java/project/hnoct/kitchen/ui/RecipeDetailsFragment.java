@@ -1,6 +1,8 @@
 package project.hnoct.kitchen.ui;
 
+import android.app.FragmentManager;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -30,6 +32,7 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
+import project.hnoct.kitchen.dialog.AddToRecipeBookDialog;
 import project.hnoct.kitchen.sync.RecipeImporter;
 
 /**
@@ -298,6 +301,55 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
                 Intent intent = new Intent(mContext, CreateRecipeActivity.class);
                 intent.setData(RecipeEntry.buildRecipeUriFromId(mRecipeId));
                 startActivity(intent);
+                return true;
+            }
+
+            case R.id.detail_menu_add_to_recipebook: {
+                AddToRecipeBookDialog dialog = new AddToRecipeBookDialog();
+                dialog.show(getActivity().getFragmentManager(), "dialog");
+                dialog.setChapterSelectedListener(new AddToRecipeBookDialog.ChapterSelectedListener() {
+                    @Override
+                    public void onChapterSelected(long bookId, long chapterId) {
+                        // Initialize parameters for querying the database for recipe order
+                        Uri linkRecipeBookUri = LinkRecipeBookEntry.CONTENT_URI;
+                        String[] projection = LinkRecipeBookEntry.PROJECTION;
+                        String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
+                        String[] selectionArgs = new String[] {Long.toString(chapterId)};
+                        String sortOrder = LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + " DESC";
+
+                        // Query the database to determine the new recipe's order in the chapter
+                        Cursor cursor = mContentResolver.query(
+                                linkRecipeBookUri,
+                                projection,
+                                selection,
+                                selectionArgs,
+                                sortOrder
+                        );
+
+                        int recipeOrder;
+                        if (cursor !=  null && cursor.moveToFirst()) {
+                            recipeOrder = cursor.getInt(LinkRecipeBookEntry.IDX_RECIPE_ORDER) + 1;
+                            // Close the Cursor
+                            cursor.close();
+                        } else {
+                            recipeOrder = 0;
+                        }
+
+                        // Generate the ContentValues to insert the entry in the database
+                        ContentValues values = new ContentValues();
+                        values.put(RecipeEntry.COLUMN_RECIPE_ID, mRecipeId);
+                        values.put(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID, bookId);
+                        values.put(ChapterEntry.COLUMN_CHAPTER_ID, chapterId);
+                        values.put(LinkRecipeBookEntry.COLUMN_RECIPE_ORDER, recipeOrder);
+
+                        // Insert into database
+                        mContentResolver.insert(
+                                LinkRecipeBookEntry.CONTENT_URI,
+                                values
+                        );
+                    }
+                });
+                return true;
             }
         }
 

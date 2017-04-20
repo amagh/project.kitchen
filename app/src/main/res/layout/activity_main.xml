@@ -52,13 +52,6 @@
                         android:padding="@dimen/button_margin"
                         android:src="@drawable/ic_menu_search"/>
 
-                    <!--<View-->
-                        <!--android:id="@+id/left_bound"-->
-                        <!--android:layout_width="0dp"-->
-                        <!--android:layout_height="0dp"-->
-                        <!--android:layout_alignRight="@id/app_title"-->
-                        <!--android:layout_alignEnd="@id/app_title" />-->
-
                     <View
                         android:id="@+id/right_bound"
                         android:layout_width="0dp"
@@ -73,7 +66,6 @@
                         android:inputType="textAutoCorrect"
                         android:imeOptions="actionSearch"
                         android:hint="@string/search_hint"
-
                         android:layout_alignRight="@id/right_bound"
                         android:layout_alignEnd="@id/right_bound"
                         android:visibility="gone"/>

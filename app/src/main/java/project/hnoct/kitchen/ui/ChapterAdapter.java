@@ -14,7 +14,6 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -55,7 +54,9 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
     private Cursor mCursor;
     private CursorManager mCursorManager;
     private FragmentManager mFragmentManager;
-    private RecipeClickListener mListener;
+    private RecipeClickListener mRecipeClickListener;
+    private ChapterClickListener mChapterClickListener;
+    private DeleteChapterListener mDeleteListener;
     private OnStartDragListener mDragListener;
     private RecipeAdapter[] mRecipeAdapterArray;
     private ItemTouchHelper[] mItemTouchHelperArray;
@@ -88,7 +89,6 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         cursorManager.setCursorChangeListener(new CursorManager.CursorChangeListener() {
             @Override
             public void onCursorChanged(int position) {
-                Log.d(LOG_TAG, "Cursor changed!");
                 if (mRecipeAdapterArray != null && mRecipeAdapterArray[position] != null) {
                     mRecipeAdapterArray[position].swapCursor(mCursorManager.getCursor(position));
                     mRecipeAdapterArray[position].notifyDataSetChanged();
@@ -97,12 +97,16 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         });
     }
 
+    public ChapterAdapter(Context context) {
+        mContext = context;
+    }
+
     /**
      * Changes the Cursor being used to display data
      * @param newCursor New Cursor to be used for data
      * @return Cursor currently used after the change
      */
-    Cursor swapCursor(Cursor newCursor) {
+    public Cursor swapCursor(Cursor newCursor) {
         // Check if the new Cursor is different than the old one
         if (newCursor != null && mCursor != newCursor) {
             // Set the member Cursor to the new Cursor
@@ -244,7 +248,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                 @Override
                 public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
                     // Relay the click event and its data to the registered Observer
-                    mListener.onRecipeClicked(recipeId, viewHolder);
+                    mRecipeClickListener.onRecipeClicked(recipeId, viewHolder);
                 }
             });
             recipeAdapter.setPosition(position);
@@ -253,7 +257,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             mRecipeAdapterArray[position] = recipeAdapter;
 
             // Set whether the RecipeAdapter should use the DetailedView layout or master-flow/single
-            recipeAdapter.setUseDetailView(useDetailView, mFragmentManager);
+            if (mFragmentManager != null) recipeAdapter.setUseDetailView(useDetailView, mFragmentManager);
         }
 
         // Check if the Adapter is in edit mode
@@ -304,7 +308,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         });
 
         // Swap the Cursor in the recipeAdapter with the new one
-        recipeAdapter.swapCursor(mCursorManager.getCursor(position));
+        if (mCursorManager != null) recipeAdapter.swapCursor(mCursorManager.getCursor(position));
 
         // Set the Adapter to the ViewHolder's RecyclerView
         holder.recipeRecyclerView.setAdapter(recipeAdapter);
@@ -323,6 +327,14 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         void onStartDrag(ChapterViewHolder viewHolder);
     }
 
+    public interface ChapterClickListener {
+        void onChapterClicked(long chapterId);
+    }
+
+    public void setChapterClickListener(ChapterClickListener listener) {
+        mChapterClickListener = listener;
+    }
+
     void setOnStartDragListener(OnStartDragListener listener) {
         mDragListener = listener;
     }
@@ -332,7 +344,15 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
      * @param listener
      */
     void setRecipeClickListener(RecipeClickListener listener) {
-        mListener = listener;
+        mRecipeClickListener = listener;
+    }
+
+    interface DeleteChapterListener {
+        void onDelete(int position);
+    }
+
+    void setDeleteChapterListener(DeleteChapterListener listener) {
+        mDeleteListener = listener;
     }
 
     @Override
@@ -350,13 +370,14 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         return (long) mList.get(position).get(CHAPTER_ID);
     }
 
-    class ChapterViewHolder extends RecyclerView.ViewHolder {
+    class ChapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // Views bound by ButterKnife
         @BindView(R.id.list_chapter_title) TextView titleText;
         @BindView(R.id.list_chapter_description) TextView descriptionText;
         @BindView(R.id.list_chapter_recipe_recyclerview) NonScrollingRecyclerView recipeRecyclerView;
         @Nullable @BindView(R.id.list_chapter_add_recipe) CardView addRecipeButton;
         @Nullable @BindView(R.id.list_chapter_touchpad) ImageView touchpad;
+        @Nullable @BindView(R.id.list_chapter_delete) ImageView deleteButton;
 //        @BindView(R.id.list_chapter_title) EditText titleText;
 //        @BindView(R.id.list_chapter_description) EditText descriptionText;
 
@@ -374,7 +395,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
 
             // Notify the observer to allow the user to select a new recipe to be added
-            if (mListener != null) mListener.onAddRecipeClicked(chapterId);
+            if (mRecipeClickListener != null) mRecipeClickListener.onAddRecipeClicked(chapterId);
         }
 
         @Optional
@@ -391,6 +412,14 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         }
 
         @Optional
+        @OnClick(R.id.list_chapter_delete)
+        void onClickDelete(View view) {
+            int position = getAdapterPosition();
+
+            if (mDeleteListener != null) mDeleteListener.onDelete(position);
+        }
+
+        @Optional
         @OnTextChanged(R.id.list_chapter_title)
         void onTitleChanged(CharSequence text) {
             int position = getAdapterPosition();
@@ -399,7 +428,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             mList.get(position).put(CHAPTER_NAME, text.toString());
 
             // Add the entry to list of items to be updated
-            if (!editChapters.contains(position)) editChapters.add(position);
+            if (editChapters != null && !editChapters.contains(position)) editChapters.add(position);
         }
 
         @Optional
@@ -411,13 +440,31 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             mList.get(position).put(CHAPTER_DESCRIPTION, text.toString());
 
             // Add the entry to list of items to be updated
-            if (!editChapters.contains(position)) editChapters.add(position);
+            if (editChapters != null && !editChapters.contains(position)) editChapters.add(position);
         }
 
 
         public ChapterViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
+            view.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (mChapterClickListener != null) {
+                // Get the Adapter's position
+                int position = getAdapterPosition();
+
+                // Move the Cursor into position
+                mCursor.moveToPosition(position);
+
+                // Get the chapter ID
+                long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+
+                // Send the chapter ID to mChapterClickListener
+                mChapterClickListener.onChapterClicked(chapterId);
+            }
         }
     }
 
@@ -756,7 +803,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                 // Iterate through each entry
                 for (int i : editChapters) {
                     // If Cursor is null or invalid, then do nothing
-                    if (mCursor == null || !mCursor.moveToFirst()) return null;
+                    if (mCursor == null || mCursor.isClosed() || !mCursor.moveToFirst()) return null;
 
                     // Move the Cursor to position being edited
                     mCursor.moveToPosition(i);

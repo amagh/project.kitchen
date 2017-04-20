@@ -32,7 +32,7 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
     private CursorManager mCursorManager;
     private RecipeBookAdapterOnClickHandler mClickHandler;
 
-    RecipeBookAdapter(Context context, RecipeBookAdapterOnClickHandler clickHandler, CursorManager cursorManager) {
+    public RecipeBookAdapter(Context context, RecipeBookAdapterOnClickHandler clickHandler, CursorManager cursorManager) {
         // Initialize member variables
         mContext = context;
         mClickHandler = clickHandler;
@@ -46,6 +46,11 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
                 notifyItemChanged(position);
             }
         });
+    }
+
+    public RecipeBookAdapter(Context context, RecipeBookAdapterOnClickHandler clickHandler) {
+        mContext = context;
+        mClickHandler = clickHandler;
     }
 
     @Override
@@ -73,7 +78,7 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
         holder.recipeBookDescriptionText.setText(bookDescription);
 
         // Retrieve the Cursor from mCursorManager
-        Cursor cursor = mCursorManager.getCursor(position);
+        Cursor cursor = mCursorManager != null ? mCursorManager.getCursor(position) : null;
 
         if (cursor != null && cursor.moveToFirst()) {
             // Set the first recipe image of each chapter to the correct thumbnail in the recipe
@@ -130,7 +135,7 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
      * Callback interface sending information about which recipe book as been selected so the
      * ChapterActivity can be correctly called
      */
-    interface RecipeBookAdapterOnClickHandler {
+    public interface RecipeBookAdapterOnClickHandler {
         void onClick(RecipeBookViewHolder viewHolder, long bookId);
     }
 
@@ -144,7 +149,7 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
         notifyDataSetChanged();
     }
 
-    class RecipeBookViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class RecipeBookViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         @BindView(R.id.list_recipebook_image_0) ImageView image0;
         @BindView(R.id.list_recipebook_image_1) ImageView image1;
         @BindView(R.id.list_recipebook_image_2) ImageView image2;

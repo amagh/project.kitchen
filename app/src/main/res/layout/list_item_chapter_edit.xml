@@ -22,10 +22,9 @@
             android:src="@drawable/ic_touchpad_custom"/>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_weight="1"
             android:orientation="vertical">
 
             <EditText
@@ -53,6 +52,14 @@
                 tools:text="This is the first chapter of my book and it contains some decent recipes... I think."/>
 
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/list_chapter_delete"
+            android:layout_width="@dimen/touchpad_size"
+            android:layout_height="@dimen/touchpad_size"
+            android:padding="@dimen/button_margin_small"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_menu_delete"/>
     </LinearLayout>
 
     <project.hnoct.kitchen.view.NonScrollingRecyclerView

@@ -9,6 +9,7 @@
     <dimen name="text_vertical_padding_small">8dp</dimen>
     <dimen name="touchpad_size">36dp</dimen>
     <dimen name="button_margin">8dp</dimen>
+    <dimen name="button_margin_small">4dp</dimen>
 
     <!-- Navigation Drawer -->
     <dimen name="navigation_drawer_width">200dp</dimen>

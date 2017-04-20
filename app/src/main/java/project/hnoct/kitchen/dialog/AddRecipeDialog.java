@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
@@ -17,7 +16,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
-import project.hnoct.kitchen.ui.ChapterActivity;
 import project.hnoct.kitchen.ui.RecipeAdapter;
 import project.hnoct.kitchen.ui.RecipeListActivity;
 
@@ -42,7 +40,7 @@ public class AddRecipeDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         // Inflate the view to be used
-        View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_add_recipe, null);
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_recyclerview, null);
         ButterKnife.bind(this, view);
 
         mRecipeAdapter = new RecipeAdapter(
@@ -112,7 +110,7 @@ public class AddRecipeDialog extends DialogFragment {
 
     /**
      * Registers an observer to be notified for recipe selection
-     * @param listener
+     * @param listener SelectionListener to be set to the member variable
      */
     public void setSelectionListener(SelectionListener listener) {
         mListener = listener;

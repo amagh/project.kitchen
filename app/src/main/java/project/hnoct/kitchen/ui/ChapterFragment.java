@@ -2,6 +2,7 @@ package project.hnoct.kitchen.ui;
 
 import android.content.ContentProviderOperation;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -25,6 +27,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -125,6 +128,36 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
             }
         });
 
+        // Initialize the Listener to observe when a chapter has been deleted
+        mChapterAdapter.setDeleteChapterListener(new ChapterAdapter.DeleteChapterListener() {
+            @Override
+            public void onDelete(final int position) {
+                // Show a dialog confirming the user's desire to delete the chapter
+                final AlertDialog dialog = new AlertDialog.Builder(mContext).create();
+
+                // Set the message to alert the user
+                dialog.setMessage("Are you sure you want to remove this chapter and all its contents?");
+                dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(android.R.string.yes), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // If user confirms, delete the chapter
+                        removeChapter(position);
+                        dialog.dismiss();
+                    }
+                });
+
+                dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(android.R.string.no), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // Dismiss the dialog and do nothing
+                        dialog.dismiss();
+                    }
+                });
+
+                dialog.show();
+            }
+        });
+
         // Initialize the ItemTouchHelper for interacting with mRecyclerView
         mHelper = new ItemTouchHelper(ithCallback);
 
@@ -161,11 +194,31 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
 
                     // Attach the ItemTouchHelper to a null RecyclerView
                     mHelper.attachToRecyclerView(null);
+
+                    // Calculate the number of pixels for the 4dp margin
+                    int px4 = (int) Utilities.convertDpToPixels(4);
+
+                    // Set the margin for the right side of mRecyclerView to prevent interference
+                    // from the SlidingAlphabeticalIndex
+                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mRecyclerView.getLayoutParams();
+                    params.setMargins(0, 0, px4, 0);
+
+                    // Set the LayoutParams to mRecyclerView
+                    mRecyclerView.setLayoutParams(params);
                 } else {
                     mChapterAdapter.enterEditMode();
 
                     // Attach the ItemTouchHelper to mRecyclerView
                     mHelper.attachToRecyclerView(mRecyclerView);
+
+                    // Calculate the number of pixels for the 20dp margin
+                    int px20 = (int) Utilities.convertDpToPixels(20);
+
+                    // Set margin and LayoutParams to mRecyclerView
+                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mRecyclerView.getLayoutParams();
+                    params.setMargins(0, 0, px20, 0);
+
+                    mRecyclerView.setLayoutParams(params);
                 }
             }
         }
@@ -361,12 +414,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
      */
     private void setLayoutColumns() {
         // Retrieve the number of columns needed by the device/orientation
-        int columns;
-        if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {
-            columns = getResources().getInteger(R.integer.recipe_twopane_columns);
-        } else {
-            columns = getResources().getInteger(R.integer.recipe_columns);
-        }
+        int columns = 1;
 
         // Instantiate the LayoutManager
         mLayoutManager = new StaggeredGridLayoutManager(
@@ -385,6 +433,18 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
         // Scroll to the position of the recipe last clicked due to change in visibility of the
         // Detailed View in Master-Flow layout
         mLayoutManager.scrollToPositionWithOffset(mPosition, 0);
+    }
+
+    void removeChapter(int position) {
+        // Remove the entry from mChapterAdapter's list
+        mChapterAdapter.getList().remove(position);
+
+        // Notify the Adapter of the change
+        mChapterAdapter.notifyItemRemoved(position);
+
+        // Remove the entry from the database in the background
+        ModifyDatabase asyncTask = new ModifyDatabase(position);
+        asyncTask.execute();
     }
 
     ItemTouchHelper.SimpleCallback ithCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -425,14 +485,6 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
             // Get the position of the ViewHolder swiped to remove
             int position = viewHolder.getAdapterPosition();
 
-            // Remove the entry from mChapterAdapter's list
-            mChapterAdapter.getList().remove(position);
-
-            // Set the edit operation in mChapterAdapter
-            mChapterAdapter.editOperations[2] = position;
-
-            // Notify the Adapter of the change
-            mChapterAdapter.notifyItemRemoved(position);
         }
 
         @Override
@@ -455,9 +507,6 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
                 }
                 // Swap procedure
                 asyncTask = new ModifyDatabase(start, end);
-            } else if (remove != -1) {
-                // Removal procedure
-                asyncTask = new ModifyDatabase(remove);
             } else {
                 // No edit operations initiated by the user, do nothing
                 return;
@@ -476,154 +525,160 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
             return false;
         }
 
-        class ModifyDatabase extends AsyncTask<Void, Void, Void> {
-            // Member variables
-            int start = -1;
-            int end = -1;
-            int remove = -1;
+        @Override
+        public boolean isItemViewSwipeEnabled() {
+            // Disable swipe to delete
+            return false;
+        }
+    };
 
-            /**
-             * Constructor for a swap procedure
-             * @param start Position of the entry to be moved
-             * @param end Position that the entry should end in
-             */
-            ModifyDatabase(int start, int end) {
-                this.start = start;
-                this.end = end;
-            }
+    class ModifyDatabase extends AsyncTask<Void, Void, Void> {
+        // Member variables
+        int start = -1;
+        int end = -1;
+        int remove = -1;
 
-            /**
-             * Constructor for a removal procedure
-             * @param remove Position of the entry to be removed
-             */
-            ModifyDatabase(int remove) {
-                this.remove = remove;
-            }
+        /**
+         * Constructor for a swap procedure
+         * @param start Position of the entry to be moved
+         * @param end Position that the entry should end in
+         */
+        ModifyDatabase(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
 
-            @Override
-            protected Void doInBackground(Void... voids) {
-                // Initialize the ArrayList that will hold all operations that need to be applied in
-                // batch
-                ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+        /**
+         * Constructor for a removal procedure
+         * @param remove Position of the entry to be removed
+         */
+        ModifyDatabase(int remove) {
+            this.remove = remove;
+        }
 
-                // Selection for update
-                String selection = ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
+        @Override
+        protected Void doInBackground(Void... voids) {
+            // Initialize the ArrayList that will hold all operations that need to be applied in
+            // batch
+            ArrayList<ContentProviderOperation> operations = new ArrayList<>();
 
-                // Determine whether an entry needs to be moved or removed from the database
-                if (start != -1 && end != -1) {
-                    // Move the cursor to the position of the item that needs to be moved
-                    mCursor.moveToPosition(start);
+            // Selection for update
+            String selection = ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
 
-                    // Create variable to hold the chapterId of the entry that needs to be moved
-                    long mChapterId = -1;
+            // Determine whether an entry needs to be moved or removed from the database
+            if (start != -1 && end != -1) {
+                // Move the cursor to the position of the item that needs to be moved
+                mCursor.moveToPosition(start);
 
-                    for (int i = 0; i < Math.abs(end - start) + 1; i++) {
-                        // Initialize variables
-                        int newPosition;
-                        int oldPosition = mCursor.getInt(ChapterEntry.IDX_CHAPTER_ORDER);
+                // Create variable to hold the chapterId of the entry that needs to be moved
+                long mChapterId = -1;
 
-                        if (oldPosition == start) {
-                            // Move the selected entry to the end of the database
-                            newPosition = mCursor.getCount() + 10;
+                for (int i = 0; i < Math.abs(end - start) + 1; i++) {
+                    // Initialize variables
+                    int newPosition;
+                    int oldPosition = mCursor.getInt(ChapterEntry.IDX_CHAPTER_ORDER);
 
-                            mChapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
-                        } else if (start < end) {
-                            // Moving an entry to a higher sort order
-                            if (oldPosition > start && oldPosition <= end) {
-                                newPosition = oldPosition - 1;
-                            } else {
-                                continue;
-                            }
+                    if (oldPosition == start) {
+                        // Move the selected entry to the end of the database
+                        newPosition = mCursor.getCount() + 10;
+
+                        mChapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+                    } else if (start < end) {
+                        // Moving an entry to a higher sort order
+                        if (oldPosition > start && oldPosition <= end) {
+                            newPosition = oldPosition - 1;
                         } else {
-                            // Moving an entry to a lower sort order
-                            if (oldPosition < start && oldPosition >= end) {
-                                newPosition = oldPosition + 1;
-                            } else {
-                                continue;
-                            }
+                            continue;
                         }
+                    } else {
+                        // Moving an entry to a lower sort order
+                        if (oldPosition < start && oldPosition >= end) {
+                            newPosition = oldPosition + 1;
+                        } else {
+                            continue;
+                        }
+                    }
 
-                        // Retrieve the ChapterId of the entry being modified
-                        long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+                    // Retrieve the ChapterId of the entry being modified
+                    long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
 
-                        // Update arguments
-                        String[] selectionArgs = new String[] {Long.toString(chapterId)};
+                    // Update arguments
+                    String[] selectionArgs = new String[] {Long.toString(chapterId)};
 
-                        // Create the update operation
+                    // Create the update operation
+                    ContentProviderOperation operation = ContentProviderOperation
+                            .newUpdate(ChapterEntry.CONTENT_URI)
+                            .withSelection(selection, selectionArgs)
+                            .withValue(ChapterEntry.COLUMN_CHAPTER_ORDER, newPosition)
+                            .build();
+
+                    // Add the update operation to the list of operations to be performed
+                    operations.add(operation);
+
+                    // Depending on whether items need to be shifted up or down, move the Cursor
+                    if (start < end ) {
+                        mCursor.moveToNext();
+                    } else {
+                        mCursor.moveToPrevious();
+                    }
+                }
+                // Update arguments
+                String[] selectionArgs = new String[] {Long.toString(mChapterId)};
+
+                // Add the final update operation that will place the selected entry at the
+                // 'end' position
+                ContentProviderOperation operation = ContentProviderOperation
+                        .newUpdate(ChapterEntry.CONTENT_URI)
+                        .withSelection(selection, selectionArgs)
+                        .withValue(ChapterEntry.COLUMN_CHAPTER_ORDER, end)
+                        .build();
+
+                operations.add(operation);
+            } else if (remove != -1) {
+                // Move the Cursor into position
+                mCursor.moveToPosition(remove);
+                do {
+                    // Initialize variables
+                    int newPosition;
+                    int oldPosition = mCursor.getInt(ChapterEntry.IDX_CHAPTER_ORDER);
+                    long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
+
+                    // Populate the selection argument for the update/removal operation
+                    String[] selectionArgs = new String[] {Long.toString(chapterId)};
+
+                    if (oldPosition == remove) {
+                        // Remove the entry selected by the user
+                        ContentProviderOperation operation = ContentProviderOperation
+                                .newDelete(ChapterEntry.CONTENT_URI)
+                                .withSelection(selection, selectionArgs)
+                                .build();
+
+                        // Add the operation to the list
+                        operations.add(operation);
+                    } else {
+                        // Move all following entries up one
+                        newPosition = oldPosition - 1;
                         ContentProviderOperation operation = ContentProviderOperation
                                 .newUpdate(ChapterEntry.CONTENT_URI)
                                 .withSelection(selection, selectionArgs)
                                 .withValue(ChapterEntry.COLUMN_CHAPTER_ORDER, newPosition)
                                 .build();
 
-                        // Add the update operation to the list of operations to be performed
+                        // Add the operation to the list
                         operations.add(operation);
-
-                        // Depending on whether items need to be shifted up or down, move the Cursor
-                        if (start < end ) {
-                            mCursor.moveToNext();
-                        } else {
-                            mCursor.moveToPrevious();
-                        }
                     }
-                    // Update arguments
-                    String[] selectionArgs = new String[] {Long.toString(mChapterId)};
-
-                    // Add the final update operation that will place the selected entry at the
-                    // 'end' position
-                    ContentProviderOperation operation = ContentProviderOperation
-                            .newUpdate(ChapterEntry.CONTENT_URI)
-                            .withSelection(selection, selectionArgs)
-                            .withValue(ChapterEntry.COLUMN_CHAPTER_ORDER, end)
-                            .build();
-
-                    operations.add(operation);
-                } else if (remove != -1) {
-                    // Move the Cursor into position
-                    mCursor.moveToPosition(remove);
-                    do {
-                        // Initialize variables
-                        int newPosition;
-                        int oldPosition = mCursor.getInt(ChapterEntry.IDX_CHAPTER_ORDER);
-                        long chapterId = mCursor.getLong(ChapterEntry.IDX_CHAPTER_ID);
-
-                        // Populate the selection argument for the update/removal operation
-                        String[] selectionArgs = new String[] {Long.toString(chapterId)};
-
-                        if (oldPosition == remove) {
-                            // Remove the entry selected by the user
-                            ContentProviderOperation operation = ContentProviderOperation
-                                    .newDelete(ChapterEntry.CONTENT_URI)
-                                    .withSelection(selection, selectionArgs)
-                                    .build();
-
-                            // Add the operation to the list
-                            operations.add(operation);
-                        } else {
-                            // Move all following entries up one
-                            newPosition = oldPosition - 1;
-                            ContentProviderOperation operation = ContentProviderOperation
-                                    .newUpdate(ChapterEntry.CONTENT_URI)
-                                    .withSelection(selection, selectionArgs)
-                                    .withValue(ChapterEntry.COLUMN_CHAPTER_ORDER, newPosition)
-                                    .build();
-
-                            // Add the operation to the list
-                            operations.add(operation);
-                        }
-                    } while (mCursor.moveToNext());
-                } else {
-                    return null;
-                }
-
-                try {
-                    // Perform the update/removal operations
-                    mContext.getContentResolver().applyBatch(RecipeContract.CONTENT_AUTHORITY, operations);
-                } catch (RemoteException | OperationApplicationException e) {
-                    e.printStackTrace();
-                }
+                } while (mCursor.moveToNext());
+            } else {
                 return null;
             }
+
+            try {
+                // Perform the update/removal operations
+                mContext.getContentResolver().applyBatch(RecipeContract.CONTENT_AUTHORITY, operations);
+            } catch (RemoteException | OperationApplicationException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
-    };
+    }
 }
