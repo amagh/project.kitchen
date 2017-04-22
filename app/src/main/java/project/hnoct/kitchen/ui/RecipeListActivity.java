@@ -1,5 +1,6 @@
 package project.hnoct.kitchen.ui;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.PendingIntent;
@@ -26,6 +27,11 @@ import android.view.View;
 import android.view.MenuItem;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.ConsoleMessage;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -33,10 +39,15 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,9 +57,11 @@ import butterknife.Optional;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeDbHelper;
+import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.dialog.ImportRecipeDialog;
 import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
+import project.hnoct.kitchen.sync.FoodDotComListAsyncTask;
 import project.hnoct.kitchen.sync.RecipeImporter;
 
 public class RecipeListActivity extends AppCompatActivity implements RecipeListFragment.RecipeCallBack, ImportRecipeDialog.ImportRecipeDialogListener {
@@ -112,7 +125,6 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
         } else {
             hideSearch();
         }
-
     }
 
     void showSearch() {
@@ -201,6 +213,69 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
 
         AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(this);
         syncTask.execute();
+
+        FoodDotComListAsyncTask asyncTask = new FoodDotComListAsyncTask(this);
+        asyncTask.execute();
+
+//        temp();
+    }
+
+    boolean loaded = false;
+    private void temp() {
+
+//        final WebView browser = new WebView(this);
+//        browser.getSettings().setJavaScriptEnabled(true);
+//        browser.addJavascriptInterface(new JavaScriptInterface(), "HTMLOUT");
+//        browser.setWebViewClient(new WebViewClient() {
+//            @Override
+//            public void onPageFinished(WebView view, String url) {
+//                if (!loaded) {
+//                    browser.loadUrl("javascript:window.HTMLOUT.processHTML('<head>'+document.getElementsByTagName('html')[0].innerHTML+'</head>');");
+//                    loaded = true;
+//                }
+//            }
+//        });
+//
+//        browser.loadUrl("http://www.food.com/recipe/all/popular");
+
+        final WebView browser = new WebView(this);
+/* JavaScript must be enabled if you want it to work, obviously */
+        browser.getSettings().setJavaScriptEnabled(true);
+
+/* Register a new JavaScript interface called HTMLOUT */
+        browser.addJavascriptInterface(new JavaScriptInterface(), "HTMLOUT");
+
+/* WebViewClient must be set BEFORE calling loadUrl! */
+        browser.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url)
+            {
+        /* This call inject JavaScript into the page which just finished loading. */
+                browser.loadUrl("javascript:HTMLOUT.processHTML('<head>'+document.getElementsByTagName('html')[0].innerHTML+'</head>');");
+            }
+        });
+
+/* load a web page */
+        browser.loadUrl("http://www.food.com/recipe/all/popular");
+    }
+
+    class JavaScriptInterface {
+        @JavascriptInterface
+        @SuppressWarnings("unused")
+        public void processHTML(String html) {
+            InputStream stream = new ByteArrayInputStream(html.getBytes(Charset.forName("UTF-8")));
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    Log.d(LOG_TAG, line);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Log.d(LOG_TAG, html);
+        }
     }
 
     private void selectDrawerItem(MenuItem item) {

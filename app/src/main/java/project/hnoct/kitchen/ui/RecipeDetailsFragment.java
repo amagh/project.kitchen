@@ -1,6 +1,5 @@
 package project.hnoct.kitchen.ui;
 
-import android.app.FragmentManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -232,7 +231,10 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         mIngredientAdapter.swapCursor(cursor);
 
         // Set the direction list for the DirectionAdapter so steps can be displayed
-        mDirectionAdapter.setDirectionList(Utilities.getDirectionList(recipeDirections));
+        if (recipeDirections != null) {
+            mDirectionAdapter.setDirectionList(Utilities.getDirectionList(recipeDirections));
+        }
+
 
         if (listener != null) {
             listener.onCursorLoaded(cursor, recipeServings);

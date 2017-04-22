@@ -1,5 +1,6 @@
 package project.hnoct.kitchen.ui;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,7 +27,7 @@ import project.hnoct.kitchen.data.Utilities;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 
-public class RecipeDetailsActivity extends AppCompatActivity implements RecipeDetailsFragment.CursorLoaderListener {
+public class RecipeDetailsActivity extends AppCompatActivity {
     /** Constants **/
 
     /** Member Variables **/
@@ -64,6 +65,25 @@ public class RecipeDetailsActivity extends AppCompatActivity implements RecipeDe
         // Instantiate the fragment and attach the Bundle containing the recipe URI
         mDetailsFragment = new RecipeDetailsFragment();
         mDetailsFragment.setArguments(args);;
+
+        final Context context = this;
+        // Set CursorLoaderListener to be informed when Cursor is finished loading so the
+        // nutrition drawer can be populated
+        mDetailsFragment.setCursorLoaderListener(new RecipeDetailsFragment.CursorLoaderListener() {
+            @Override
+            public void onCursorLoaded(Cursor cursor, int recipeServings) {
+                // Set the text for the serving and calorie disclosure in the NutritionDrawer
+                mNutritionServingDisclosureText.setText(
+                        getString(R.string.nutrition_info_serving_disclosure, recipeServings)
+                );
+                mNutritionCalorieDiscloureText.setText(
+                        getString(R.string.nutrition_info_disclosure, Utilities.getUserCalories(context))
+                );
+
+                // Set the nutrition list for the NutritionAdapter for the slide out drawer
+                mNutritionAdapter.setNutritionList(getNutritionList(cursor));
+            }
+        });
 
         if (savedInstanceState == null) {
             // Add the RecipeDetailsFragment to the container layout
@@ -138,26 +158,7 @@ public class RecipeDetailsActivity extends AppCompatActivity implements RecipeDe
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * CallBack method from the fragment that informs the Activity the CursorLoader has finished
-     * loading. Utilized to populate the NutritionDrawer so that it can slide above the toolbar
-     * in the Activity
-     * @param cursor Cursor referring to the information for the recipe
-     * @param recipeServings Number of servings per recipe
-     */
-    @Override
-    public void onCursorLoaded(Cursor cursor, int recipeServings) {
-        // Set the text for the serving and calorie disclosure in the NutritionDrawer
-        mNutritionServingDisclosureText.setText(
-                getString(R.string.nutrition_info_serving_disclosure, recipeServings)
-        );
-        mNutritionCalorieDiscloureText.setText(
-                getString(R.string.nutrition_info_disclosure, Utilities.getUserCalories(this))
-        );
 
-        // Set the nutrition list for the NutritionAdapter for the slide out drawer
-        mNutritionAdapter.setNutritionList(getNutritionList(cursor));
-    }
 
     /**
      * Retrieves the information regarding the recipe's nutrition from the Cursor so that it can

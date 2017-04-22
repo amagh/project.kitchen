@@ -48,9 +48,7 @@ public class RecipeProvider extends ContentProvider {
                 RecipeEntry.TABLE_NAME + " INNER JOIN " +
                         LinkIngredientEntry.TABLE_NAME + " ON " +
                         RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = " +
-                        LinkIngredientEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " AND " +
-                        RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = " +
-                        LinkIngredientEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " INNER JOIN " +
+                        LinkIngredientEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " INNER JOIN " +
                         IngredientEntry.TABLE_NAME + " ON " +
                         LinkIngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID + " = " +
                         IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID

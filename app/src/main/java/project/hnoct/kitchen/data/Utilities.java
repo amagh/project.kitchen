@@ -43,6 +43,7 @@ public class Utilities {
 
     private static final int CUSTOM_RECIPE_URI = 0;
     public static final int ALLRECIPES_URI = 1;
+    public static final int FOOD_URI = 2;
 
     public static final String URI = "uri";
     public static final String PROJECTION = "projection";
@@ -123,7 +124,7 @@ public class Utilities {
         }
         // If the input String does not contain any known measurements, then use Regex to
         // obtain the quantity of the ingredient
-        Pattern pattern = Pattern.compile("([0-9]* *[1-9]*\\/*[1-9]*) (.*)");
+        Pattern pattern = Pattern.compile("([0-9]* *-* *[1-9]*\\/*[1-9]*) (.*)");
         Matcher matcher = pattern.matcher(ingredientAndQuantity);
 
         if (matcher.find()) {
@@ -672,7 +673,7 @@ public class Utilities {
      * @param recipeUrl String form of link to website containing recipe
      * @return recipeId
      */
-    public static long getRecipeIdFromUrl(Context context, String recipeUrl) {
+    public static long getRecipeSourceIdFromUrl(Context context, String recipeUrl) {
         // Parse the URL into a Uri
         Uri recipeUri = Uri.parse(recipeUrl);
 
@@ -697,8 +698,43 @@ public class Utilities {
             case ALLRECIPES_URI: {
                 return getRecipeIdFromAllRecipesUrl(recipeUri.toString());
             }
+
+            case FOOD_URI: {
+                return getRecipeIdFromFoodUrl(recipeUri.toString());
+            }
+
             default: throw new UnsupportedOperationException("Unknown URL: " + recipeUrl);
         }
+    }
+
+    public static long getRecipeIdFromUrl(Context context, String recipeUrl) {
+        Cursor cursor = context.getContentResolver().query(
+                RecipeEntry.CONTENT_URI,
+                RecipeEntry.RECIPE_PROJECTION,
+                RecipeEntry.COLUMN_RECIPE_URL + " = ?",
+                new String[] {recipeUrl},
+                null
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            long recipeId = cursor.getLong(RecipeEntry.IDX_RECIPE_ID);
+            cursor.close();
+            return recipeId;
+        } else {
+            return -1;
+        }
+    }
+
+    public static long getRecipeIdFromFoodUrl(String recipeUrl) {
+        Pattern pattern = Pattern.compile("[0-9]+$");
+
+        Matcher match = pattern.matcher(recipeUrl);
+
+        if (match.find()) {
+            long recipeId = Long.parseLong(match.group());
+            return recipeId;
+        }
+        return -1;
     }
 
     /**
@@ -715,6 +751,8 @@ public class Utilities {
         uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#/*", ALLRECIPES_URI);
         uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#", ALLRECIPES_URI);
         uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#", ALLRECIPES_URI);
+        uriMatcher.addURI(context.getString(R.string.food_authority), "/recipe/*", FOOD_URI);
+        uriMatcher.addURI(context.getString(R.string.food_www_authority), "/recipe/*", FOOD_URI);
 
         // Return UriMatcher
         return uriMatcher;
@@ -833,29 +871,123 @@ public class Utilities {
      * @param mContext Interface to global Context
      * @param ingredientCVList List of ingredient ContentValues to be inserted to database
      */
-    public static void insertIngredientValues(Context mContext, List<ContentValues> ingredientCVList) {
+    public static void insertAndUpdateIngredientValues(Context mContext, List<ContentValues> ingredientCVList) {
         // Duplicate the list as to avoid ConcurrentModificationError
         List<ContentValues> workingList = new LinkedList<>(ingredientCVList);
 
-        // Bulk insert ingredient and link information
+        // Create an ArrayList for update operations
+        ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+
+        String selection = IngredientEntry.COLUMN_ALLRECIPES_INGREDIENT_ID + " = ? OR " +
+                IngredientEntry.COLUMN_FOOD_INGREDIENT_ID + " = ?";
+
+        // Iterate through the ContentValues to check whether they need to be added or updated
         for (ContentValues ingredientValue : workingList) {
-            // Check if ingredient is already in the database, if so, skip it
-            long ingredientId = ingredientValue.getAsLong(IngredientEntry.COLUMN_INGREDIENT_ID);
+            // Retrieves parameters to insert into database so they can be checked if they already
+            // exist
+            long ingredientId = -1;
+            long allrecipesId = -1;
+            long foodId = -1;
 
-            Cursor cursor = mContext.getContentResolver().query(
-                    IngredientEntry.CONTENT_URI,
-                    null,
-                    IngredientEntry.COLUMN_INGREDIENT_ID + " = ?",
-                    new String[] {Long.toString(ingredientId)},
-                    null
-            );
-
-            if (cursor.moveToFirst()) {
-                // Remove the ContentValues from the list to be bulk inserted
-                ingredientCVList.remove(ingredientValue);
+            if (ingredientValue.containsKey(IngredientEntry.COLUMN_INGREDIENT_ID)) {
+                // If ContentValues contains ingredientId value, remove it because it cannot be
+                // inserted. It is only used to ensure parity with the value inserted in the
+                // ingredient link table
+                ingredientId = ingredientValue.getAsLong(IngredientEntry.COLUMN_INGREDIENT_ID);
+                ingredientValue.remove(IngredientEntry.COLUMN_INGREDIENT_ID);
             }
-            // Close the Cursor
-            cursor.close();
+
+            if (ingredientValue.containsKey(IngredientEntry.COLUMN_ALLRECIPES_INGREDIENT_ID)) {
+                allrecipesId = ingredientValue.getAsLong(IngredientEntry.COLUMN_ALLRECIPES_INGREDIENT_ID);
+            }
+
+            if (ingredientValue.containsKey(IngredientEntry.COLUMN_FOOD_INGREDIENT_ID)) {
+                foodId = ingredientValue.getAsLong(IngredientEntry.COLUMN_FOOD_INGREDIENT_ID);
+            }
+
+            String ingredientName = ingredientValue.getAsString(IngredientEntry.COLUMN_INGREDIENT_NAME);
+
+            // Query the database to check whether it already contains the ingredient
+            long databaseIngredientId = getIngredientIdFromName(mContext, ingredientName);
+
+            if (databaseIngredientId != -1 && ingredientId != databaseIngredientId) {
+                // If database contains ingredient, check to ensure the value being inserted into
+                // the link table matches the value in the ingredients table
+                Log.d(LOG_TAG, "Mismatched ingredientId while attempting to insert ingredient!");
+                Log.d(LOG_TAG, "Expected value for " + ingredientName + ": " + ingredientId +
+                        " | Read value: " + databaseIngredientId);
+                return;
+            }
+
+            if (databaseIngredientId != -1 && (allrecipesId != -1 || foodId != -1)) {
+                // If database contains ingredient and it passes the check, remove it from the list
+                // to be bulk-inserted into the database
+                ingredientCVList.remove(ingredientValue);
+
+                // Create parameters for updating the database
+                String updateSelection = IngredientEntry.COLUMN_INGREDIENT_ID + " = ?";
+                String[] updateArgs = new String[] {Long.toString(ingredientId)};
+                String column = null;
+                long value = -1;
+
+                if (allrecipesId != -1) {
+                    column = IngredientEntry.COLUMN_ALLRECIPES_INGREDIENT_ID;
+                    value = allrecipesId;
+                }
+                if (foodId != -1) {
+                    column = IngredientEntry.COLUMN_FOOD_INGREDIENT_ID;
+                    value = foodId;
+                }
+
+                // Create the update operation
+                ContentProviderOperation operation = ContentProviderOperation
+                        .newUpdate(IngredientEntry.CONTENT_URI)
+                        .withSelection(updateSelection, updateArgs)
+                        .withValue(column, value)
+                        .build();
+
+                // Add to the update list
+                operations.add(operation);
+            }
+
+//            // Check if ingredient is already in the database, if so, skip it
+//            long allrecipesId = -1;
+//            long foodId = -1;
+//
+//            if (ingredientValue.containsKey(IngredientEntry.COLUMN_ALLRECIPES_INGREDIENT_ID)) {
+//                allrecipesId = ingredientValue.getAsLong(IngredientEntry.COLUMN_ALLRECIPES_INGREDIENT_ID);
+//            }
+//            if (ingredientValue.containsKey(IngredientEntry.COLUMN_FOOD_INGREDIENT_ID)) {
+//                foodId = ingredientValue.getAsLong(IngredientEntry.COLUMN_FOOD_INGREDIENT_ID);
+//            }
+//
+//            // If not being added from an online source, then the ingredient is sure be new
+//            if (allrecipesId == -1 && foodId == -1) continue;
+//
+//            // Selection Argument
+//            String[] selectionArgs = new String[] {Long.toString(allrecipesId), Long.toString(foodId)};
+//
+//            Cursor cursor = mContext.getContentResolver().query(
+//                    IngredientEntry.CONTENT_URI,
+//                    null,
+//                    selection,
+//                    selectionArgs,
+//                    null
+//            );
+//
+//            if (cursor != null && cursor.moveToFirst()) {
+//                // Remove the ContentValues from the list to be bulk inserted
+//                ingredientCVList.remove(ingredientValue);
+//            }
+//            // Close the Cursor
+//            if (cursor != null) cursor.close();
+        }
+
+        // Update existing values
+        try {
+            mContext.getContentResolver().applyBatch(RecipeContract.CONTENT_AUTHORITY, operations);
+        } catch (RemoteException | OperationApplicationException e) {
+            e.printStackTrace();
         }
 
         // Create an Array of Content Values to be bulk inserted from what remains in the
@@ -984,5 +1116,74 @@ public class Utilities {
         }
 
         return new Pair<>(valuesAdded, valuesUpdated);
+    }
+
+    /**
+     * Checks to make sure the recipe doesn't already exist in the database prior to bulk-insertion
+     * @param context Interface for global Context
+     * @param recipeCVList List containing recipes to be bulk-inserted
+     */
+    public static void insertAndUpdateRecipeValues(Context context, List<ContentValues> recipeCVList) {
+        /** Variables **/
+        int recipesInserted;
+        int recipesUpdated = 0;
+        List<ContentValues> workingList = new ArrayList<>(recipeCVList);    // To prevent ConcurrentModificationError
+
+        /** Constants **/
+        Uri recipeUri = RecipeEntry.CONTENT_URI;
+
+        for (ContentValues recipeValue : workingList) {
+            long recipeId = recipeValue.getAsLong(RecipeEntry.COLUMN_RECIPE_SOURCE_ID);
+            // Check if recipe exists in database
+
+            Cursor cursor = context.getContentResolver().query(
+                    recipeUri,
+                    RecipeEntry.RECIPE_PROJECTION,
+                    RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ?",
+                    new String[] {Long.toString(recipeId)},
+                    null
+            );
+
+            // Update appropriate recipes
+            if (cursor != null && cursor.moveToFirst()) {
+                // If cursor returns a row, then update the values if they have changed
+                // Get the review and rating values from the ContentValues to be updated
+                double dbRating = cursor.getDouble(RecipeEntry.IDX_RECIPE_RATING);
+                long dbReviews = cursor.getLong(RecipeEntry.IDX_RECIPE_REVIEWS);
+
+                if (recipeValue.getAsDouble(RecipeEntry.COLUMN_RATING) != dbRating ||
+                        recipeValue.getAsLong(RecipeEntry.COLUMN_REVIEWS) != dbReviews) {
+                    // Values do match database values. Update database.
+                    // Remove date from ContentValues so that the update doesn't push the recipe to
+                    // the top
+                    recipeValue.remove(RecipeEntry.COLUMN_DATE_ADDED);
+
+                    context.getContentResolver().update(
+                            recipeUri,
+                            recipeValue,
+                            RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ?",
+                            new String[]{Long.toString(recipeId)}
+                    );
+                    recipesUpdated++;
+                }
+
+                // Remove the recipeValues from the list to be bulk-inserted
+                recipeCVList.remove(recipeValue);
+            }
+            // Close the cursor
+            if (cursor != null) cursor.close();
+        }
+
+
+        // Create a ContentValues[] from the remaining values in the list
+        ContentValues[] recipeValues = new ContentValues[recipeCVList.size()];
+
+        // Add values of list to the array
+        recipeCVList.toArray(recipeValues);
+
+        // Bulk insert all remaining recipes
+        recipesInserted = context.getContentResolver().bulkInsert(recipeUri, recipeValues);
+
+        Log.v(LOG_TAG, recipesInserted + " recipes added and " + recipesUpdated + " recipes updated!");
     }
 }

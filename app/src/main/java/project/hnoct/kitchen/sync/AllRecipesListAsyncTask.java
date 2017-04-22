@@ -3,8 +3,6 @@ package project.hnoct.kitchen.sync;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -13,6 +11,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
 
@@ -27,13 +26,13 @@ import java.util.List;
 public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
     /** Constants **/
     private final String LOG_TAG = AllRecipesListAsyncTask.class.getSimpleName();
-    public static final String ALL_RECIPES_ATTRIBUTION = "Allrecipes.com";
 
     /** Member Variables **/
     private Context mContext;       // Interface to global context
     private ContentResolver mContentResolver;
 
     public AllRecipesListAsyncTask(Context context) {
+        // Initialize member variables
         mContext = context;
         mContentResolver = mContext.getContentResolver();
     }
@@ -71,7 +70,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                 recipeUrl = ALL_RECIPES_BASE_URL + recipeUrl;
 
                 // Get the recipe Id by converting the link to a URI and selecting the 2nd segment
-                long recipeId = Utilities.getRecipeIdFromUrl(mContext, recipeUrl);
+                long recipeId = Utilities.getRecipeSourceIdFromUrl(mContext, recipeUrl);
 
                 // Retrieve the recipe name, thumbnail URL, and description
                 Element recipeElement = recipe.getElementsByClass("grid-col__rec-image").first();
@@ -111,25 +110,24 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
                 // Create ContentValues from values
                 ContentValues recipeValues = new ContentValues();
-                recipeValues.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeId);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, recipeAuthor);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);
-                recipeValues.put(RecipeEntry.COLUMN_THUMBNAIL_URL, recipeThumbnailUrl);
                 recipeValues.put(RecipeEntry.COLUMN_IMG_URL, recipeImageUrl);
                 recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, recipeDescription);
                 recipeValues.put(RecipeEntry.COLUMN_RATING, rating);
                 recipeValues.put(RecipeEntry.COLUMN_REVIEWS, reviews);
                 recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, timeAdded);
                 recipeValues.put(RecipeEntry.COLUMN_FAVORITE, 0);
-                recipeValues.put(RecipeEntry.COLUMN_SOURCE, ALL_RECIPES_ATTRIBUTION);
+                recipeValues.put(RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_allrecipes));
 
                 recipeCVList.add(recipeValues);
 
                 timeAdded--;
             }
 
-            insertAndUpdateValues(recipeCVList);
+            Utilities.insertAndUpdateRecipeValues(mContext, recipeCVList);
         } catch(IOException e) {
             e.printStackTrace();
         } catch(NullPointerException e) {
@@ -140,71 +138,4 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
         return null;
     }
 
-    /**
-     * Checks to make sure the recipe doesn't already exist in the database prior to bulk-insertion
-     * @param recipeCVList List containing recipes to be bulk-inserted
-     */
-    private void insertAndUpdateValues(List<ContentValues> recipeCVList) {
-        /** Variables **/
-        int recipesInserted;
-        int recipesUpdated = 0;
-        List<ContentValues> workingList = new ArrayList<>(recipeCVList);    // To prevent ConcurrentModificationError
-
-        /** Constants **/
-        Uri recipeUri = RecipeEntry.CONTENT_URI;
-
-        for (ContentValues recipeValue : workingList) {
-            long recipeId = recipeValue.getAsLong(RecipeEntry.COLUMN_RECIPE_ID);
-            // Check if recipe exists in database
-
-            Cursor cursor = mContext.getContentResolver().query(
-                    recipeUri,
-                    RecipeEntry.RECIPE_PROJECTION,
-                    RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-                    new String[] {Long.toString(recipeId)},
-                    null
-            );
-
-            // Update appropriate recipes
-            if (cursor.moveToFirst()) {
-                // If cursor returns a row, then update the values if they have changed
-                // Get the review and rating values from the ContentValues to be updated
-                double dbRating = cursor.getDouble(RecipeEntry.IDX_RECIPE_RATING);
-                long dbReviews = cursor.getLong(RecipeEntry.IDX_RECIPE_REVIEWS);
-
-                if (recipeValue.getAsDouble(RecipeEntry.COLUMN_RATING) != dbRating ||
-                        recipeValue.getAsLong(RecipeEntry.COLUMN_REVIEWS) != dbReviews) {
-                    // Values do match database values. Update database.
-                    // Remove date from ContentValues so that the update doesn't push the recipe to
-                    // the top
-                    recipeValue.remove(RecipeEntry.COLUMN_DATE_ADDED);
-
-                    mContentResolver.update(
-                            recipeUri,
-                            recipeValue,
-                            RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-                            new String[]{Long.toString(recipeId)}
-                    );
-                    recipesUpdated++;
-                }
-
-                // Remove the recipeValues from the list to be bulk-inserted
-                recipeCVList.remove(recipeValue);
-            }
-            // Close the cursor
-            cursor.close();
-        }
-
-
-        // Create a ContentValues[] from the remaining values in the list
-        ContentValues[] recipeValues = new ContentValues[recipeCVList.size()];
-
-        // Add values of list to the array
-        recipeCVList.toArray(recipeValues);
-
-        // Bulk insert all remaining recipes
-        recipesInserted = mContentResolver.bulkInsert(recipeUri, recipeValues);
-
-        Log.v(LOG_TAG, recipesInserted + " recipes added and " + recipesUpdated + " recipes updated!");
-    }
 }

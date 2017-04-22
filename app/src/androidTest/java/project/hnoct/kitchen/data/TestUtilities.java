@@ -20,7 +20,6 @@ class TestUtilities {
         recipeValues.put(RecipeContract.RecipeEntry.COLUMN_RECIPE_ID, TEST_RECIPE_ID);
         recipeValues.put(RecipeContract.RecipeEntry.COLUMN_RECIPE_NAME, "TestRecipe");
         recipeValues.put(RecipeContract.RecipeEntry.COLUMN_IMG_URL, "http://www.testurl.com/img.jpg");
-        recipeValues.put(RecipeContract.RecipeEntry.COLUMN_THUMBNAIL_URL, "http://www.testurl.com/thumb.jpg");
         recipeValues.put(RecipeContract.RecipeEntry.COLUMN_RECIPE_URL, "http://www.testurl.com/recipe/000001");
         recipeValues.put(RecipeContract.RecipeEntry.COLUMN_RATING, "5");
         recipeValues.put(RecipeContract.RecipeEntry.COLUMN_REVIEWS, "100");
@@ -33,7 +32,7 @@ class TestUtilities {
 
     static ContentValues createTestIngredientValues() {
         ContentValues ingredientValues = new ContentValues();
-        ingredientValues.put(RecipeContract.IngredientEntry.COLUMN_INGREDIENT_ID, TEST_INGREDIENT_ID);
+        ingredientValues.put(RecipeContract.IngredientEntry.COLUMN_ALLRECIPES_INGREDIENT_ID, TEST_INGREDIENT_ID);
         ingredientValues.put(RecipeContract.IngredientEntry.COLUMN_INGREDIENT_NAME, "salt");
 
         return ingredientValues;
@@ -42,7 +41,7 @@ class TestUtilities {
     static ContentValues createTestLinkValues() {
         ContentValues linkValues = new ContentValues();
         linkValues.put(RecipeContract.RecipeEntry.COLUMN_RECIPE_ID, TEST_RECIPE_ID);
-        linkValues.put(RecipeContract.IngredientEntry.COLUMN_INGREDIENT_ID, TEST_INGREDIENT_ID);
+        linkValues.put(RecipeContract.IngredientEntry.COLUMN_ALLRECIPES_INGREDIENT_ID, TEST_INGREDIENT_ID);
         linkValues.put(RecipeContract.LinkIngredientEntry.COLUMN_QUANTITY, "1/4 tsp");
 
         return linkValues;

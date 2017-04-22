@@ -56,6 +56,7 @@
 
         <TextView
             android:id="@+id/list_recipe_description_text"
+            android:maxLines="8"
             android:paddingBottom="@dimen/default_text_vertical_padding"
             app:layout_columnSpan="2"
             tools:text="Simple fried chicken from Kentucky" />

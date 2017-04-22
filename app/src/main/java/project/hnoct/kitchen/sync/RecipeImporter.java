@@ -3,6 +3,7 @@ package project.hnoct.kitchen.sync;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import project.hnoct.kitchen.R;
@@ -42,20 +43,33 @@ public class RecipeImporter {
 
         }
 
+        AsyncTask syncTask;
+
         // Match the URI and launch the correct AsyncTask
         switch (matcher.match(recipeUri)) {
             case Utilities.ALLRECIPES_URI: {
-                AllRecipesAsyncTask syncTask = new AllRecipesAsyncTask(context, new AllRecipesAsyncTask.RecipeSyncCallback() {
+                syncTask = new AllRecipesAsyncTask(context, new AllRecipesAsyncTask.RecipeSyncCallback() {
                     @Override
                     public void onFinishLoad() {
                         syncer.onFinishLoad();
                     }
                 });
-                syncTask.execute(recipeUri.toString(), Long.toString(Utilities.getRecipeIdFromUrl(context, recipeUrl)));
-                return;
+                break;
+            }
+
+            case Utilities.FOOD_URI: {
+                syncTask = new FoodDotComAsyncTask(context, new AllRecipesAsyncTask.RecipeSyncCallback() {
+                    @Override
+                    public void onFinishLoad() {
+                        syncer.onFinishLoad();
+                    }
+                });
+                break;
             }
             default: throw new UnsupportedOperationException("Unknown URL: " + recipeUrl);
         }
+
+        syncTask.execute(recipeUri.toString());
     }
 
     public interface UtilitySyncer {

@@ -51,34 +51,34 @@ public class RecipeContract {
         public static final String TABLE_NAME = "recipes";
 
         // Columns
-        public static final String COLUMN_RECIPE_ID = "recipe_id";              // REAL NOT NULL
-        public static final String COLUMN_RECIPE_NAME = "recipe_name";          // TEXT NOT NULL
-        public static final String COLUMN_RECIPE_AUTHOR = "author";             // TEXT NOT NULL
-        public static final String COLUMN_THUMBNAIL_URL = "thumbnail_url";      // TEXT
-        public static final String COLUMN_IMG_URL = "image_url";                // TEXT
-        public static final String COLUMN_RECIPE_URL = "recipe_url";            // TEXT NOT NULL
-        public static final String COLUMN_SHORT_DESC = "short_description";     // TEXT
-        public static final String COLUMN_RATING = "rating";                    // REAL
-        public static final String COLUMN_REVIEWS = "reviews";                  // REAL
-        public static final String COLUMN_DIRECTIONS = "directions";            // TEXT
-        public static final String COLUMN_DATE_ADDED = "date_added";            // REAL NOT NULL
-        public static final String COLUMN_FAVORITE = "favorite";                // INTEGER NOT NULL
-        public static final String COLUMN_SOURCE = "source";                    // TEXT NOT NULL
+        public static final String COLUMN_RECIPE_ID = "recipe_id";                  // REAL NOT NULL
+        public static final String COLUMN_RECIPE_SOURCE_ID = "recipe_source_id";
+        public static final String COLUMN_RECIPE_NAME = "recipe_name";              // TEXT NOT NULL
+        public static final String COLUMN_RECIPE_AUTHOR = "author";                 // TEXT NOT NULL
+        public static final String COLUMN_IMG_URL = "image_url";                    // TEXT
+        public static final String COLUMN_RECIPE_URL = "recipe_url";                // TEXT NOT NULL
+        public static final String COLUMN_SHORT_DESC = "short_description";         // TEXT
+        public static final String COLUMN_RATING = "rating";                        // REAL
+        public static final String COLUMN_REVIEWS = "reviews";                      // REAL
+        public static final String COLUMN_DIRECTIONS = "directions";                // TEXT
+        public static final String COLUMN_DATE_ADDED = "date_added";                // REAL NOT NULL
+        public static final String COLUMN_FAVORITE = "favorite";                    // INTEGER NOT NULL
+        public static final String COLUMN_SOURCE = "source";                        // TEXT NOT NULL
         // Nutrition Info
-        public static final String COLUMN_CALORIES = "calories";                // REAL
-        public static final String COLUMN_FAT = "fat";                          // REAL
-        public static final String COLUMN_CARBS = "carbs";                      // REAL
-        public static final String COLUMN_PROTEIN = "protein";                  // REAL
-        public static final String COLUMN_CHOLESTEROL = "cholesterol";          // REAL
-        public static final String COLUMN_SODIUM = "sodium";                    // REAL
-        public static final String COLUMN_SERVINGS = "servings";                // INTEGER
+        public static final String COLUMN_CALORIES = "calories";                    // REAL
+        public static final String COLUMN_FAT = "fat";                              // REAL
+        public static final String COLUMN_CARBS = "carbs";                          // REAL
+        public static final String COLUMN_PROTEIN = "protein";                      // REAL
+        public static final String COLUMN_CHOLESTEROL = "cholesterol";              // REAL
+        public static final String COLUMN_SODIUM = "sodium";                        // REAL
+        public static final String COLUMN_SERVINGS = "servings";                    // INTEGER
 
         // Column Projection and index
         public static final String[] RECIPE_PROJECTION = new String[] {
                 TABLE_NAME + "." + COLUMN_RECIPE_ID,
+                COLUMN_RECIPE_SOURCE_ID,
                 COLUMN_RECIPE_NAME,
                 COLUMN_RECIPE_AUTHOR,
-                COLUMN_THUMBNAIL_URL,
                 COLUMN_IMG_URL,
                 COLUMN_RECIPE_URL,
                 COLUMN_SHORT_DESC,
@@ -94,12 +94,13 @@ public class RecipeContract {
                 COLUMN_PROTEIN,
                 COLUMN_CHOLESTEROL,
                 COLUMN_SODIUM,
+                COLUMN_SERVINGS
         };
 
         public static final int IDX_RECIPE_ID = 0;
-        public static final int IDX_RECIPE_NAME = 1;
-        public static final int IDX_RECIPE_AUTHOR = 2;
-        public static final int IDX_THUMBNAIL_URL = 3;
+        public static final int IDX_RECIPE_SOURCE_ID = 1;
+        public static final int IDX_RECIPE_NAME = 2;
+        public static final int IDX_RECIPE_AUTHOR = 3;
         public static final int IDX_IMG_URL = 4;
         public static final int IDX_RECIPE_URL = 5;
         public static final int IDX_SHORT_DESCRIPTION = 6;
@@ -115,7 +116,7 @@ public class RecipeContract {
         public static final int IDX_PROTEIN = 16;
         public static final int IDX_CHOLESTEROL = 17;
         public static final int IDX_SODIUM = 18;
-//        public static final int IDX_UNIQUE = 19;
+        public static final int IDX_SERVINGS = 19;
 
         /** Integer definition for nutrient types **/
         @Retention(SOURCE)
@@ -177,8 +178,11 @@ public class RecipeContract {
         public static final String TABLE_NAME = "ingredients";
 
         // Columns
-        public static final String COLUMN_INGREDIENT_ID = "ingredient_id";  // REAL NOT NULL
-        public static final String COLUMN_INGREDIENT_NAME = "ingredient";   // TEXT NOT NULL
+        public static final String COLUMN_INGREDIENT_ID = "ingredient_id";              // INTEGER PRIMARY KEY AUTOINCREMENT
+        public static final String COLUMN_INGREDIENT_NAME = "ingredient";               // TEXT NOT NULL
+        public static final String COLUMN_ALLRECIPES_INGREDIENT_ID = "allrecipes_id";   // REAL
+        public static final String COLUMN_FOOD_INGREDIENT_ID = "food_id";               // REAL
+
 
         public static final String[] measurements = new String[] {
                 "mL", "loaf", "can", "package", "container", "tablespoon", "teaspoon", "clove", "cup", "pint",
@@ -234,6 +238,7 @@ public class RecipeContract {
         // Column projection and index
         public static final String[] LINK_PROJECTION = new String[] {
                 RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID,
+                RecipeEntry.COLUMN_RECIPE_SOURCE_ID,
                 RecipeEntry.COLUMN_RECIPE_NAME,
                 RecipeEntry.COLUMN_RECIPE_AUTHOR,
                 RecipeEntry.COLUMN_IMG_URL,
@@ -258,27 +263,28 @@ public class RecipeContract {
         };
 
         public static final int IDX_RECIPE_ID = 0;
-        public static final int IDX_RECIPE_NAME = 1;
-        public static final int IDX_RECIPE_AUTHOR = 2;
-        public static final int IDX_IMG_URL = 3;
-        public static final int IDX_RECIPE_URL = 4;
-        public static final int IDX_SHORT_DESC = 5;
-        public static final int IDX_RECIPE_RATING = 6;
-        public static final int IDX_RECIPE_REVIEWS = 7;
-        public static final int IDX_RECIPE_DIRECTIONS = 8;
-        public static final int IDX_RECIPE_FAVORITE = 9;
-        public static final int IDX_RECIPE_SERVINGS = 10;
-        public static final int IDX_RECIPE_CALORIES = 11;
-        public static final int IDX_RECIPE_FAT = 12;
-        public static final int IDX_RECIPE_CARBS = 13;
-        public static final int IDX_RECIPE_PROTEIN = 14;
-        public static final int IDX_RECIPE_CHOLESTEROL = 15;
-        public static final int IDX_RECIPE_SODIUM = 16;
-        public static final int IDX_RECIPE_SOURCE = 17;
-        public static final int IDX_INGREDIENT_ID = 18;
-        public static final int IDX_INGREDIENT_NAME = 19;
-        public static final int IDX_LINK_QUANTITY = 20;
-        public static final int IDX_LINK_INGREDIENT_ORDER = 21;
+        public static final int IDX_RECIPE_SOURCE_ID = 1;
+        public static final int IDX_RECIPE_NAME = 2;
+        public static final int IDX_RECIPE_AUTHOR = 3;
+        public static final int IDX_IMG_URL = 4;
+        public static final int IDX_RECIPE_URL = 5;
+        public static final int IDX_SHORT_DESC = 6;
+        public static final int IDX_RECIPE_RATING = 7;
+        public static final int IDX_RECIPE_REVIEWS = 8;
+        public static final int IDX_RECIPE_DIRECTIONS = 9;
+        public static final int IDX_RECIPE_FAVORITE = 10;
+        public static final int IDX_RECIPE_SERVINGS = 11;
+        public static final int IDX_RECIPE_CALORIES = 12;
+        public static final int IDX_RECIPE_FAT = 13;
+        public static final int IDX_RECIPE_CARBS = 14;
+        public static final int IDX_RECIPE_PROTEIN = 15;
+        public static final int IDX_RECIPE_CHOLESTEROL = 16;
+        public static final int IDX_RECIPE_SODIUM = 17;
+        public static final int IDX_RECIPE_SOURCE = 18;
+        public static final int IDX_INGREDIENT_ID = 19;
+        public static final int IDX_INGREDIENT_NAME = 20;
+        public static final int IDX_LINK_QUANTITY = 21;
+        public static final int IDX_LINK_INGREDIENT_ORDER = 22;
 
         /** See RecipeEntry for comments on following methods **/
 

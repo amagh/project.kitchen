@@ -31,7 +31,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -656,7 +655,6 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
 
         // Create Lists to hold ingredientIds, ingredient ContentValues, and link ContentValues
         @SuppressLint("UseSparseArrays") Map<Long, String> ingredientIdNameMap = new HashMap<>();
-        List<Long> ingredientIdList = new ArrayList<>();
         List<ContentValues> ingredientCVList = new LinkedList<>();
         ContentValues[] linkValues = new ContentValues[mIngredientList.size()];
 
@@ -694,14 +692,12 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
                     ingredientId++;
                 }
 
-                // Add the ingredientId to the List of ingredientIds to check against subsequent ingredients
+                // Add the ingredientId to the Map of ingredientIds to check against subsequent ingredients
                 ingredientIdNameMap.put(ingredientId, ingredient);
-                ingredientIdList.add(ingredientId);
 
                 // Add the values to the ContentValues for ingredients
                 if (newIngredient) {
                     // If ingredient is not found in database, add it
-                    ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
                     ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_NAME, ingredient);
                     ingredientCVList.add(ingredientValue);
                 }
@@ -749,8 +745,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         }
 
         // Insert missing ingredient values to the database
-        /** @see Utilities#insertIngredientValues(Context, List) **/
-        Utilities.insertIngredientValues(mContext, ingredientCVList);
+        /** @see Utilities#insertAndUpdateIngredientValues(Context, List) **/
+        Utilities.insertAndUpdateIngredientValues(mContext, ingredientCVList);
 
         // TODO: Start the RecipeDetailsActivity???
         Toast.makeText(mContext, "Recipe saved!", Toast.LENGTH_SHORT).show();

@@ -116,6 +116,8 @@
     <string name="allrecipes_authority">allrecipes.com</string>
     <string name="allrecipes_www_authority">www.allrecipes.com</string>
     <string name="custom_authority">user.custom</string>
+    <string name="food_authority">food.com</string>
+    <string name="food_www_authority">www.food.com</string>
 
     <!-- Create Recipe -->
     <string name="create_recipe_name_hint">Recipe Name</string>
@@ -146,8 +148,8 @@
 
     <!-- Attribution -->
     <string name="attribution_custom">user-added</string>
-    <string name="attriubtion_allrecipes">Allrecipes.com</string>
-
+    <string name="attribution_allrecipes">Allrecipes.com</string>
+    <string name="attribution_food">Food.com</string>
 
     <string name="title_activity_favorites">FavoritesActivity</string>
     <string name="title_activity_recipe_book">RecipeBookActivity</string>
