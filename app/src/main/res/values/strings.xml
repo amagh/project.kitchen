@@ -167,4 +167,5 @@
 
     <!-- Search -->
     <string name="search_hint">Search</string>
+    <string name="title_activity_my_recipes">MyRecipesActivity</string>
 </resources>

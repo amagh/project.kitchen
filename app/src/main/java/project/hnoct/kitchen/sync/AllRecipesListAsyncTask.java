@@ -129,7 +129,6 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
                 recipeCVList.add(recipeValues);
 
-                Log.d(LOG_TAG, "Time: " + mTimeInMillis);
                 int randomNum = random.nextInt((50-10) + 1) + 10;
                 mTimeInMillis -= randomNum;
             }

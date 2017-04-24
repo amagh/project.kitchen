@@ -6,7 +6,7 @@
     android:id="@+id/main_drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="project.hnoct.kitchen.ui.RecipeListActivity">
+    tools:context="project.hnoct.kitchen.ui.ActivityRecipeList">
 
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"

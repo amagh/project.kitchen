@@ -22,9 +22,9 @@ import project.hnoct.kitchen.data.RecipeContract.*;
  * Created by hnoct on 3/25/2017.
  */
 
-public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.RecipeBookViewHolder> {
+public class AdapterRecipeBook extends RecyclerView.Adapter<AdapterRecipeBook.RecipeBookViewHolder> {
     /** Constants **/
-    private static final String LOG_TAG = RecipeBookAdapter.class.getSimpleName();
+    private static final String LOG_TAG = AdapterRecipeBook.class.getSimpleName();
 
     /** Member Variables **/
     private Context mContext;
@@ -32,7 +32,7 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
     private CursorManager mCursorManager;
     private RecipeBookAdapterOnClickHandler mClickHandler;
 
-    public RecipeBookAdapter(Context context, RecipeBookAdapterOnClickHandler clickHandler, CursorManager cursorManager) {
+    public AdapterRecipeBook(Context context, RecipeBookAdapterOnClickHandler clickHandler, CursorManager cursorManager) {
         // Initialize member variables
         mContext = context;
         mClickHandler = clickHandler;
@@ -48,7 +48,7 @@ public class RecipeBookAdapter extends RecyclerView.Adapter<RecipeBookAdapter.Re
         });
     }
 
-    public RecipeBookAdapter(Context context, RecipeBookAdapterOnClickHandler clickHandler) {
+    public AdapterRecipeBook(Context context, RecipeBookAdapterOnClickHandler clickHandler) {
         mContext = context;
         mClickHandler = clickHandler;
     }

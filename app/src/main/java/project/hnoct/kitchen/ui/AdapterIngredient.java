@@ -28,7 +28,7 @@ import project.hnoct.kitchen.data.Utilities;
  * Created by hnoct on 2/21/2017.
  */
 
-public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.IngredientViewHolder> {
+public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.IngredientViewHolder> {
     /** Constants **/
 
     /** Member Variables **/
@@ -37,7 +37,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
     private ContentResolver mContentResolver;   // Reference to ContentResolver
     private List<String> mIngredientList;       // TODO: For storing ingredients that need to be added to shopping list
 
-    public IngredientAdapter(Context context) {
+    public AdapterIngredient(Context context) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
     }

@@ -18,6 +18,7 @@ import android.util.Log;
 
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.ui.AdapterNutrition;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -601,7 +602,7 @@ public class Utilities {
     }
 
     /**
-     * Formats the nutrient value to be displayed by the {@link project.hnoct.kitchen.ui.NutritionAdapter}
+     * Formats the nutrient value to be displayed by the {@link AdapterNutrition}
      * @param context Interface to global context
      * @param nutrientType int value for {@link RecipeEntry.NutrientType}
      * @param nutrientValue double value for a given nutrient in its measurement
@@ -1134,8 +1135,6 @@ public class Utilities {
      */
     public static void insertAndUpdateRecipeValues(Context context, List<ContentValues> recipeCVList) {
         /** Variables **/
-        int recipesInserted;
-        int recipesUpdated = 0;
         List<ContentValues> workingList = new ArrayList<>(recipeCVList);    // To prevent ConcurrentModificationError
 
         /** Constants **/
@@ -1180,10 +1179,7 @@ public class Utilities {
                             RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ?",
                             new String[]{Long.toString(recipeId)}
                     );
-                    recipesUpdated++;
                 }
-
-
             }
             // Close the cursor
             if (cursor != null) cursor.close();
@@ -1197,9 +1193,7 @@ public class Utilities {
         recipeCVList.toArray(recipeValues);
 
         // Bulk insert all remaining recipes
-        recipesInserted = context.getContentResolver().bulkInsert(recipeUri, recipeValues);
-
-        Log.v(LOG_TAG, recipesInserted + " recipes added and " + recipesUpdated + " recipes updated!");
+        context.getContentResolver().bulkInsert(recipeUri, recipeValues);
     }
 
     /**

@@ -19,9 +19,9 @@ import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.dialog.AddRecipeDialog;
 import project.hnoct.kitchen.dialog.ChapterDetailsDialog;
 
-public class ChapterActivity extends AppCompatActivity implements ChapterDetailsDialog.ChapterDetailsListener, ChapterFragment.RecipeCallBack {
+public class ActivityChapter extends AppCompatActivity implements ChapterDetailsDialog.ChapterDetailsListener, FragmentChapter.RecipeCallBack {
     /** Constants**/
-    private static final String LOG_TAG = ChapterActivity.class.getSimpleName();
+    private static final String LOG_TAG = ActivityChapter.class.getSimpleName();
     private static final String CHAPTER_DETAILS_DIALOG = "chapter_details_dialog";
     private static final String ADD_RECIPE_DIALOG = "add_recipe_dialog";
     private static final String CHAPTER_FRAGMENT_TAG = "chapter_fragment";
@@ -49,13 +49,13 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
         // Set the member variable bookId
         mBookId = RecipeBookEntry.getRecipeBookIdFromUri(bookUri);
 
-        // Pass the URI to the ChapterFragment as part of a Bundle
-        ChapterFragment fragment = new ChapterFragment();
+        // Pass the URI to the FragmentChapter as part of a Bundle
+        FragmentChapter fragment = new FragmentChapter();
         Bundle args = new Bundle();
-        args.putParcelable(ChapterFragment.RECIPE_BOOK_URI, bookUri);
+        args.putParcelable(FragmentChapter.RECIPE_BOOK_URI, bookUri);
         fragment.setArguments(args);
 
-        // Inflate ChapterFragment into the container
+        // Inflate FragmentChapter into the container
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.chapter_container, fragment, CHAPTER_FRAGMENT_TAG)
@@ -68,7 +68,7 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
      */
     @Override
     public void onBackPressed() {
-        ChapterFragment fragment = (ChapterFragment) getSupportFragmentManager().findFragmentByTag(CHAPTER_FRAGMENT_TAG);
+        FragmentChapter fragment = (FragmentChapter) getSupportFragmentManager().findFragmentByTag(CHAPTER_FRAGMENT_TAG);
 
         if (fragment.mChapterAdapter.isInEditMode()) {
             fragment.mChapterAdapter.exitEditMode();
@@ -147,9 +147,9 @@ public class ChapterActivity extends AppCompatActivity implements ChapterDetails
     }
 
     @Override
-    public void onRecipeSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder) {
-        // Start the RecipeDetailsActivity for the selected recipe
-        Intent intent = new Intent(this, RecipeDetailsActivity.class);
+    public void onRecipeSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+        // Start the ActivityRecipeDetails for the selected recipe
+        Intent intent = new Intent(this, ActivityRecipeDetails.class);
         intent.setData(Uri.parse(recipeUrl));
         startActivity(intent);
     }

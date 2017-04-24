@@ -37,9 +37,9 @@ import project.hnoct.kitchen.sync.RecipeImporter;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class RecipeDetailsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class FragmentRecipeDetails extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     /** Constants **/
-    private static final String LOG_TAG = RecipeDetailsFragment.class.getSimpleName();
+    private static final String LOG_TAG = FragmentRecipeDetails.class.getSimpleName();
     private static final int DETAILS_LOADER = 1;
     private static final String RECIPE_DETAILS_URI = "recipe_and_ingredients_uri";
     public static final String RECIPE_DETAILS_URL = "recipe_url";
@@ -51,8 +51,8 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     private Context mContext;
     private Cursor mCursor;
     private ContentResolver mContentResolver;
-    private IngredientAdapter mIngredientAdapter;
-    private DirectionAdapter mDirectionAdapter;
+    private AdapterIngredient mIngredientAdapter;
+    private AdapterDirection mDirectionAdapter;
     private CursorLoaderListener listener;
 
     private boolean mSyncing = false;
@@ -73,7 +73,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
     @BindView(R.id.details_line_separator_bottom) View mLineSeparatorBottom;
 
 
-    public RecipeDetailsFragment() {
+    public FragmentRecipeDetails() {
     }
 
     @Override
@@ -88,7 +88,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         mContentResolver = mContext.getContentResolver();
 
         if (getArguments() != null) {
-            // Get the URL passed from the RecipeListActivity/RecipeDetailsActivity
+            // Get the URL passed from the ActivityRecipeList/ActivityRecipeDetails
             mRecipeUri = getArguments().getParcelable(RECIPE_DETAILS_URI);
             if(getArguments().getParcelable(RECIPE_DETAILS_URL) != null) {
                 mRecipeUrl = getArguments().getParcelable(RECIPE_DETAILS_URL).toString();
@@ -102,9 +102,9 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
             return rootView;
         }
 
-        // Initialize the IngredientAdapter and DirectionAdapter
-        mIngredientAdapter = new IngredientAdapter(getActivity());
-        mDirectionAdapter = new DirectionAdapter(getActivity());
+        // Initialize the AdapterIngredient and AdapterDirection
+        mIngredientAdapter = new AdapterIngredient(getActivity());
+        mDirectionAdapter = new AdapterDirection(getActivity());
 
 
         // Initialize and set the LayoutManagers
@@ -125,7 +125,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         mDirectionsRecyclerView.setLayoutManager(llm2);
 
 
-        // Set the IngredientAdapter for the ingredient's RecyclerView
+        // Set the AdapterIngredient for the ingredient's RecyclerView
         mIngredientsRecyclerView.setAdapter(mIngredientAdapter);
         mDirectionsRecyclerView.setAdapter(mDirectionAdapter);
 
@@ -175,7 +175,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
                     @Override
                     public void onFinishLoad() {
                         if (getActivity() != null)
-                        getLoaderManager().restartLoader(DETAILS_LOADER, null, RecipeDetailsFragment.this);
+                        getLoaderManager().restartLoader(DETAILS_LOADER, null, FragmentRecipeDetails.this);
                         mSyncing = false;
                     }
                 }, mRecipeUrl);
@@ -230,7 +230,7 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
         // Swap the Cursor into the Adapter so that data can be displayed in the ingredient list
         mIngredientAdapter.swapCursor(cursor);
 
-        // Set the direction list for the DirectionAdapter so steps can be displayed
+        // Set the direction list for the AdapterDirection so steps can be displayed
         if (recipeDirections != null) {
             mDirectionAdapter.setDirectionList(Utilities.getDirectionList(recipeDirections));
         }
@@ -299,8 +299,8 @@ public class RecipeDetailsFragment extends Fragment implements LoaderManager.Loa
             }
 
             case R.id.detail_menu_edit: {
-                // Start CreateRecipeActivity to edit recipe
-                Intent intent = new Intent(mContext, CreateRecipeActivity.class);
+                // Start ActivityCreateRecipe to edit recipe
+                Intent intent = new Intent(mContext, ActivityCreateRecipe.class);
                 intent.setData(RecipeEntry.buildRecipeUriFromId(mRecipeId));
                 startActivity(intent);
                 return true;

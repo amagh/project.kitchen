@@ -1,6 +1,5 @@
 package project.hnoct.kitchen.ui;
 
-import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.PendingIntent;
@@ -9,17 +8,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.renderscript.ScriptGroup;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
@@ -27,9 +22,7 @@ import android.view.View;
 import android.view.MenuItem;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
@@ -55,7 +48,6 @@ import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import butterknife.Optional;
 import project.hnoct.kitchen.R;
-import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeDbHelper;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.dialog.ImportRecipeDialog;
@@ -65,9 +57,9 @@ import project.hnoct.kitchen.sync.FoodDotComListAsyncTask;
 import project.hnoct.kitchen.sync.RecipeImporter;
 import project.hnoct.kitchen.sync.SeriousEatsListAsyncTask;
 
-public class RecipeListActivity extends AppCompatActivity implements RecipeListFragment.RecipeCallBack, ImportRecipeDialog.ImportRecipeDialogListener {
+public class ActivityRecipeList extends AppCompatActivity implements FragmentRecipeList.RecipeCallBack, ImportRecipeDialog.ImportRecipeDialogListener {
     /** Constants **/
-    private static final String LOG_TAG = RecipeListActivity.class.getSimpleName();
+    private static final String LOG_TAG = ActivityRecipeList.class.getSimpleName();
     private final String DETAILS_FRAGMENT = "DFTAG";
 
     /** Member Variables **/
@@ -99,7 +91,7 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     public void closePreview() {
         mDetailsVisible = false;
         mContainer.setVisibility(View.GONE);
-        RecipeListFragment fragment = (RecipeListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+        FragmentRecipeList fragment = (FragmentRecipeList) getSupportFragmentManager().findFragmentById(R.id.fragment);
         fragment.setLayoutColumns();
 //        fragment.mRecipeRecyclerView.scrollToPosition(mPosition);
     }
@@ -169,7 +161,7 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     @OnClick(R.id.main_add_recipe_fab)
     public void createRecipe() {
         closeFabMenu();
-        startActivity(new Intent(this, CreateRecipeActivity.class));
+        startActivity(new Intent(this, ActivityCreateRecipe.class));
     }
 
     @Override
@@ -199,12 +191,12 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
                 // details fragment is not visible
                 mDetailsVisible = false;
 
-                // Set the visibility of the container to GONE to allow the RecipeListFragment
+                // Set the visibility of the container to GONE to allow the FragmentRecipeList
                 // to take the full width of the view
                 mContainer.setVisibility(View.GONE);
 
-                // Create a new RecipeDetailsFragment and load it into the container
-                RecipeDetailsFragment fragment = new RecipeDetailsFragment();
+                // Create a new FragmentRecipeDetails and load it into the container
+                FragmentRecipeDetails fragment = new FragmentRecipeDetails();
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.recipe_detail_container, fragment, DETAILS_FRAGMENT)
                         .commit();
@@ -225,68 +217,10 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
 //        temp();
     }
 
-    boolean loaded = false;
-    private void temp() {
-
-//        final WebView browser = new WebView(this);
-//        browser.getSettings().setJavaScriptEnabled(true);
-//        browser.addJavascriptInterface(new JavaScriptInterface(), "HTMLOUT");
-//        browser.setWebViewClient(new WebViewClient() {
-//            @Override
-//            public void onPageFinished(WebView view, String url) {
-//                if (!loaded) {
-//                    browser.loadUrl("javascript:window.HTMLOUT.processHTML('<head>'+document.getElementsByTagName('html')[0].innerHTML+'</head>');");
-//                    loaded = true;
-//                }
-//            }
-//        });
-//
-//        browser.loadUrl("http://www.food.com/recipe/all/popular");
-
-        final WebView browser = new WebView(this);
-/* JavaScript must be enabled if you want it to work, obviously */
-        browser.getSettings().setJavaScriptEnabled(true);
-
-/* Register a new JavaScript interface called HTMLOUT */
-        browser.addJavascriptInterface(new JavaScriptInterface(), "HTMLOUT");
-
-/* WebViewClient must be set BEFORE calling loadUrl! */
-        browser.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url)
-            {
-        /* This call inject JavaScript into the page which just finished loading. */
-                browser.loadUrl("javascript:HTMLOUT.processHTML('<head>'+document.getElementsByTagName('html')[0].innerHTML+'</head>');");
-            }
-        });
-
-/* load a web page */
-        browser.loadUrl("http://www.food.com/recipe/all/popular");
-    }
-
-    class JavaScriptInterface {
-        @JavascriptInterface
-        @SuppressWarnings("unused")
-        public void processHTML(String html) {
-            InputStream stream = new ByteArrayInputStream(html.getBytes(Charset.forName("UTF-8")));
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    Log.d(LOG_TAG, line);
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            Log.d(LOG_TAG, html);
-        }
-    }
-
     private void selectDrawerItem(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_favorites: {
-                startActivity(new Intent(this, FavoritesActivity.class));
+                startActivity(new Intent(this, ActivityFavorites.class));
                 hideNavigationDrawer();
                 mDetailsVisible = false;
                 break;
@@ -298,13 +232,16 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
                 break;
             }
             case R.id.action_my_recipes: {
+                startActivity(new Intent(this, ActivityMyRecipes.class));
                 hideNavigationDrawer();
+                mDetailsVisible = false;
                 break;
             }
             case R.id.action_my_recipe_books: {
                 hideNavigationDrawer();
-                Intent intent = new Intent(this, RecipeBookActivity.class);
+                Intent intent = new Intent(this, ActivityRecipeBook.class);
                 startActivity(intent);
+                mDetailsVisible = false;
                 break;
             }
             case R.id.action_copy_db: {
@@ -404,30 +341,30 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
     }
 
     @Override
-    public void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder) {
+    public void onItemSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
         if (!mTwoPane) {
-            // If in single-view mode, then start the RecipeDetailsActivity
-            Intent intent = new Intent(this, RecipeDetailsActivity.class);
+            // If in single-view mode, then start the ActivityRecipeDetails
+            Intent intent = new Intent(this, ActivityRecipeDetails.class);
             intent.setData(Uri.parse(recipeUrl));
             startActivity(intent);
         } else {
             mDetailsVisible = true;
 
-            // Create a new RecipeDetailsFragment
-            RecipeDetailsFragment fragment = new RecipeDetailsFragment();
+            // Create a new FragmentRecipeDetails
+            FragmentRecipeDetails fragment = new FragmentRecipeDetails();
 
             // Create the Bundle and add the recipe's URL to it and set it as the argument for the
             // fragment
             Bundle args = new Bundle();
-            args.putParcelable(RecipeDetailsFragment.RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
+            args.putParcelable(FragmentRecipeDetails.RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
             fragment.setArguments(args);
 
-            // Replace the existing RecipeDetailsFragment with the newly created one
+            // Replace the existing FragmentRecipeDetails with the newly created one
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.recipe_detail_container, fragment, DETAILS_FRAGMENT)
                     .commit();
 
-            // Show the RecipeDetailsFragment in the master-flow view
+            // Show the FragmentRecipeDetails in the master-flow view
             mContainer.setVisibility(View.VISIBLE);
         }
     }
@@ -439,39 +376,39 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
             RecipeImporter.importRecipeFromUrl(this, new RecipeImporter.UtilitySyncer() {
                 @Override
                 public void onFinishLoad() {
-                    RecipeListFragment recipeListFragment =
-                            (RecipeListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+                    FragmentRecipeList recipeListFragment =
+                            (FragmentRecipeList) getSupportFragmentManager().findFragmentById(R.id.fragment);
                     recipeListFragment.mRecipeAdapter.notifyDataSetChanged();
                     recipeListFragment.mRecipeAdapter.setDetailCardPosition(0);
                 }
             }, recipeUrl);
 
         } else if (!mTwoPane) {
-            // If in single-view mode, then start the RecipeDetailsActivity
-            Intent intent = new Intent(this, RecipeDetailsActivity.class);
+            // If in single-view mode, then start the ActivityRecipeDetails
+            Intent intent = new Intent(this, ActivityRecipeDetails.class);
             intent.setData(Uri.parse(recipeUrl));
             startActivity(intent);
         } else {
             mDetailsVisible = true;
 
-            // Create a new RecipeDetailsFragment
-            RecipeDetailsFragment fragment = new RecipeDetailsFragment();
+            // Create a new FragmentRecipeDetails
+            FragmentRecipeDetails fragment = new FragmentRecipeDetails();
 
             // Create the Bundle and add the recipe's URL to it and set it as the argument for the
             // fragment
             Bundle args = new Bundle();
-            args.putParcelable(RecipeDetailsFragment.RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
+            args.putParcelable(FragmentRecipeDetails.RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
             fragment.setArguments(args);
 
-            // Replace the existing RecipeDetailsFragment with the newly created one
+            // Replace the existing FragmentRecipeDetails with the newly created one
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.recipe_detail_container, fragment, DETAILS_FRAGMENT)
                     .commit();
 
-            // Show the RecipeDetailsFragment in the master-flow view
+            // Show the FragmentRecipeDetails in the master-flow view
             mContainer.setVisibility(View.VISIBLE);
 
-            RecipeListFragment recipeListFragment = (RecipeListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+            FragmentRecipeList recipeListFragment = (FragmentRecipeList) getSupportFragmentManager().findFragmentById(R.id.fragment);
             recipeListFragment.setLayoutColumns();
         }
 

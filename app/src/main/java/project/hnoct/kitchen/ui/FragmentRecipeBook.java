@@ -25,22 +25,22 @@ import project.hnoct.kitchen.data.RecipeContract.*;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class RecipeBookFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class FragmentRecipeBook extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     /** Constants **/
-    private static final String LOG_TAG = RecipeBookFragment.class.getSimpleName();
+    private static final String LOG_TAG = FragmentRecipeBook.class.getSimpleName();
     private static final int RECIPE_BOOK_LOADER = 3;
     private static final int POSITION_MODIFIER = 100000;
 
     /** Member Variables **/
     private Context mContext;
     private Cursor mCursor;
-    private RecipeBookAdapter mRecipeBookAdapter;
+    private AdapterRecipeBook mRecipeBookAdapter;
     private CursorManager mCursorManager;
     private int mPosition;
 
     @BindView(R.id.recipe_book_recyclerview) RecyclerView mRecyclerView;
 
-    public RecipeBookFragment() {
+    public FragmentRecipeBook() {
     }
 
     @Override
@@ -54,17 +54,17 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
         mCursorManager = new CursorManager(mContext);
 
         // Initialize mRecipeBookAdapter
-        mRecipeBookAdapter = new RecipeBookAdapter(mContext, new RecipeBookAdapter.RecipeBookAdapterOnClickHandler() {
+        mRecipeBookAdapter = new AdapterRecipeBook(mContext, new AdapterRecipeBook.RecipeBookAdapterOnClickHandler() {
             @Override
-            public void onClick(RecipeBookAdapter.RecipeBookViewHolder viewHolder, long bookId) {
-                // Start the ChapterActivity when a specific recipe is clicked
-                Intent intent = new Intent(mContext, ChapterActivity.class);
+            public void onClick(AdapterRecipeBook.RecipeBookViewHolder viewHolder, long bookId) {
+                // Start the ActivityChapter when a specific recipe is clicked
+                Intent intent = new Intent(mContext, ActivityChapter.class);
 
                 // Set the Uri for the recipe book as the data to pass to the Activity
                 Uri bookUri = RecipeBookEntry.buildUriFromRecipeBookId(bookId);
                 intent.setData(bookUri);
 
-                // Launch the ChapterActivity from the Intent
+                // Launch the ActivityChapter from the Intent
                 startActivity(intent);
             }
         }, mCursorManager);
@@ -120,7 +120,7 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         if (loader.getId() == RECIPE_BOOK_LOADER) {
-            // Main Cursor for the RecipeBookAdapter
+            // Main Cursor for the AdapterRecipeBook
             if (cursor != null && cursor.moveToFirst()) {
                 for (int i = 0; i < cursor.getCount(); i++) {
                     // Retrieve the bookId to query for chapters
@@ -147,7 +147,7 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
                 }
             }
 
-            // Swap the Cursor into the RecipeBookAdapter
+            // Swap the Cursor into the AdapterRecipeBook
             mCursor = cursor;
             mRecipeBookAdapter.swapCursor(mCursor);
 
@@ -199,7 +199,7 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
     private void setLayoutColumns() {
         // Retrieve the number of columns needed by the device/orientation
         int columns;
-        if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {
+        if (ActivityRecipeList.mTwoPane && ActivityRecipeList.mDetailsVisible) {
             columns = getResources().getInteger(R.integer.recipe_twopane_columns);
         } else {
             columns = getResources().getInteger(R.integer.recipe_columns);
@@ -214,7 +214,7 @@ public class RecipeBookFragment extends Fragment implements LoaderManager.Loader
         // Set the LayoutManager for the RecyclerView
         mRecyclerView.setLayoutManager(sglm);
 
-        RecipeAdapter adapter = ((RecipeAdapter) mRecyclerView.getAdapter());
+        AdapterRecipe adapter = ((AdapterRecipe) mRecyclerView.getAdapter());
         if (adapter != null) {
             adapter.hideDetails();
         }

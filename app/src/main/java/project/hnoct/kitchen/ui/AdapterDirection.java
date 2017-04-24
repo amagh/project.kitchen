@@ -1,7 +1,6 @@
 package project.hnoct.kitchen.ui;
 
 import android.content.Context;
-import android.graphics.drawable.GradientDrawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,19 +19,19 @@ import project.hnoct.kitchen.data.Utilities;
  * Created by hnoct on 2/21/2017.
  */
 
-public class DirectionAdapter extends RecyclerView.Adapter<DirectionAdapter.DirectionViewHolder> {
+public class AdapterDirection extends RecyclerView.Adapter<AdapterDirection.DirectionViewHolder> {
     /** Constants **/
 
     /** Member Variables **/
     private Context mContext;               // Interface for global context
     private List<String> mDirectionList;    // Stores all directions that need to be loaded into views
 
-    public DirectionAdapter(Context context) {
+    public AdapterDirection(Context context) {
         mContext = context;
     }
 
     @Override
-    public DirectionAdapter.DirectionViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public AdapterDirection.DirectionViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // Inflate the layout used for direction items
         View view = LayoutInflater.from(mContext).inflate(R.layout.list_item_direction, parent, false);
         view.setFocusable(true);
@@ -41,7 +40,7 @@ public class DirectionAdapter extends RecyclerView.Adapter<DirectionAdapter.Dire
     }
 
     @Override
-    public void onBindViewHolder(DirectionAdapter.DirectionViewHolder holder, int position) {
+    public void onBindViewHolder(AdapterDirection.DirectionViewHolder holder, int position) {
         String direction = Utilities.convertToUnicodeFractionForDirections(
                 mContext,
                 mDirectionList.get(position)

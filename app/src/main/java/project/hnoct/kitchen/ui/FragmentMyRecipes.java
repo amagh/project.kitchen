@@ -8,17 +8,12 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,53 +21,50 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
-
-import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.view.SlidingAlphabeticalIndex;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class FavoritesFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     /** Constants **/
-    private static final String LOG_TAG = FavoritesFragment.class.getSimpleName();
+    private static final String LOG_TAG = FragmentMyRecipes.class.getSimpleName();
     private static final int FAVORITES_LOADER = 2;
     private static final String ALPHABET = "0ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     /** Member Variables **/
     private Context mContext;
-    private RecipeAdapter mRecipeAdapter;
+    private AdapterRecipe mRecipeAdapter;
     private Cursor mCursor;
     private int mPosition;
     private Map<String, Integer> mRecipeIndex;
-    private LayoutInflater mInflater;       // Used to inflate the list_item_alphabet_index layout
     private StaggeredGridLayoutManager mLayoutManager;
 
     // Views bound by ButterKnife
-    @BindView(R.id.favorites_index) SlidingAlphabeticalIndex mIndex;
-    @BindView(R.id.favorites_recycler_view) RecyclerView mRecipeRecyclerView;
+    @BindView(R.id.my_recipes_sliding_index) SlidingAlphabeticalIndex mIndex;
+    @BindView(R.id.my_recipes_recyclerview) RecyclerView mRecipeRecyclerView;
 
-    public FavoritesFragment() {
+    public FragmentMyRecipes() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_favorites, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_my_recipes, container, false);
         ButterKnife.bind(this, rootView);
 
         // Initialize member variables
         mContext = getActivity();
-        mInflater = inflater;
         mRecipeIndex = new HashMap<>();
 
-        mRecipeAdapter = new RecipeAdapter(mContext, new RecipeAdapter.RecipeAdapterOnClickHandler() {
+        mRecipeAdapter = new AdapterRecipe(mContext, new AdapterRecipe.RecipeAdapterOnClickHandler() {
             @Override
-            public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
-                boolean resetLayout = !RecipeListActivity.mDetailsVisible;
+            public void onClick(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
+                boolean resetLayout = !ActivityRecipeList.mDetailsVisible;
 
-                ((RecipeCallBack) getActivity()).onItemSelected(
+                ((FragmentMyRecipes.RecipeCallback) getActivity()).onItemSelected(
                         Utilities.getRecipeUrlFromRecipeId(mContext, recipeId),
                         viewHolder
                 );
@@ -90,10 +82,10 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
         boolean useDetailView = getResources().getBoolean(R.bool.recipeAdapterUseDetailView);
         mRecipeAdapter.setUseDetailView(useDetailView, getChildFragmentManager());
         if (useDetailView) {
-            mRecipeAdapter.setVisibilityListener(new RecipeAdapter.DetailVisibilityListener() {
+            mRecipeAdapter.setVisibilityListener(new AdapterRecipe.DetailVisibilityListener() {
                 @Override
                 public void onDetailsHidden() {
-                    ((FavoritesActivity) getActivity()).mToolbar.getMenu().clear();
+                    ((ActivityFavorites) getActivity()).mToolbar.getMenu().clear();
                 }
             });
         }
@@ -119,6 +111,10 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
         return rootView;
     }
 
+    // CallBack for starting the ActivityRecipeDetails (preparation for master-view flow)
+    interface RecipeCallback {
+        void onItemSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder);
+    }
 
     /**
      * Used to interpreting the position of the scroll indicator to find the correct letter to
@@ -126,21 +122,22 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
      * @param letter Letter the user is scrolling to
      */
     private void scrollToIndex(String letter) {
+        Log.d(LOG_TAG, mRecipeIndex.get(letter) + "");
         mLayoutManager.scrollToPositionWithOffset(mRecipeIndex.get(letter), 0);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         // Initialize variables for the CursorLoader
-        String selection = RecipeEntry.COLUMN_FAVORITE + " = ?";
-        String[] selectionArgs = new String[] {Integer.toString(1)};
-        String sortOrder = RecipeEntry.COLUMN_RECIPE_NAME + " ASC";
+        String selection = RecipeContract.RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " < ?";
+        String[] selectionArgs = new String[] {Integer.toString(0)};
+        String sortOrder = RecipeContract.RecipeEntry.COLUMN_RECIPE_NAME + " ASC";
 
         // Initialize and return the CursorLoader
         return new CursorLoader(
                 mContext,
-                RecipeEntry.CONTENT_URI,
-                RecipeEntry.RECIPE_PROJECTION,
+                RecipeContract.RecipeEntry.CONTENT_URI,
+                RecipeContract.RecipeEntry.RECIPE_PROJECTION,
                 selection,
                 selectionArgs,
                 sortOrder
@@ -149,17 +146,21 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        // Retrieved the index populated by the ScrollingAlphabeticalIndex
+        mRecipeIndex = mIndex.getIndex();
+
         if (cursor != null && cursor.moveToFirst()) {
             // Instantiate the member variable mCursor
             mCursor = cursor;
 
-            // Retrieved the index populated by the ScrollingAlphabeticalIndex
-            mRecipeIndex = mIndex.getIndex();
+            for (String letter : mRecipeIndex.keySet()) {
+                Log.d(LOG_TAG, letter + ": " + mRecipeIndex.get(letter));
+            }
 
             // Create the Map used as the index
             do {
                 // Get the first letter of the recipe
-                String letter = cursor.getString(RecipeEntry.IDX_RECIPE_NAME).substring(0,1);
+                String letter = cursor.getString(RecipeContract.RecipeEntry.IDX_RECIPE_NAME).substring(0,1);
                 if (mRecipeIndex.get(letter) != -1) {
                     // If the position of the first instance of the letter already exists, then skip
                     continue;
@@ -198,7 +199,7 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        // Swap a null Cursor into the RecipeAdapter
+        // Swap a null Cursor into the AdapterRecipe
         mRecipeAdapter.swapCursor(null);
     }
 
@@ -210,18 +211,13 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
         getLoaderManager().initLoader(FAVORITES_LOADER, null, this);
     }
 
-    // CallBack for starting the RecipeDetailsActivity (preparation for master-view flow)
-    interface RecipeCallBack {
-        void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder);
-    }
-
     /**
      * Sets the number columns used by the StaggeredGridLayoutManager
      */
     private void setLayoutColumns() {
         // Retrieve the number of columns needed by the device/orientation
         int columns;
-        if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {
+        if (ActivityRecipeList.mTwoPane && ActivityRecipeList.mDetailsVisible) {
             columns = getResources().getInteger(R.integer.recipe_twopane_columns);
         } else {
             columns = getResources().getInteger(R.integer.recipe_columns);
@@ -236,7 +232,7 @@ public class FavoritesFragment extends Fragment implements LoaderManager.LoaderC
         // Set the LayoutManager for the RecyclerView
         mRecipeRecyclerView.setLayoutManager(mLayoutManager);
 
-        RecipeAdapter adapter = ((RecipeAdapter) mRecipeRecyclerView.getAdapter());
+        AdapterRecipe adapter = ((AdapterRecipe) mRecipeRecyclerView.getAdapter());
         if (adapter != null) {
             adapter.hideDetails();
         }

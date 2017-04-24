@@ -3,17 +3,14 @@ package project.hnoct.kitchen.ui;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 
-public class FavoritesActivity extends AppCompatActivity implements FavoritesFragment.RecipeCallBack {
+public class ActivityFavorites extends AppCompatActivity implements FragmentFavorites.RecipeCallBack {
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
 
@@ -37,9 +34,9 @@ public class FavoritesActivity extends AppCompatActivity implements FavoritesFra
     }
 
     @Override
-    public void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder) {
-        // Start the RecipeDetailsActivity utilizing the URL of the recipe
-        Intent intent = new Intent(this, RecipeDetailsActivity.class);
+    public void onItemSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+        // Start the ActivityRecipeDetails utilizing the URL of the recipe
+        Intent intent = new Intent(this, ActivityRecipeDetails.class);
         intent.setData(Uri.parse(recipeUrl));
         startActivity(intent);
     }

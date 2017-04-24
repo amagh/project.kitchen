@@ -26,7 +26,7 @@ import project.hnoct.kitchen.data.Utilities;
 /**
  * Fragment for the main view displaying all recipes loaded from web
  */
-public class RecipeListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class FragmentRecipeList extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     /** Constants **/
     private static final int RECIPE_LOADER = 0;
 
@@ -34,13 +34,13 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
     private Context mContext;                   // Interface for global context
     Cursor mCursor;
     private ContentResolver mResolver;          // Reference to ContentResolver
-    RecipeAdapter mRecipeAdapter;
+    AdapterRecipe mRecipeAdapter;
     private int mPosition;                      // Position of mCursor
 
     // Views bound by ButterKnife
     @BindView(R.id.recipe_recycler_view) RecyclerView mRecipeRecyclerView;
 
-    public RecipeListFragment() {
+    public FragmentRecipeList() {
     }
 
     @Override
@@ -55,10 +55,10 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         mContext = getActivity();
 
         // Instantiate the Adapter for the RecyclerView
-        mRecipeAdapter = new RecipeAdapter(getActivity(), new RecipeAdapter.RecipeAdapterOnClickHandler() {
+        mRecipeAdapter = new AdapterRecipe(getActivity(), new AdapterRecipe.RecipeAdapterOnClickHandler() {
             @Override
-            public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
-                boolean resetLayout = !RecipeListActivity.mDetailsVisible;
+            public void onClick(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
+                boolean resetLayout = !ActivityRecipeList.mDetailsVisible;
 
                 // Initiate Callback to Activity which will launch Details Activity
                 ((RecipeCallBack) getActivity()).onItemSelected(
@@ -79,10 +79,10 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         boolean useDetailView = getResources().getBoolean(R.bool.recipeAdapterUseDetailView);
         mRecipeAdapter.setUseDetailView(useDetailView, getChildFragmentManager());
         if (useDetailView) {
-            mRecipeAdapter.setVisibilityListener(new RecipeAdapter.DetailVisibilityListener() {
+            mRecipeAdapter.setVisibilityListener(new AdapterRecipe.DetailVisibilityListener() {
                 @Override
                 public void onDetailsHidden() {
-                    ((RecipeListActivity) getActivity()).mToolbar.getMenu().clear();
+                    ((ActivityRecipeList) getActivity()).mToolbar.getMenu().clear();
                 }
             });
         }
@@ -93,7 +93,7 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         // Set the adapter to the RecyclerView
         mRecipeRecyclerView.setAdapter(mRecipeAdapter);
 
-        ((RecipeListActivity) getActivity()).setSearchListener(new RecipeListActivity.SearchListener() {
+        ((ActivityRecipeList) getActivity()).setSearchListener(new ActivityRecipeList.SearchListener() {
             @Override
             public void onSearch(String searchTerm) {
                 search(searchTerm);
@@ -164,7 +164,7 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
     }
 
     interface RecipeCallBack {
-        void onItemSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder);
+        void onItemSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder);
     }
 
 
@@ -174,7 +174,7 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
     void setLayoutColumns() {
         // Retrieve the number of columns needed by the device/orientation
         int columns;
-        if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {
+        if (ActivityRecipeList.mTwoPane && ActivityRecipeList.mDetailsVisible) {
             columns = getResources().getInteger(R.integer.recipe_twopane_columns);
         } else {
             columns = getResources().getInteger(R.integer.recipe_columns);
@@ -189,7 +189,7 @@ public class RecipeListFragment extends Fragment implements LoaderManager.Loader
         // Set the LayoutManager for the RecyclerView
         mRecipeRecyclerView.setLayoutManager(sglm);
 
-        RecipeAdapter adapter = ((RecipeAdapter) mRecipeRecyclerView.getAdapter());
+        AdapterRecipe adapter = ((AdapterRecipe) mRecipeRecyclerView.getAdapter());
         if (adapter != null) {
             adapter.hideDetails();
         }

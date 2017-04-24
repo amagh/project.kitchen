@@ -9,7 +9,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -18,10 +17,10 @@ import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.dialog.RecipeBookDetailsDialog;
 
-public class RecipeBookActivity extends AppCompatActivity implements RecipeBookDetailsDialog.RecipeBookDetailsListener {
+public class ActivityRecipeBook extends AppCompatActivity implements RecipeBookDetailsDialog.RecipeBookDetailsListener {
     /** Constants **/
     private static final String RECIPE_BOOK_DETAILS_DIALOG = "recipe_book_details_dialog";
-    private static final String LOG_TAG = RecipeBookActivity.class.getSimpleName();
+    private static final String LOG_TAG = ActivityRecipeBook.class.getSimpleName();
 
     /** Member Variables **/
 
@@ -80,9 +79,9 @@ public class RecipeBookActivity extends AppCompatActivity implements RecipeBookD
         // Get the bookId from the URI generated from inserting into DB
         long bookId = Long.parseLong(bookUri != null ? bookUri.getLastPathSegment() : null);
 
-        // Start the ChapterActivity that lists all chapters of a recipe book of the recipe that was
+        // Start the ActivityChapter that lists all chapters of a recipe book of the recipe that was
         // just created
-        Intent intent = new Intent(this, ChapterActivity.class);
+        Intent intent = new Intent(this, ActivityChapter.class);
         intent.setData(RecipeBookEntry.buildUriFromRecipeBookId(bookId));
         startActivity(intent);
     }

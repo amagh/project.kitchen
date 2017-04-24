@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
 
-        tools:context="project.hnoct.kitchen.ui.RecipeDetailsActivity">
+        tools:context="project.hnoct.kitchen.ui.ActivityRecipeDetails">
 
         <FrameLayout
             android:layout_width="match_parent"

@@ -8,7 +8,7 @@ import android.view.MenuItem;
 
 import project.hnoct.kitchen.R;
 
-public class CreateRecipeActivity extends AppCompatActivity {
+public class ActivityCreateRecipe extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,12 +22,12 @@ public class CreateRecipeActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // Create a new Bundle to attach to the fragment and add the recipeUri if it is passed from
-        // RecipeDetailsActivity
+        // ActivityRecipeDetails
         Bundle args = new Bundle();
-        args.putParcelable(CreateRecipeFragment.RECIPE_URI, getIntent().getData());
+        args.putParcelable(FragmentCreateRecipe.RECIPE_URI, getIntent().getData());
 
-        // Instantiate the CreateRecipeFragment and set the args
-        CreateRecipeFragment fragment = new CreateRecipeFragment();
+        // Instantiate the FragmentCreateRecipe and set the args
+        FragmentCreateRecipe fragment = new FragmentCreateRecipe();
         fragment.setArguments(args);
 
         if (savedInstanceState == null) {
@@ -49,16 +49,16 @@ public class CreateRecipeActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_save: {
-                // Initiate the Callback to the CreateRecipeFragment to inform it that user has clicked
+                // Initiate the Callback to the FragmentCreateRecipe to inform it that user has clicked
                 // the save option
-                CreateRecipeFragment fragment =
-                        (CreateRecipeFragment) getSupportFragmentManager().findFragmentById(R.id.create_recipe_container);
+                FragmentCreateRecipe fragment =
+                        (FragmentCreateRecipe) getSupportFragmentManager().findFragmentById(R.id.create_recipe_container);
                 fragment.onSaveClicked();
                 break;
             }
             case R.id.action_clear_recipe: {
-                CreateRecipeFragment fragment =
-                        (CreateRecipeFragment) getSupportFragmentManager().findFragmentById(R.id.create_recipe_container);
+                FragmentCreateRecipe fragment =
+                        (FragmentCreateRecipe) getSupportFragmentManager().findFragmentById(R.id.create_recipe_container);
                 fragment.onClearClicked();
                 break;
             }

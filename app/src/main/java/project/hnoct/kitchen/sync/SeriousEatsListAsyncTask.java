@@ -70,21 +70,22 @@ public class SeriousEatsListAsyncTask extends AsyncTask<Void, Void, Void> {
 
             for (Element recipeElement : recipeElements)  {
                 // Check that the element is for a recipe and not a "technique" or "collection"
-                String dataType = recipeElement.select("a.category-link").first().attr("data-click-id");
+                Element dataTypeElement = recipeElement.select("a.category-link").first();
 
-                if (!dataType.equals("Recipes")) {
-                    // If not recipe, skip
-                    continue;
-                }
+                // If element does not contain data type, then skip it
+                if (dataTypeElement == null) continue;
+
+                String dataType = dataTypeElement.attr("data-click-id");
+
+                // If not recipe, skip
+                if (dataType == null || !dataType.equals("Recipes")) continue;
 
                 // Get the recipe information
                 long recipeSourceId = Long.parseLong(recipeElement.attr("data-postid"));
 
                 // Check to ensure recipe isn't already in the list of recipe to be added
-                if (importedRecipes.contains(recipeSourceId)) {
-                    // If it is already on the List, then skip
-                    continue;
-                }
+                // If it is already on the List, then skip
+                if (importedRecipes.contains(recipeSourceId)) continue;
 
                 // Add the recipe to the List to prevent multiple insertions of same recipe
                 importedRecipes.add(recipeSourceId);

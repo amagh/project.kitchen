@@ -49,15 +49,16 @@ import project.hnoct.kitchen.view.NonScrollingRecyclerView;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class CreateRecipeFragment extends Fragment implements CreateRecipeActivity.MenuButtonClicked {
+public class FragmentCreateRecipe extends Fragment implements ActivityCreateRecipe.MenuButtonClicked {
     /** Constants **/
-    private static final String LOG_TAG = CreateRecipeActivity.class.getSimpleName();
+    private static final String LOG_TAG = ActivityCreateRecipe.class.getSimpleName();
     static final String RECIPE_URI = "recipe_uri";
     private final int SELECT_PHOTO = 25687;
 
 
     /** Member Variables **/
     private Context mContext;
+    private long mRecipeSourceId;
     private long mRecipeId;
     private Uri mRecipeImageUri;
     private String mRecipeDescription;
@@ -74,8 +75,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
     private List<Pair<String, String>> mIngredientList;
     private List<String> mDirectionList;
 
-    private AddIngredientAdapter mIngredientAdapter;
-    private AddDirectionAdapter mDirectionAdapter;
+    private AdapterAddIngredient mIngredientAdapter;
+    private AdapterAddDirection mDirectionAdapter;
 
     private boolean mSaved = false;     // Check if the user has saved the data manually
 
@@ -117,7 +118,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         Glide.with(mContext).load(mRecipeImageUri).into(mRecipeImage);
     }
 
-    public CreateRecipeFragment() {
+    public FragmentCreateRecipe() {
     }
 
     @OnClick(R.id.create_recipe_add_ingredient)
@@ -166,9 +167,9 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
 
                     // If the recipe is not user added, set the recipeId as the negative of the recipe
                     // so the original can be easily referenced
-                    mRecipeId = mSource.equals(getString(R.string.attribution_custom))
-                            ? cursor.getLong(RecipeEntry.IDX_RECIPE_ID)
-                            : -cursor.getLong(RecipeEntry.IDX_RECIPE_ID);
+                    mRecipeSourceId = mSource.equals(getString(R.string.attribution_custom))
+                            ? cursor.getLong(RecipeEntry.IDX_RECIPE_SOURCE_ID)
+                            : -cursor.getLong(RecipeEntry.IDX_RECIPE_SOURCE_ID);
 
                     // Retrieve the directions in String form
                     String directions = cursor.getString(RecipeEntry.IDX_RECIPE_DIRECTIONS);
@@ -187,8 +188,8 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
                 cursor = mContext.getContentResolver().query(
                         LinkIngredientEntry.CONTENT_URI,
                         LinkIngredientEntry.LINK_PROJECTION,
-                        RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " + RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = ?",
-                        new String[] {Long.toString(mSource.equals(mContext.getString(R.string.attribution_custom))? mRecipeId : -mRecipeId), mSource},
+                        RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ? AND " + RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = ?",
+                        new String[] {Long.toString(mSource.equals(mContext.getString(R.string.attribution_custom))? mRecipeSourceId : -mRecipeSourceId), mSource},
                         LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + " ASC"  // Sort by ingredient order to maintain order of ingredients
                 );
 
@@ -218,9 +219,9 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
 
         }
 
-        if (mRecipeId == 0) {
+        if (mRecipeSourceId == 0) {
             // If no saved data exists, generate a new recipeId
-            mRecipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
+            mRecipeSourceId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
 
         } else {
             // Insert saved data into EditText
@@ -245,17 +246,17 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         }
 
         // Instantiate the RecyclerAdapters
-        mIngredientAdapter = new AddIngredientAdapter(mContext, new AddIngredientAdapter.OnStartDragListener() {
+        mIngredientAdapter = new AdapterAddIngredient(mContext, new AdapterAddIngredient.OnStartDragListener() {
             @Override
-            public void onStartDrag(AddIngredientAdapter.AddIngredientViewHolder holder) {
+            public void onStartDrag(AdapterAddIngredient.AddIngredientViewHolder holder) {
                 // Begin listening for drag events initiated from the ViewHolder's handler
                 mIngredientIth.startDrag(holder);
             }
         });
 
-        mDirectionAdapter = new AddDirectionAdapter(mContext, new AddDirectionAdapter.OnStartDragListener() {
+        mDirectionAdapter = new AdapterAddDirection(mContext, new AdapterAddDirection.OnStartDragListener() {
             @Override
-            public void onStartDrag(AddDirectionAdapter.AddDirectionViewHolder viewHolder) {
+            public void onStartDrag(AdapterAddDirection.AddDirectionViewHolder viewHolder) {
                 mDirectionIth.startDrag(viewHolder);
             }
         });
@@ -326,7 +327,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
 
                 // Save the bitmap to file in the private directory
                 /** @see Utilities#saveImageToFile(Context, long, Bitmap) **/
-                mRecipeImageUri = Utilities.saveImageToFile(mContext, mRecipeId, mImageBitmap);
+                mRecipeImageUri = Utilities.saveImageToFile(mContext, mRecipeSourceId, mImageBitmap);
 
                 // Load the image into the ImageView
                 Glide.with(mContext)
@@ -391,7 +392,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
     if (mRecipeName != null || mRecipeDescription != null || mRecipeImageUri != null ||
             mIngredientList != null || mDirectionList != null) {
             // If at least one piece of data was retrieved, then get the recipeId
-            mRecipeId = prefs.getLong(mContext.getString(R.string.edit_recipe_id_key), 0);
+            mRecipeSourceId = prefs.getLong(mContext.getString(R.string.edit_recipe_id_key), 0);
         }
     }
 
@@ -493,7 +494,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
             // RecipeId only needs to be saved if other data was saved as well.
             editor.putLong(
                     mContext.getString(R.string.edit_recipe_id_key),
-                    mRecipeId
+                    mRecipeSourceId
             );
         }
         // Apply the changes
@@ -613,7 +614,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
                 RecipeEntry.CONTENT_URI,
                 null,
                 RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-                new String[] {Long.toString(mRecipeId)},
+                new String[] {Long.toString(mRecipeSourceId)},
                 null
         );
 
@@ -627,14 +628,14 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
 
         // Create ContentValues for Recipe that need to be inserted/updated
         ContentValues recipeValues = new ContentValues();
-        recipeValues.put(RecipeEntry.COLUMN_RECIPE_ID, mRecipeId);
+        recipeValues.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, mRecipeSourceId);
         recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, mRecipeName);
         recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, "TestUser");     // TODO: Add ability to set recipe-author
         recipeValues.put(RecipeEntry.COLUMN_IMG_URL, mRecipeImageUri.toString());
         recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, mRecipeDescription);
         recipeValues.put(RecipeEntry.COLUMN_SOURCE, mSource);
         String mRecipeUrl = "content://user.custom/";
-        recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, mRecipeUrl + mRecipeId);
+        recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, mRecipeUrl + mRecipeSourceId);
         recipeValues.put(RecipeEntry.COLUMN_FAVORITE, mFavorite);
         recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, mDateAdded);
 
@@ -652,6 +653,12 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
 
         // Add direction values to recipe ContentValues
         recipeValues.put(RecipeEntry.COLUMN_DIRECTIONS, directions);
+
+        // Generate the recipe ID for the link values
+        long recipeId = Utilities.getRecipeIdFromSourceId(mContext, mRecipeSourceId, mSource);
+        if (newRecipe) {
+             recipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
+        }
 
         // Create Lists to hold ingredientIds, ingredient ContentValues, and link ContentValues
         @SuppressLint("UseSparseArrays") Map<Long, String> ingredientIdNameMap = new HashMap<>();
@@ -703,8 +710,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
                 }
 
                 // Add the values to the ContentValues for the Link table
-                linkValue.put(RecipeEntry.COLUMN_RECIPE_ID, mRecipeId);
-                linkValue.put(RecipeEntry.COLUMN_SOURCE, mSource);
+                linkValue.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
                 linkValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
                 linkValue.put(LinkIngredientEntry.COLUMN_INGREDIENT_ORDER, i);
                 linkValue.put(LinkIngredientEntry.COLUMN_QUANTITY, quantity);
@@ -732,7 +738,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
                     RecipeEntry.CONTENT_URI,
                     recipeValues,
                     RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-                    new String[] {Long.toString(mRecipeId)}
+                    new String[] {Long.toString(mRecipeSourceId)}
             );
 
             // Generate a List from the Array of ContentValues
@@ -748,7 +754,7 @@ public class CreateRecipeFragment extends Fragment implements CreateRecipeActivi
         /** @see Utilities#insertAndUpdateIngredientValues(Context, List) **/
         Utilities.insertAndUpdateIngredientValues(mContext, ingredientCVList);
 
-        // TODO: Start the RecipeDetailsActivity???
+        // TODO: Start the ActivityRecipeDetails???
         Toast.makeText(mContext, "Recipe saved!", Toast.LENGTH_SHORT).show();
         mSaved = true;
     }

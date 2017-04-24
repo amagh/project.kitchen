@@ -39,9 +39,9 @@ import project.hnoct.kitchen.data.Utilities;
  * Created by hnoct on 2/20/2017.
  */
 
-public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
+public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapter<AdapterRecipe.RecipeViewHolder> {
     /** Constants **/
-    public static final String LOG_TAG = RecipeAdapter.class.getSimpleName();
+    public static final String LOG_TAG = AdapterRecipe.class.getSimpleName();
     private static final int RECIPE_VIEW_NORMAL = 0;
     private static final int RECIPE_VIEW_LAST = 1;
     private static final int RECIPE_VIEW_DETAIL = 2;
@@ -57,7 +57,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
     private int mDetailCardPosition;
     private int mPosition;
 
-    private FragmentManager mFragmentManager;       // Used for inflating the RecipeDetailsFragment into the ViewHolder
+    private FragmentManager mFragmentManager;       // Used for inflating the FragmentRecipeDetails into the ViewHolder
     private RecyclerView mRecyclerView;
 
     private boolean useDetailView = false;
@@ -68,6 +68,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
 
     // Map Key Values
     private String RECIPE_ID = "recipeId";
+    private String RECIPE_SOURCE_ID = "recipeSourceId";
     private String RECIPE_TITLE = "recipeTitle";
     private String RECIPE_AUTHOR = "recipeAuthor";
     private String RECIPE_ATTRIBUTION = "recipeAttribution";
@@ -80,12 +81,12 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
     int[] editInstructions = new int[] {-1, -1, -1};
 
     /**
-     * Public constructor for RecipeAdapter. Used to inflate view used for Recycle View in the
-     * {@link RecipeListFragment}
+     * Public constructor for AdapterRecipe. Used to inflate view used for Recycle View in the
+     * {@link FragmentRecipeList}
      * @param context interface for global context
      * @param clickHandler interface for passing information to the UI from the Adapter
      */
-    public RecipeAdapter(Context context, RecipeAdapterOnClickHandler clickHandler) {
+    public AdapterRecipe(Context context, RecipeAdapterOnClickHandler clickHandler) {
         mContext = context;
         mClickHandler = clickHandler;
         mDetailCardPosition = -1;
@@ -99,6 +100,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
                 mList = new ArrayList<>(mCursor.getCount());
                 do {
                     long recipeId = mCursor.getLong(RecipeEntry.IDX_RECIPE_ID);
+                    long recipeSourceId = mCursor.getLong(RecipeEntry.IDX_RECIPE_SOURCE_ID);
                     String recipeTitle = mCursor.getString(RecipeEntry.IDX_RECIPE_NAME);
                     String recipeAuthor = mCursor.getString(RecipeEntry.IDX_RECIPE_AUTHOR);
                     String recipeAttribution = mCursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
@@ -112,6 +114,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
                     Map<String, Object> map = new HashMap<>();
 
                     map.put(RECIPE_ID, recipeId);
+                    map.put(RECIPE_SOURCE_ID, recipeSourceId);
                     map.put(RECIPE_TITLE, recipeTitle);
                     map.put(RECIPE_AUTHOR, recipeAuthor);
                     map.put(RECIPE_ATTRIBUTION, recipeAttribution);
@@ -141,7 +144,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
 
     /**
      * Sets the position of this Adapter within another Adapter
-     * @param position Int position of this RecipeAdapter
+     * @param position Int position of this AdapterRecipe
      */
     void setPosition(int position) {
         mPosition = position;
@@ -311,6 +314,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
         Map<String, Object> map = mList.get(position);
 
         long recipeId = (long) map.get(RECIPE_ID);
+        long recipeSourceId = (long) map.get(RECIPE_SOURCE_ID);
         String recipeTitle = (String) map.get(RECIPE_TITLE);
         String recipeAuthor = (String) map.get(RECIPE_AUTHOR);
         String recipeAttribution = (String) map.get(RECIPE_ATTRIBUTION);
@@ -323,8 +327,8 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
 
         if (useDetailView && position == mDetailCardPosition) {
             // Instantiate a new RecipeDetailsFragmeent
-            RecipeDetailsFragment fragment = new RecipeDetailsFragment();
-            fragment.setCursorLoaderListener(new RecipeDetailsFragment.CursorLoaderListener() {
+            FragmentRecipeDetails fragment = new FragmentRecipeDetails();
+            fragment.setCursorLoaderListener(new FragmentRecipeDetails.CursorLoaderListener() {
                 @Override
                 public void onCursorLoaded(Cursor cursor, int recipeServings) {
                     // When finished loading the fragment, scroll to the recipe
@@ -335,7 +339,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
 
             // Add the recipe's URL as a Bundle to the fragment
             Bundle args = new Bundle();
-            args.putParcelable(RecipeDetailsFragment.RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
+            args.putParcelable(FragmentRecipeDetails.RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
             fragment.setArguments(args);
 
             // Swap the fragment into the container
@@ -370,7 +374,7 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
             holder.recipeDescription.setText(recipeDescription);
 
             if (!editMode) {
-                if (recipeAttribution.equals(mContext.getString(R.string.attribution_custom)) || recipeId < 0) {
+                if (recipeAttribution.equals(mContext.getString(R.string.attribution_custom)) || recipeSourceId < 0) {
                     // Hide non-utilized views if recipe was made or edited by user
                     holder.recipeAttribution.setVisibility(View.INVISIBLE);
                     holder.recipeReviews.setVisibility(View.INVISIBLE);

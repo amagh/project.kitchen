@@ -3,13 +3,11 @@ package project.hnoct.kitchen.ui;
 import android.content.Context;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
@@ -26,16 +24,16 @@ import project.hnoct.kitchen.data.Utilities;
  * Created by hnoct on 2/26/2017.
  */
 
-public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.NutritionViewHolder> {
+public class AdapterNutrition extends RecyclerView.Adapter<AdapterNutrition.NutritionViewHolder> {
     /** Constants **/
-    private static final String LOG_TAG = NutritionAdapter.class.getSimpleName();
+    private static final String LOG_TAG = AdapterNutrition.class.getSimpleName();
 
     /** Member Variables **/
     private static Context mContext;
     private static List<Pair<Integer, Double>> mNutritionList;
     private int mNutritionBarWidthTotal;
 
-    public NutritionAdapter(Context context) {
+    public AdapterNutrition(Context context) {
         mContext = context;
     }
     @Override

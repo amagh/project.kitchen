@@ -16,8 +16,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
-import project.hnoct.kitchen.ui.RecipeAdapter;
-import project.hnoct.kitchen.ui.RecipeListActivity;
+import project.hnoct.kitchen.ui.AdapterRecipe;
+import project.hnoct.kitchen.ui.ActivityRecipeList;
 
 /**
  * Created by hnoct on 4/5/2017.
@@ -26,7 +26,7 @@ import project.hnoct.kitchen.ui.RecipeListActivity;
 public class AddRecipeDialog extends DialogFragment {
     /** Constants **/
 
-    private RecipeAdapter mRecipeAdapter;
+    private AdapterRecipe mRecipeAdapter;
     private SelectionListener mListener;
     private Cursor mCursor;
     Context mContext;
@@ -43,11 +43,11 @@ public class AddRecipeDialog extends DialogFragment {
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_recyclerview, null);
         ButterKnife.bind(this, view);
 
-        mRecipeAdapter = new RecipeAdapter(
+        mRecipeAdapter = new AdapterRecipe(
                 getActivity(),
-                new RecipeAdapter.RecipeAdapterOnClickHandler() {
+                new AdapterRecipe.RecipeAdapterOnClickHandler() {
                     @Override
-                    public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
+                    public void onClick(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
                         if (mListener != null) {
                             // Utilize Callback interface to send information about recipe that was
                             // selected
@@ -63,7 +63,7 @@ public class AddRecipeDialog extends DialogFragment {
         );
 
         // Get the number of columns to be used in the RecyclerView
-        int columns = (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) ?
+        int columns = (ActivityRecipeList.mTwoPane && ActivityRecipeList.mDetailsVisible) ?
                 getResources().getInteger(R.integer.recipe_twopane_columns) :
                 getResources().getInteger(R.integer.recipe_columns);
 
@@ -84,7 +84,7 @@ public class AddRecipeDialog extends DialogFragment {
                 sortOrder
         );
 
-        // Swap the Cursor into the RecipeAdapter
+        // Swap the Cursor into the AdapterRecipe
         mRecipeAdapter.swapCursor(mCursor);
 
         // Set the View to be displayed

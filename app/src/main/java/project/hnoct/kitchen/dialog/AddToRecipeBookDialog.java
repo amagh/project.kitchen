@@ -16,10 +16,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract;
-import project.hnoct.kitchen.ui.ChapterAdapter;
-import project.hnoct.kitchen.ui.RecipeAdapter;
-import project.hnoct.kitchen.ui.RecipeBookAdapter;
-import project.hnoct.kitchen.ui.RecipeListActivity;
+import project.hnoct.kitchen.ui.ActivityRecipeList;
+import project.hnoct.kitchen.ui.AdapterChapter;
+import project.hnoct.kitchen.ui.AdapterRecipeBook;
 
 /**
  * Created by hnoct on 4/20/2017.
@@ -29,8 +28,8 @@ public class AddToRecipeBookDialog extends DialogFragment {
     /** Constants **/
 
     /** Member Variables **/
-    private RecipeBookAdapter mRecipeBookAdapter;
-    private ChapterAdapter mChapterAdapter;
+    private AdapterRecipeBook mRecipeBookAdapter;
+    private AdapterChapter mChapterAdapter;
     private ChapterSelectedListener mListener;
     private Cursor mCursor;
     private long mBookId;
@@ -52,14 +51,14 @@ public class AddToRecipeBookDialog extends DialogFragment {
         View view = LayoutInflater.from(mContext).inflate(R.layout.dialog_recyclerview, null);
         ButterKnife.bind(this, view);
 
-        // Initialize the RecipeBookAdapter
-        mRecipeBookAdapter = new RecipeBookAdapter(mContext, new RecipeBookAdapter.RecipeBookAdapterOnClickHandler() {
+        // Initialize the AdapterRecipeBook
+        mRecipeBookAdapter = new AdapterRecipeBook(mContext, new AdapterRecipeBook.RecipeBookAdapterOnClickHandler() {
             @Override
-            public void onClick(RecipeBookAdapter.RecipeBookViewHolder viewHolder, long bookId) {
+            public void onClick(AdapterRecipeBook.RecipeBookViewHolder viewHolder, long bookId) {
                 // Initialize member variable
                 mBookId = bookId;
 
-                // Set the RecipeBookAdapter to null so the ChapterAdapter can be set to mRecyclerView
+                // Set the AdapterRecipeBook to null so the AdapterChapter can be set to mRecyclerView
                 mRecipeBookAdapter.swapCursor(null);
                 mRecyclerView.setAdapter(mChapterAdapter);
 
@@ -79,14 +78,14 @@ public class AddToRecipeBookDialog extends DialogFragment {
                         sortOrder
                 );
 
-                // Swap the new Cursor into the ChapterAdapter
+                // Swap the new Cursor into the AdapterChapter
                 mChapterAdapter.swapCursor(mCursor);
             }
         });
 
-        // Initialize the ChapterAdapter used for selecting the chapter the recipe is to be added to
-        mChapterAdapter = new ChapterAdapter(mContext);
-        mChapterAdapter.setChapterClickListener(new ChapterAdapter.ChapterClickListener() {
+        // Initialize the AdapterChapter used for selecting the chapter the recipe is to be added to
+        mChapterAdapter = new AdapterChapter(mContext);
+        mChapterAdapter.setChapterClickListener(new AdapterChapter.ChapterClickListener() {
             @Override
             public void onChapterClicked(long chapterId) {
                 if (mListener != null) {
@@ -100,7 +99,7 @@ public class AddToRecipeBookDialog extends DialogFragment {
         });
 
         // Get the number of columns to be used from
-        int columnCount = RecipeListActivity.mTwoPane ?
+        int columnCount = ActivityRecipeList.mTwoPane ?
                 getResources().getInteger(R.integer.recipe_twopane_columns) :
                 getResources().getInteger(R.integer.recipe_columns);
 
@@ -111,7 +110,7 @@ public class AddToRecipeBookDialog extends DialogFragment {
         StaggeredGridLayoutManager sglm = new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(sglm);
 
-        // Set the RecipeBookAdapter to mRecyclerView to start
+        // Set the AdapterRecipeBook to mRecyclerView to start
         mRecyclerView.setAdapter(mRecipeBookAdapter);
 
         // Initialize the parameters used to query the database for the recipe book information

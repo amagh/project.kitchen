@@ -27,14 +27,14 @@ import project.hnoct.kitchen.data.Utilities;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 
-public class RecipeDetailsActivity extends AppCompatActivity {
+public class ActivityRecipeDetails extends AppCompatActivity {
     /** Constants **/
 
     /** Member Variables **/
     long mRecipeId;
     MenuItem mMenuFavorite;
-    private RecipeDetailsFragment mDetailsFragment;
-    private NutritionAdapter mNutritionAdapter;
+    private FragmentRecipeDetails mDetailsFragment;
+    private AdapterNutrition mNutritionAdapter;
 
     // Views bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -55,21 +55,21 @@ public class RecipeDetailsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        // Retrieve the URI passed from the RecipeListActivity
+        // Retrieve the URI passed from the ActivityRecipeList
         Uri recipeUri = getIntent().getData();
 
-        // Add the URI as part of a Bundle to attach to the RecipeDetailsFragment
+        // Add the URI as part of a Bundle to attach to the FragmentRecipeDetails
         Bundle args = new Bundle();
-        args.putParcelable(RecipeDetailsFragment.RECIPE_DETAILS_URL, recipeUri);
+        args.putParcelable(FragmentRecipeDetails.RECIPE_DETAILS_URL, recipeUri);
 
         // Instantiate the fragment and attach the Bundle containing the recipe URI
-        mDetailsFragment = new RecipeDetailsFragment();
+        mDetailsFragment = new FragmentRecipeDetails();
         mDetailsFragment.setArguments(args);;
 
         final Context context = this;
         // Set CursorLoaderListener to be informed when Cursor is finished loading so the
         // nutrition drawer can be populated
-        mDetailsFragment.setCursorLoaderListener(new RecipeDetailsFragment.CursorLoaderListener() {
+        mDetailsFragment.setCursorLoaderListener(new FragmentRecipeDetails.CursorLoaderListener() {
             @Override
             public void onCursorLoaded(Cursor cursor, int recipeServings) {
                 // Set the text for the serving and calorie disclosure in the NutritionDrawer
@@ -80,20 +80,20 @@ public class RecipeDetailsActivity extends AppCompatActivity {
                         getString(R.string.nutrition_info_disclosure, Utilities.getUserCalories(context))
                 );
 
-                // Set the nutrition list for the NutritionAdapter for the slide out drawer
+                // Set the nutrition list for the AdapterNutrition for the slide out drawer
                 mNutritionAdapter.setNutritionList(getNutritionList(cursor));
             }
         });
 
         if (savedInstanceState == null) {
-            // Add the RecipeDetailsFragment to the container layout
+            // Add the FragmentRecipeDetails to the container layout
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.recipe_detail_container, mDetailsFragment)
                     .commit();
         }
 
-        // Instantiate the NutritionAdapter
-        mNutritionAdapter = new NutritionAdapter(this);
+        // Instantiate the AdapterNutrition
+        mNutritionAdapter = new AdapterNutrition(this);
 
         // Instantiate the LinearLayoutManager
         LinearLayoutManager llm3 = new LinearLayoutManager(this);

@@ -78,7 +78,7 @@ public class ChapterDetailsDialog extends DialogFragment {
     }
 
     /**
-     * Callback interface to pass the entered information to the RecipeBookActivity
+     * Callback interface to pass the entered information to the ActivityRecipeBook
      */
     public interface ChapterDetailsListener {
         void onPositiveDialogClick(DialogFragment dialog, String titleText, String descriptionText);

@@ -27,16 +27,16 @@ import project.hnoct.kitchen.R;
  * Created by hnoct on 3/7/2017.
  */
 
-public class AddDirectionAdapter extends RecyclerView.Adapter<AddDirectionAdapter.AddDirectionViewHolder> {
+public class AdapterAddDirection extends RecyclerView.Adapter<AdapterAddDirection.AddDirectionViewHolder> {
     /** Constants **/
-    private static final String LOG_TAG = AddDirectionAdapter.class.getSimpleName();
+    private static final String LOG_TAG = AdapterAddDirection.class.getSimpleName();
 
     /** Member Variables **/
     private Context mContext;               // Interface to global Context
     private List<String> mDirectionList;    // List of all directions
     private OnStartDragListener mDragListener;
 
-    public AddDirectionAdapter(Context context, OnStartDragListener dragListener) {
+    public AdapterAddDirection(Context context, OnStartDragListener dragListener) {
         // Initialize member variables
         mContext = context;
         mDirectionList = new LinkedList<>();

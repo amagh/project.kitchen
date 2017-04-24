@@ -12,14 +12,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -46,15 +44,15 @@ import project.hnoct.kitchen.view.SlidingAlphabeticalIndex;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class ChapterFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class FragmentChapter extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     /** Constants **/
-    private static final String LOG_TAG = ChapterFragment.class.getSimpleName();
+    private static final String LOG_TAG = FragmentChapter.class.getSimpleName();
     private static final int CHAPTER_LOADER = 4;
     static final String RECIPE_BOOK_URI = "recipe_book_uri";
     private static final int POSITION_MODIFIER = 10000;
 
     /** Member Variables **/
-    ChapterAdapter mChapterAdapter;
+    AdapterChapter mChapterAdapter;
 
     private Context mContext;
     private Cursor mCursor;
@@ -69,7 +67,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
     @BindView(R.id.chapter_recyclerview) RecyclerView mRecyclerView;
     @BindView(R.id.chapter_alphabetical_index) SlidingAlphabeticalIndex mSlidingIndex;
 
-    public ChapterFragment() {
+    public FragmentChapter() {
     }
 
     @Override
@@ -88,7 +86,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
             mRecipeBookUri = bundle.getParcelable(RECIPE_BOOK_URI);
         }
 
-        mChapterAdapter = new ChapterAdapter(
+        mChapterAdapter = new AdapterChapter(
                 mContext,
                 getChildFragmentManager(),
                 mCursorManager = new CursorManager(mContext)
@@ -99,21 +97,21 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
 
         mRecyclerView.setAdapter(mChapterAdapter);
         mRecyclerView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
-        mChapterAdapter.setRecipeClickListener(new ChapterAdapter.RecipeClickListener() {
+        mChapterAdapter.setRecipeClickListener(new AdapterChapter.RecipeClickListener() {
             @Override
-            public void onRecipeClicked(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
+            public void onRecipeClicked(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
                 String recipeUrl = Utilities.getRecipeUrlFromRecipeId(mContext, recipeId);
-                ((ChapterActivity) getActivity()).onRecipeSelected(recipeUrl, viewHolder);
+                ((ActivityChapter) getActivity()).onRecipeSelected(recipeUrl, viewHolder);
             }
 
             @Override
             public void onAddRecipeClicked(long chapterId) {
-                ((ChapterActivity) getActivity()).onAddRecipeClicked(chapterId);
+                ((ActivityChapter) getActivity()).onAddRecipeClicked(chapterId);
             }
         });
 
         // Set a listener to restart the CursorLoader when a new chapter has been added
-        ((ChapterActivity) getActivity()).setChapterListener(new ChapterActivity.ChapterListener() {
+        ((ActivityChapter) getActivity()).setChapterListener(new ActivityChapter.ChapterListener() {
             @Override
             public void onNewChapter() {
                 restartLoader();
@@ -121,15 +119,15 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
         });
 
         // Initialize the Listener to observe when the drag handle has been touched
-        mChapterAdapter.setOnStartDragListener(new ChapterAdapter.OnStartDragListener() {
+        mChapterAdapter.setOnStartDragListener(new AdapterChapter.OnStartDragListener() {
             @Override
-            public void onStartDrag(ChapterAdapter.ChapterViewHolder viewHolder) {
+            public void onStartDrag(AdapterChapter.ChapterViewHolder viewHolder) {
                 mHelper.startDrag(viewHolder);
             }
         });
 
         // Initialize the Listener to observe when a chapter has been deleted
-        mChapterAdapter.setDeleteChapterListener(new ChapterAdapter.DeleteChapterListener() {
+        mChapterAdapter.setDeleteChapterListener(new AdapterChapter.DeleteChapterListener() {
             @Override
             public void onDelete(final int position) {
                 // Show a dialog confirming the user's desire to delete the chapter
@@ -251,7 +249,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
                     sortOrder
             );
         } else if (args != null) {
-            // The Loader is for Cursors used by RecyclerViews within ChapterAdapter
+            // The Loader is for Cursors used by RecyclerViews within AdapterChapter
             // Retrieve the arguments from the passed Bundle
             Uri uri = args.getParcelable(Utilities.URI);
             String[] projection = args.getStringArray(Utilities.PROJECTION);
@@ -281,7 +279,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
                 mCursor = cursor;
 
                 // After all the other required Cursors have been initialized, swap the Cursor into
-                // ChapterAdapter
+                // AdapterChapter
                 mChapterAdapter.swapCursor(mCursor);
 
                 // Build a String containing an entry for each chapter
@@ -376,10 +374,10 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        // Swap a null Cursor into ChapterAdapter
+        // Swap a null Cursor into AdapterChapter
         mChapterAdapter.swapCursor(null);
 
-//        // Close all previously opened Cursors used by the ChapterAdapter
+//        // Close all previously opened Cursors used by the AdapterChapter
 //        mCursorManager.closeAllCursors();
     }
 
@@ -392,7 +390,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     /**
-     * Callback Interface to notify ChapterActivity of user interactions
+     * Callback Interface to notify ActivityChapter of user interactions
      */
     interface RecipeCallBack {
         /**
@@ -400,7 +398,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
          * @param recipeUrl URL of the recipe to be added
          * @param viewHolder ViewHolder holding the recipe's information
          */
-        void onRecipeSelected(String recipeUrl, RecipeAdapter.RecipeViewHolder viewHolder);
+        void onRecipeSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder);
 
         /**
          * For opening a dialog allowing the user to select a recipe to add
@@ -425,7 +423,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
         // Set the LayoutManager for the RecyclerView
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        RecipeAdapter adapter = ((RecipeAdapter) mRecyclerView.getAdapter());
+        AdapterRecipe adapter = ((AdapterRecipe) mRecyclerView.getAdapter());
         if (adapter != null) {
             adapter.hideDetails();
         }
@@ -450,7 +448,7 @@ public class ChapterFragment extends Fragment implements LoaderManager.LoaderCal
     ItemTouchHelper.SimpleCallback ithCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
         @Override
         public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-            // Retrieve the List being used to by the ChapterAdapter
+            // Retrieve the List being used to by the AdapterChapter
             List<Map<String, Object>> chapterList = mChapterAdapter.getList();
 
             // Get the start and end positions for the swap

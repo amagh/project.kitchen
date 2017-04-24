@@ -1,49 +1,41 @@
 package project.hnoct.kitchen.ui;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Bundle;
 import android.support.v4.util.Pair;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import butterknife.OnEditorAction;
-import butterknife.OnFocusChange;
 import butterknife.OnTextChanged;
 import butterknife.OnTouch;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
-import project.hnoct.kitchen.data.RecipeProvider;
 
 /**
  * Created by hnoct on 3/5/2017.
  */
 
-public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdapter.AddIngredientViewHolder> {
+public class AdapterAddIngredient extends RecyclerView.Adapter<AdapterAddIngredient.AddIngredientViewHolder> {
     /** Constants **/
-    private static final String LOG_TAG = AddIngredientAdapter.class.getSimpleName();
+    private static final String LOG_TAG = AdapterAddIngredient.class.getSimpleName();
 
     /** Member Variables **/
     private Context mContext;                               // Interface for global Context
@@ -52,7 +44,7 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
     private RecyclerView mRecyclerView;                     // References the Recycler containing this adapter for use in searching other ViewHolders
     private OnStartDragListener mDragListener;              // Listens for when a drag even has initiated from a viewHolder's handle
 
-    public AddIngredientAdapter(Context context, OnStartDragListener dragListener) {
+    public AdapterAddIngredient(Context context, OnStartDragListener dragListener) {
         // Initialize the member variables
         mContext = context;
         mIngredientList = new LinkedList<>();

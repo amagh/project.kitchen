@@ -45,9 +45,9 @@ import project.hnoct.kitchen.view.NonScrollingRecyclerView;
  * Created by hnoct on 3/22/2017.
  */
 
-public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterViewHolder> {
+public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterViewHolder> {
     /** Constants **/
-    private static final String LOG_TAG = ChapterAdapter.class.getSimpleName();
+    private static final String LOG_TAG = AdapterChapter.class.getSimpleName();
 
     /** Member Variables **/
     private Context mContext;
@@ -58,7 +58,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
     private ChapterClickListener mChapterClickListener;
     private DeleteChapterListener mDeleteListener;
     private OnStartDragListener mDragListener;
-    private RecipeAdapter[] mRecipeAdapterArray;
+    private AdapterRecipe[] mRecipeAdapterArray;
     private ItemTouchHelper[] mItemTouchHelperArray;
     private List<Map<String, Object>> mList;
     private boolean editMode = false;
@@ -77,7 +77,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
     private String CHAPTER_DESCRIPTION = "chapterDescription";
     private String CHAPTER_ORDER = "chapterOrder";
 
-    public ChapterAdapter(Context context, FragmentManager fragmentManager, CursorManager cursorManager) {
+    public AdapterChapter(Context context, FragmentManager fragmentManager, CursorManager cursorManager) {
         mContext = context;
         mFragmentManager = fragmentManager;
         editChapters = new ArrayList<>();
@@ -97,7 +97,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         });
     }
 
-    public ChapterAdapter(Context context) {
+    public AdapterChapter(Context context) {
         mContext = context;
     }
 
@@ -140,7 +140,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             }
 
             // Reset the Array holding the RecipeAdapters being used
-            mRecipeAdapterArray = new RecipeAdapter[mCursor.getCount()];
+            mRecipeAdapterArray = new AdapterRecipe[mCursor.getCount()];
             mItemTouchHelperArray = new ItemTouchHelper[mCursor.getCount()];
 
             // Notify the Adapter of the change in data
@@ -222,7 +222,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         // Retrieve the column information from pre-defined resources
         int columnCount;
 
-        if (RecipeListActivity.mTwoPane && RecipeListActivity.mDetailsVisible) {
+        if (ActivityRecipeList.mTwoPane && ActivityRecipeList.mDetailsVisible) {
             columnCount = mContext.getResources().getInteger(R.integer.recipe_twopane_columns);
         } else {
             columnCount = mContext.getResources().getInteger(R.integer.recipe_columns);
@@ -233,30 +233,30 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                 new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
 
         // Check whether the orientation and screen size calls for utilization of the detailed view
-        // within the RecipeAdapter
+        // within the AdapterRecipe
         final boolean useDetailView = mContext.getResources().getBoolean(R.bool.recipeAdapterUseDetailView);
 
         // Set the layout manager for the recycler view and set the adapter
         holder.recipeRecyclerView.setLayoutManager(sglm);
 
-        // Attempt to get a reference to the RecipeAdapter in memory if it exists
-        RecipeAdapter recipeAdapter;
+        // Attempt to get a reference to the AdapterRecipe in memory if it exists
+        AdapterRecipe recipeAdapter;
         if ((recipeAdapter = mRecipeAdapterArray[position]) == null)  {
-            // If there is no reference to a corresponding RecipeAdapter, initialize a new
-            // RecipeAdapter
-            recipeAdapter = new RecipeAdapter(mContext, new RecipeAdapter.RecipeAdapterOnClickHandler() {
+            // If there is no reference to a corresponding AdapterRecipe, initialize a new
+            // AdapterRecipe
+            recipeAdapter = new AdapterRecipe(mContext, new AdapterRecipe.RecipeAdapterOnClickHandler() {
                 @Override
-                public void onClick(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder) {
+                public void onClick(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
                     // Relay the click event and its data to the registered Observer
                     mRecipeClickListener.onRecipeClicked(recipeId, viewHolder);
                 }
             });
             recipeAdapter.setPosition(position);
 
-            // Set a reference to this RecipeAdapter in mRecipeAdapterArray
+            // Set a reference to this AdapterRecipe in mRecipeAdapterArray
             mRecipeAdapterArray[position] = recipeAdapter;
 
-            // Set whether the RecipeAdapter should use the DetailedView layout or master-flow/single
+            // Set whether the AdapterRecipe should use the DetailedView layout or master-flow/single
             if (mFragmentManager != null) recipeAdapter.setUseDetailView(useDetailView, mFragmentManager);
         }
 
@@ -300,9 +300,9 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             recipeAdapter.enterEditMode();
         }
 
-        recipeAdapter.setOnStartDragListener(new RecipeAdapter.OnStartDragListener() {
+        recipeAdapter.setOnStartDragListener(new AdapterRecipe.OnStartDragListener() {
             @Override
-            public void onStartDrag(RecipeAdapter.RecipeViewHolder viewHolder) {
+            public void onStartDrag(AdapterRecipe.RecipeViewHolder viewHolder) {
                 mItemTouchHelperArray[(int) viewHolder.itemView.getTag()].startDrag(viewHolder);
             }
         });
@@ -319,7 +319,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
      * selected or if user clicked to add a new recipe to the Chapter
      */
     interface RecipeClickListener {
-        void onRecipeClicked(long recipeId, RecipeAdapter.RecipeViewHolder viewHolder);
+        void onRecipeClicked(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder);
         void onAddRecipeClicked(long chapterId);
     }
 
@@ -475,8 +475,8 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             int start = viewHolder.getAdapterPosition();
             int end = target.getAdapterPosition();
 
-            // Retrieve the RecipeAdapter being modified
-            RecipeAdapter adapter = (RecipeAdapter) recyclerView.getAdapter();
+            // Retrieve the AdapterRecipe being modified
+            AdapterRecipe adapter = (AdapterRecipe) recyclerView.getAdapter();
 
             // Add instructions for how the database should be re-arranged
             // Check to see if the initial position of the edit action has already been set
@@ -488,7 +488,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             // Set the end instruction as the target's position
             adapter.editInstructions[1] = end;
 
-            // Change the order of the item within the list being utilized by RecipeAdapter
+            // Change the order of the item within the list being utilized by AdapterRecipe
             if (start < end) {
                 for (int i = start; i < end; i++) {
                     Collections.swap(adapter.getList(), i, i + 1);
@@ -507,7 +507,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
 
         @Override
         public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-            RecipeAdapter adapter = mRecipeAdapterArray[(int) viewHolder.itemView.getTag()];
+            AdapterRecipe adapter = mRecipeAdapterArray[(int) viewHolder.itemView.getTag()];
             if (editMode) {
                 // Get the position of the ViewHolder being removed
                 int position = viewHolder.getAdapterPosition();
@@ -524,7 +524,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             super.clearView(recyclerView, viewHolder);
             // Modify the database when the user-releases the item being dragged so that update
             // operations in the database are kept to a minimum
-            RecipeAdapter adapter = (RecipeAdapter) recyclerView.getAdapter();
+            AdapterRecipe adapter = (AdapterRecipe) recyclerView.getAdapter();
 
             // Check to see if both the start and end position of the edit instructions have been
             // correctly set
