@@ -18,6 +18,7 @@ import project.hnoct.kitchen.data.Utilities;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by hnoct on 2/15/2017.
@@ -30,11 +31,13 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
     /** Member Variables **/
     private Context mContext;       // Interface to global context
     private ContentResolver mContentResolver;
+    private long mTimeInMillis;
 
-    public AllRecipesListAsyncTask(Context context) {
+    public AllRecipesListAsyncTask(Context context, long timeInMillis) {
         // Initialize member variables
         mContext = context;
         mContentResolver = mContext.getContentResolver();
+        mTimeInMillis = timeInMillis;
     }
 
     @Override
@@ -51,6 +54,8 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
             // Select the elements from the document to add to the database as part of the recipe
             Elements recipes = document.select("article.grid-col--fixed-tiles").select("article:not(.marketing-card)");
+
+            Random random = new Random();
 
             for (Element recipe : recipes) {
                 // Retrieve the href for the recipe
@@ -118,13 +123,15 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                 recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, recipeDescription);
                 recipeValues.put(RecipeEntry.COLUMN_RATING, rating);
                 recipeValues.put(RecipeEntry.COLUMN_REVIEWS, reviews);
-                recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, timeAdded);
+                recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, mTimeInMillis);
                 recipeValues.put(RecipeEntry.COLUMN_FAVORITE, 0);
                 recipeValues.put(RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_allrecipes));
 
                 recipeCVList.add(recipeValues);
 
-                timeAdded--;
+                Log.d(LOG_TAG, "Time: " + mTimeInMillis);
+                int randomNum = random.nextInt((50-10) + 1) + 10;
+                mTimeInMillis -= randomNum;
             }
 
             Utilities.insertAndUpdateRecipeValues(mContext, recipeCVList);

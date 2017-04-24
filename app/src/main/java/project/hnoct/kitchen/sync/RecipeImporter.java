@@ -66,6 +66,16 @@ public class RecipeImporter {
                 });
                 break;
             }
+
+            case Utilities.SERIOUSEATS_URI: {
+                syncTask = new SeriousEatsAsyncTask(context, new AllRecipesAsyncTask.RecipeSyncCallback() {
+                    @Override
+                    public void onFinishLoad() {
+                        syncer.onFinishLoad();
+                    }
+                });
+                break;
+            }
             default: throw new UnsupportedOperationException("Unknown URL: " + recipeUrl);
         }
 

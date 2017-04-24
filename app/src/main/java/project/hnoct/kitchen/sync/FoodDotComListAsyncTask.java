@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
@@ -28,9 +29,11 @@ public class FoodDotComListAsyncTask extends AsyncTask<Void, Void, Void> {
     /** Member Variables **/
     private Cursor mCursor;
     private Context mContext;
+    private long mTimeInMillis;
 
-    public FoodDotComListAsyncTask(Context context) {
+    public FoodDotComListAsyncTask(Context context, long timeInMillis) {
         mContext = context;
+        mTimeInMillis = timeInMillis;
     }
 
     @Override
@@ -84,9 +87,11 @@ public class FoodDotComListAsyncTask extends AsyncTask<Void, Void, Void> {
             JSONObject jsonResponseArray = json.getJSONObject(FOOD_RECIPE_RESPONSE_ARRAY);
             JSONArray jsonRecipeArray = jsonResponseArray.getJSONArray(FOOD_RECIPE_ARRAY);
 
+            Random random = new Random();
+
             // Iterate through the objects backwards so that the first object appears at the top of
             // the list
-            for (int i = jsonRecipeArray.length() - 1; i >= 0; i--) {
+            for (int i = 0; i < jsonRecipeArray.length(); i++) {
                 // Retrieve each recipe JSON Object
                 JSONObject jsonRecipe = jsonRecipeArray.getJSONObject(i);
 
@@ -122,14 +127,15 @@ public class FoodDotComListAsyncTask extends AsyncTask<Void, Void, Void> {
                 values.put(RecipeEntry.COLUMN_RATING, recipeRating);
                 values.put(RecipeEntry.COLUMN_REVIEWS, recipeReviews);
                 values.put(RecipeEntry.COLUMN_FAVORITE, 0);
-                values.put(RecipeEntry.COLUMN_DATE_ADDED, timeAdded);
+                values.put(RecipeEntry.COLUMN_DATE_ADDED, mTimeInMillis);
                 values.put(RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_food));
 
                 // Add the ContentValues to the List of ContentValues to be inserted/updated
                 recipeCVList.add(values);
 
                 // Increase the time-added so the next object is located below
-                timeAdded++;
+                int randomNum = random.nextInt((50-10) + 1) + 10;
+                mTimeInMillis -= randomNum;
             }
 
         } catch (Exception e) {

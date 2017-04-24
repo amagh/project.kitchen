@@ -54,23 +54,11 @@ public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
         long recipeSourceId = Utilities.getRecipeSourceIdFromUrl(mContext, recipeUrl);
         int ingredientOrder = 0;        // Used to ensure ingredient order is kept the same when added to db
 
-        // Check whether recipe exists in table or if it is a new recipe entry to be added
-        Cursor cursor = mContext.getContentResolver().query(
-                RecipeEntry.CONTENT_URI,
-                null,
-                RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ? AND " + RecipeEntry.COLUMN_SOURCE + " = ?",
-                new String[] {Long.toString(recipeSourceId), mContext.getString(R.string.attribution_food)},
-                null
+        long recipeId = Utilities.getRecipeIdFromSourceId(
+                mContext,
+                recipeSourceId,
+                mContext.getString(R.string.attribution_food)
         );
-
-        // Set the parameter indicating if this is a new recipe
-        boolean mNewRecipe = !(cursor != null && cursor.moveToFirst());
-
-        long recipeId = -1;
-        if (cursor != null) {
-            recipeId = cursor.getLong(RecipeEntry.IDX_RECIPE_ID);
-            cursor.close();
-        }
 
         // Initialize the Lists that will hold the ContentValues to be inserted into the
         // ingredients table and ingredient link table
@@ -188,7 +176,7 @@ public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
 
             // Create a ContentValues to hold the recipe information to be inserted into database
             ContentValues recipeValues = new ContentValues();
-            if (mNewRecipe) {
+            if (recipeId == -1) {
                 // If new recipe, add all recipe information not already in database
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeSourceId);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
@@ -228,23 +216,12 @@ public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
                         recipeValues
                 );
 
-                // Query the database to get the recipeID for the newly inserted recipe
-                cursor = mContext.getContentResolver().query(
-                        RecipeEntry.CONTENT_URI,
-                        RecipeEntry.RECIPE_PROJECTION,
-                        RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ? AND " + RecipeEntry.COLUMN_SOURCE + " = ?",
-                        new String[] {Long.toString(recipeSourceId), mContext.getString(R.string.attribution_food)},
-                        null
+                // Retrieve the recipe ID that was inserted
+                recipeId = Utilities.getRecipeIdFromSourceId(
+                        mContext,
+                        recipeSourceId,
+                        mContext.getString(R.string.attribution_food)
                 );
-
-                if (cursor != null && cursor.moveToFirst()) {
-                    recipeId = cursor.getLong(RecipeEntry.IDX_RECIPE_ID);
-                    cursor.close();
-                } else {
-                    // If unable to query database for the recipe, then there was an error inserting.
-                    // Stop importing.
-                    return null;
-                }
             }
 
             // Get the ingredient Elements from the document
@@ -252,28 +229,36 @@ public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
                     .select("div.row")
                     .select("div.ingredients")
                     .select("ul.ingredient-list")
-                    .select("li[data-ingredient]");
+                    .select("li");
 
             // Iterate through and retrieve the ingredient information
             for (Element ingredientElement : ingredientElements) {
-                // Replace the weird HTML markup superscript and subscript characters with regular ones
-                String ingredientQuantity = ingredientElement.text()
-                        .replaceAll("1", "1")
-                        .replaceAll("3", "3")
-                        .replaceAll("⁄", "/")
-                        .replaceAll("2", "2")
-                        .replaceAll("4", "4");
+                String ingredientQuantity;
+
+                if ((ingredientQuantity = ingredientElement.select("h4").text()) != null && !ingredientQuantity.isEmpty()) {
+                    ingredientQuantity = ingredientQuantity + ":";
+                } else {
+                    // Replace the weird HTML markup superscript and subscript characters with regular ones
+                    ingredientQuantity = ingredientElement.text()
+                            .replaceAll("1", "1")
+                            .replaceAll("3", "3")
+                            .replaceAll("⁄", "/")
+                            .replaceAll("2", "2")
+                            .replaceAll("4", "4");
+                }
 
                 // Ingredient ID is only found in the URL, so retrieve the URL
                 String ingredientIdUrl = ingredientElement.select("a[href]").attr("href");
 
-                // Utilize Regex to retrieve the ingredient ID
-                Pattern pattern = Pattern.compile("[0-9]+$");
-                Matcher match = pattern.matcher(ingredientIdUrl);
-
                 long foodIngredientId = -1;
-                if (match.find()) {
-                    foodIngredientId = Long.parseLong(match.group());
+                if (ingredientIdUrl != null || !ingredientIdUrl.isEmpty()) {
+                    // Utilize Regex to retrieve the ingredient ID
+                    Pattern pattern = Pattern.compile("[0-9]+$");
+                    Matcher match = pattern.matcher(ingredientIdUrl);
+
+                    if (match.find()) {
+                        foodIngredientId = Long.parseLong(match.group());
+                    }
                 }
 
                 // Split the ingredientQuantity String to separate Strings
@@ -283,11 +268,14 @@ public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
 
                 // Check to see if ingredient already exists in database
                 long ingredientId = Utilities.getIngredientIdFromName(mContext, ingredient);
+                boolean skipAddIngredient = false;
 
                 if (ingredientId == -1) {
                     // If it does not, find the ID that will be automatically generated for this
                     // ingredient
                     ingredientId = Utilities.generateNewId(mContext, Utilities.INGREDIENT_TYPE);
+                } else {
+                    skipAddIngredient = true;
                 }
 
                 // Check to see if the ingredient ID has already been used by a previous ingredient
@@ -299,7 +287,7 @@ public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
                 }
 
                 // Final check to see if ingredient already exists in ingredientIdNameMap
-                boolean skipAddIngredient = false;
+
                 String ingredientMapName = ingredientIdNameMap.get(ingredientId);
 
                 if (ingredient.equals(ingredientMapName)) {
@@ -318,7 +306,7 @@ public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
                     ContentValues ingredientValue = new ContentValues();
                     ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
                     ingredientValue.put(IngredientEntry.COLUMN_INGREDIENT_NAME, ingredient);
-                    ingredientValue.put(IngredientEntry.COLUMN_FOOD_INGREDIENT_ID, foodIngredientId);
+                    if (foodIngredientId != -1) ingredientValue.put(IngredientEntry.COLUMN_FOOD_INGREDIENT_ID, foodIngredientId);
 
                     ingredientCVList.add(ingredientValue);
                 }

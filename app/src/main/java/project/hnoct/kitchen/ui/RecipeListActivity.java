@@ -63,6 +63,7 @@ import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
 import project.hnoct.kitchen.sync.FoodDotComListAsyncTask;
 import project.hnoct.kitchen.sync.RecipeImporter;
+import project.hnoct.kitchen.sync.SeriousEatsListAsyncTask;
 
 public class RecipeListActivity extends AppCompatActivity implements RecipeListFragment.RecipeCallBack, ImportRecipeDialog.ImportRecipeDialogListener {
     /** Constants **/
@@ -210,12 +211,16 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeListF
             }
         }
 
+        long seedTime = Utilities.getCurrentTime();
 
-        AllRecipesListAsyncTask syncTask = new AllRecipesListAsyncTask(this);
-        syncTask.execute();
+        AllRecipesListAsyncTask allRecipesAsyncTask = new AllRecipesListAsyncTask(this, seedTime);
+        allRecipesAsyncTask.execute();
 
-        FoodDotComListAsyncTask asyncTask = new FoodDotComListAsyncTask(this);
-        asyncTask.execute();
+        FoodDotComListAsyncTask foodAsyncTask = new FoodDotComListAsyncTask(this, seedTime);
+        foodAsyncTask.execute();
+
+        SeriousEatsListAsyncTask seriouseatsAsyncTask = new SeriousEatsListAsyncTask(this, seedTime);
+        seriouseatsAsyncTask.execute();
 
 //        temp();
     }

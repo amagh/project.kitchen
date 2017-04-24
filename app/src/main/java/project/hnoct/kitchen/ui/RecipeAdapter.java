@@ -387,6 +387,20 @@ public class RecipeAdapter extends android.support.v7.widget.RecyclerView.Adapte
                     holder.overlay.setVisibility(View.GONE);
                 }
 
+                if (recipeDescription == null || recipeDescription.isEmpty()) {
+                    holder.recipeDescription.setVisibility(View.GONE);
+                } else {
+                    holder.recipeDescription.setVisibility(View.VISIBLE);
+                }
+
+                if (recipeReviews == 0) {
+                    holder.recipeReviews.setVisibility(View.INVISIBLE);
+                    holder.recipeRating.setVisibility(View.INVISIBLE);
+                } else {
+                    holder.recipeReviews.setVisibility(View.VISIBLE);
+                    holder.recipeRating.setVisibility(View.VISIBLE);
+                }
+
                 // Populate the rest of the views
                 holder.recipeAuthor.setText(Utilities.formatAuthor(mContext, recipeAuthor));
                 holder.recipeAttribution.setText(recipeAttribution);

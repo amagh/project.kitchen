@@ -183,11 +183,10 @@ public class RecipeContract {
         public static final String COLUMN_ALLRECIPES_INGREDIENT_ID = "allrecipes_id";   // REAL
         public static final String COLUMN_FOOD_INGREDIENT_ID = "food_id";               // REAL
 
-
         public static final String[] measurements = new String[] {
                 "mL", "loaf", "can", "package", "container", "tablespoon", "teaspoon", "clove", "cup", "pint",
                 "quart", "gallon", "ounce", "fluid ounce", "jar", "dashes", "dash", "pinch", "slice",
-                "pound", "drop"
+                "pound", "drop", "lb"
         };
 
         /** See RecipeEntry for comments on following methods **/

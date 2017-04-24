@@ -44,6 +44,7 @@ public class Utilities {
     private static final int CUSTOM_RECIPE_URI = 0;
     public static final int ALLRECIPES_URI = 1;
     public static final int FOOD_URI = 2;
+    public static final int SERIOUSEATS_URI = 3;
 
     public static final String URI = "uri";
     public static final String PROJECTION = "projection";
@@ -124,7 +125,7 @@ public class Utilities {
         }
         // If the input String does not contain any known measurements, then use Regex to
         // obtain the quantity of the ingredient
-        Pattern pattern = Pattern.compile("([0-9]* *-* *[1-9]*\\/*[1-9]*) (.*)");
+        Pattern pattern = Pattern.compile("([0-9]* *-* *[1-9]+\\/*[1-9]*) (.*)");
         Matcher matcher = pattern.matcher(ingredientAndQuantity);
 
         if (matcher.find()) {
@@ -429,7 +430,7 @@ public class Utilities {
      * @return Unused Id for the given type
      */
     public static long generateNewId(Context context, int type) {
-        long id = -1;
+        long id = 1;
         switch (type) {
             case RECIPE_TYPE: {
                 // Instantiate a new List that will hold all the recipeIds that already exist
@@ -441,12 +442,12 @@ public class Utilities {
                         new String[] {RecipeEntry.COLUMN_RECIPE_ID},
                         null,
                         null,
-                        RecipeEntry.COLUMN_RECIPE_ID + " ASC"
+                        RecipeEntry.COLUMN_RECIPE_ID + " DESC"
                 );
 
                 // Add all recipeIds to the List // TODO: Replace this explanation
                 if (cursor != null && cursor.moveToFirst()) {
-                    id = cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_RECIPE_ID)) - 1;
+                    id = cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_RECIPE_ID)) + 1;
                 }
 
                 // Close the cursor
@@ -474,6 +475,7 @@ public class Utilities {
                 }
 
                 if (cursor!= null) cursor.close();
+
                 return id;
             }
 
@@ -499,8 +501,11 @@ public class Utilities {
 
         if (cursor != null && cursor.moveToFirst()) {
             ingredientName = cursor.getString(cursor.getColumnIndex(IngredientEntry.COLUMN_INGREDIENT_NAME));
+
         }
-        cursor.close();
+
+        if (cursor != null) cursor.close();
+
         return ingredientName;
     }
 
@@ -519,10 +524,12 @@ public class Utilities {
                 new String[] {ingredientName.trim()},
                 null
         );
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             ingredientId = cursor.getLong(cursor.getColumnIndex(IngredientEntry.COLUMN_INGREDIENT_ID));
         }
-        cursor.close();
+
+        if (cursor != null) cursor.close();
+
         return ingredientId;
     }
 
@@ -753,6 +760,8 @@ public class Utilities {
         uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#", ALLRECIPES_URI);
         uriMatcher.addURI(context.getString(R.string.food_authority), "/recipe/*", FOOD_URI);
         uriMatcher.addURI(context.getString(R.string.food_www_authority), "/recipe/*", FOOD_URI);
+        uriMatcher.addURI(context.getString(R.string.seriouseats_authority), "/recipes/#/#/*", SERIOUSEATS_URI);
+        uriMatcher.addURI(context.getString(R.string.seriouseats_www_authority), "/recipes/#/#/*", SERIOUSEATS_URI);
 
         // Return UriMatcher
         return uriMatcher;
@@ -1146,10 +1155,17 @@ public class Utilities {
 
             // Update appropriate recipes
             if (cursor != null && cursor.moveToFirst()) {
+                // Remove the recipeValues from the list to be bulk-inserted
+                recipeCVList.remove(recipeValue);
+
                 // If cursor returns a row, then update the values if they have changed
                 // Get the review and rating values from the ContentValues to be updated
                 double dbRating = cursor.getDouble(RecipeEntry.IDX_RECIPE_RATING);
                 long dbReviews = cursor.getLong(RecipeEntry.IDX_RECIPE_REVIEWS);
+
+                if (!recipeValue.containsKey(RecipeEntry.COLUMN_REVIEWS)) {
+                    continue;
+                }
 
                 if (recipeValue.getAsDouble(RecipeEntry.COLUMN_RATING) != dbRating ||
                         recipeValue.getAsLong(RecipeEntry.COLUMN_REVIEWS) != dbReviews) {
@@ -1167,8 +1183,7 @@ public class Utilities {
                     recipesUpdated++;
                 }
 
-                // Remove the recipeValues from the list to be bulk-inserted
-                recipeCVList.remove(recipeValue);
+
             }
             // Close the cursor
             if (cursor != null) cursor.close();
@@ -1185,5 +1200,37 @@ public class Utilities {
         recipesInserted = context.getContentResolver().bulkInsert(recipeUri, recipeValues);
 
         Log.v(LOG_TAG, recipesInserted + " recipes added and " + recipesUpdated + " recipes updated!");
+    }
+
+    /**
+     * Retrieves the recipe ID from the database given the recipe source's ID and the recipe source
+     * @param context Interface to global Context
+     * @param recipeSourceId The recipe ID given by the source where the recipe was imported from
+     * @param recipeSource The source where the recipe was imported from
+     * @return Internal ID from the database for the recipe
+     */
+    public static long getRecipeIdFromSourceId(Context context, long recipeSourceId, String recipeSource) {
+        // Query the database and filter for entries with the recipe source and recipe source ID
+        Cursor cursor = context.getContentResolver().query(
+                RecipeEntry.CONTENT_URI,
+                null,
+                RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ? AND " + RecipeEntry.COLUMN_SOURCE + " = ?",
+                new String[] {Long.toString(recipeSourceId), recipeSource},
+                null
+        );
+
+        // Initialize the variable to hold the recipe ID
+        long recipeId = -1;
+
+        if (cursor != null && cursor.moveToFirst()) {
+            // If entry is found, set the recipe ID
+            recipeId = cursor.getLong(RecipeEntry.IDX_RECIPE_ID);
+
+            // Close the Cursor
+            cursor.close();
+        }
+
+        // Return either recipe ID if found or -1 if none found
+        return recipeId;
     }
 }
