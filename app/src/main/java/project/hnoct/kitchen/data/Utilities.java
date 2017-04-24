@@ -120,6 +120,18 @@ public class Utilities {
                 String ingredientQuantity = ingredientAndQuantity.substring(0, lastCharIdx).trim();
                 String ingredient = ingredientAndQuantity.substring(lastCharIdx).trim();
 
+                if (ingredientQuantity.length() > 50) {
+                    // If the ingredient quantity is an abnormal length, it is usually because the
+                    // measurement is a clarification within the ingredient and not the actual
+                    // quantity
+                    //
+                    // e.g. 1 large bunch lacinato (Tuscan) kale, washed, tough stems
+                    // removed and discarded, and roughly chopped (about 300g ; 10 ounces after
+                    // de-stemming) - ounces will be caught, but is not the actual quantity of the
+                    // ingredient
+                    continue;
+                }
+
                 // Return the Strings as a Pair
                 return new Pair<>(ingredient, ingredientQuantity);
             }

@@ -200,9 +200,9 @@ public class SeriousEatsAsyncTask extends AsyncTask<Object, Void, Void> {
 
                 // Utilize Regex to strip ingredient info of metric measurements
                 ingredientQuantity = ingredientQuantity
-                        .replaceAll(" \\(\\d+\\.*\\d*k*m*g*l*\\)", "")
-                        .replaceAll("\\d+\\.*\\d*k*m*g*l*; ", "")
-                        .replaceAll("; \\d+\\.*\\d*k*m*g*l*", "");
+                        .replaceAll(" *\\(\\d+\\.*\\d*[kgml]+\\)", "")
+                        .replaceAll("\\w* *\\d\\.*\\d*[kgml]+ *; *", "")
+                        .replaceAll("; \\d+\\.*\\d* *[kgml]+", "");
 
                 // Get the separated ingredient name and quantity information
                 Pair<String, String> ingredientQuantityPair = Utilities.getIngredientQuantity(ingredientQuantity);
