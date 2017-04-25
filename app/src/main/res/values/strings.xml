@@ -101,15 +101,15 @@
     <string name="button_deny">CANCEL</string>
 
     <!-- Import Dialog -->
-    <string name="dialog_import_url_hint">Link to recipe</string>
+    <string name="hint_import_url">Link to recipe</string>
 
     <!-- Recipe Book Details Dialog -->
-    <string name="dialog_recipebook_details_title">Recipe book title</string>
-    <string name="dialog_recipebook_details_description">Recipe book description</string>
+    <string name="hint_recipebook_title">Recipe book title</string>
+    <string name="hint_recipebook_description">Recipe book description</string>
 
     <!-- Chapter Details Dialog -->
-    <string name="dialog_chapter_details_title_hint">Chapter title</string>
-    <string name="dialog_chapter_details_description_hint">Chapter description</string>
+    <string name="hint_chapter_details_title">Chapter title</string>
+    <string name="hint_chapter_details_description">Chapter description</string>
 
     <!-- Utility -->
     <string name="http_scheme">http</string>

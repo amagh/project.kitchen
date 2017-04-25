@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:hint="@string/dialog_chapter_details_title_hint"
+                android:hint="@string/hint_chapter_details_title"
                 android:inputType="textAutoCorrect|textCapWords|textMultiLine"
                 android:maxLines="2"
                 style="@style/titleText"
@@ -46,7 +46,7 @@
                 android:layout_marginTop="@dimen/text_vertical_padding_small"
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:hint="@string/dialog_chapter_details_description_hint"
+                android:hint="@string/hint_chapter_details_description"
                 android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
                 style="@style/descriptionText"
                 tools:text="This is the first chapter of my book and it contains some decent recipes... I think."/>

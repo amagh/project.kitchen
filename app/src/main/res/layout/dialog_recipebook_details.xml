@@ -11,13 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textAutoCorrect|textCapWords"
-        android:hint="@string/dialog_recipebook_details_title"/>
+        android:hint="@string/hint_recipebook_title"/>
 
     <EditText
         android:id="@+id/dialog_recipebook_description_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textAutoCorrect|textCapSentences"
-        android:hint="@string/dialog_recipebook_details_description"/>
+        android:hint="@string/hint_recipebook_description"/>
 
 </LinearLayout>

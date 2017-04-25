@@ -25,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
@@ -203,6 +204,10 @@ public class FragmentChapter extends Fragment implements LoaderManager.LoaderCal
 
                     // Set the LayoutParams to mRecyclerView
                     mRecyclerView.setLayoutParams(params);
+
+                    // Hide the soft keyboard
+                    InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
                 } else {
                     mChapterAdapter.enterEditMode();
 

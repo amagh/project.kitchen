@@ -11,6 +11,6 @@
         android:inputType="textUri"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/dialog_import_url_hint"/>
+        android:hint="@string/hint_import_url"/>
 
 </LinearLayout>

@@ -67,14 +67,6 @@
             </LinearLayout>
 
             <ImageView
-                android:id="@+id/list_recipebook_edit"
-                android:layout_width="@dimen/touchpad_size"
-                android:layout_height="@dimen/touchpad_size"
-                android:padding="@dimen/button_margin_small"
-                android:layout_gravity="end"
-                android:src="@drawable/ic_menu_edit"/>
-
-            <ImageView
                 android:id="@+id/list_recipebook_gradient"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/card_thumbnail_gradient_height_single"
@@ -82,7 +74,7 @@
                 android:src="@drawable/list_title_gradient"
                 />
 
-            <TextView
+            <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -92,17 +84,30 @@
                 android:paddingLeft="@dimen/card_text_horizontal_margin"
                 android:paddingRight="@dimen/card_text_horizontal_margin"
                 android:paddingBottom="@dimen/activity_vertical_margin"
+                android:hint="@string/hint_recipebook_title"
+                android:inputType="textAutoCorrect|textCapWords"
+                android:imeOptions="actionNext"
                 style="@style/titleText"
                 tools:text="Christmas Dinner"/>
 
+            <ImageView
+                android:id="@+id/list_recipebook_edit"
+                android:layout_width="@dimen/touchpad_size"
+                android:layout_height="@dimen/touchpad_size"
+                android:padding="@dimen/button_margin_small"
+                android:layout_gravity="end"
+                android:src="@drawable/ic_menu_save"/>
+
         </FrameLayout>
 
-        <TextView
+        <EditText
             android:id="@+id/list_recipebook_description_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="@dimen/card_text_horizontal_margin"
             android:paddingRight="@dimen/card_text_horizontal_margin"
+            android:hint="@string/hint_recipebook_description"
+            android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
             tools:text="This is from Christmas 2016. My first Christmas cooking dinner by myself!"/>
     </LinearLayout>
 

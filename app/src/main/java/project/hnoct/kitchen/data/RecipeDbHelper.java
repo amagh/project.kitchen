@@ -102,7 +102,8 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 // chapter in the recipe book should be unique and each recipe should only occupy
                 // a spot in the ordering within the chapter
                 "UNIQUE (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ", " +
-                ChapterEntry.COLUMN_CHAPTER_ID + ") " +
+                ChapterEntry.COLUMN_CHAPTER_ID + ", " +
+                LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + ") " +
                 // Foreign keys to recipe_books.recipe_book_id & chapters.chapter_id
                 "FOREIGN KEY (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ") REFERENCES " +
                 RecipeBookEntry.TABLE_NAME + " (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ") " +
