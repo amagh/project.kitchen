@@ -20,6 +20,7 @@
             android:layout_width="match_parent"
             android:scaleType="fitXY"
             android:adjustViewBounds="true"
+            android:transitionName="@string/transition_recipe_image"
             tools:src="@drawable/placeholder" />
 
         <LinearLayout
@@ -29,119 +30,135 @@
             android:paddingRight="@dimen/activity_horizontal_margin"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/details_recipe_title_text"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:layout_marginTop="@dimen/default_text_vertical_padding"
-                app:layout_columnSpan="3"
-                style="@style/titleText"
-                tools:text="Kentucky Fried Chicken" />
-
-            <android.support.v7.widget.GridLayout
+            <LinearLayout
+                android:id="@+id/details_recipe_content1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_text_vertical_padding"
-                android:descendantFocusability="blocksDescendants"
-                app:columnCount="2">
+                android:orientation="vertical"
+                android:transitionGroup="true">
 
                 <TextView
-                    android:id="@+id/details_recipe_author_text"
-                    app:layout_columnWeight="1"
-                    app:layout_gravity="fill_horizontal"
-                    tools:text="Recipe by hnocturna" />
+                    android:id="@+id/details_recipe_title_text"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="@dimen/default_text_vertical_padding"
+                    app:layout_columnSpan="3"
+                    style="@style/titleText"
+                    tools:text="Kentucky Fried Chicken" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/details_recipe_author_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        tools:text="Recipe by hnocturna" />
+
+                    <TextView
+                        android:id="@+id/details_recipe_attribution_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        tools:text="Allrecipes"
+                        />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/details_ratings_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        tools:text="4.9\u2605" />
+
+                    <TextView
+                        android:id="@+id/details_recipe_reviews_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="end|center_vertical"
+                        tools:text="9001 reviews"
+                        />
+
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/details_line_separator_top"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_marginLeft="@dimen/details_line_separator_padding"
+                    android:layout_marginRight="@dimen/details_line_separator_padding"
+                    android:background="@color/grey_300"
+                    tools:visibility="visible" />
 
                 <TextView
-                    android:id="@+id/details_recipe_attribution_text"
-                    android:gravity="end"
-                    app:layout_columnWeight="1"
-                    app:layout_gravity="fill_horizontal"
-                    tools:text="Allrecipes"
+                    android:id="@+id/details_recipe_short_description_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/details_description_text_padding"
+                    style="@style/descriptionText"
+                    tools:text="An easy, creamy chicken enchilada casserole. Slow cooking gently melds together the flavors of the chicken thigh meat, cream of chicken soup, sour cream, and green chiles"
                     />
 
-                <TextView
-                    android:id="@+id/details_ratings_text"
-                    android:gravity="center_vertical"
-                    app:layout_gravity="fill_horizontal"
-                    tools:text="4.9\u2605" />
+                <View
+                    android:id="@+id/details_line_separator_bottom"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_marginLeft="@dimen/details_line_separator_padding"
+                    android:layout_marginRight="@dimen/details_line_separator_padding"
+                    android:background="@color/grey_300"
+                    tools:visibility="visible" />
 
                 <TextView
-                    android:id="@+id/details_recipe_reviews_text"
-                    android:gravity="end|center_vertical"
-                    app:layout_gravity="fill_horizontal"
-                    tools:text="9001 reviews"
-                    />
+                    android:id="@+id/details_ingredient_title_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/list_ingredient_title"
+                    android:gravity="center_horizontal"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    style="@style/subtitleText"
+                    tools:visibility="visible" />
 
-            </android.support.v7.widget.GridLayout>
+                <project.hnoct.kitchen.view.NonScrollingRecyclerView
+                    android:id="@+id/details_ingredient_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/default_text_vertical_padding"/>
 
-            <View
-                android:id="@+id/details_line_separator_top"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:layout_marginLeft="@dimen/details_line_separator_padding"
-                android:layout_marginRight="@dimen/details_line_separator_padding"
-                android:visibility="invisible"
-                android:background="@color/grey_300"
-                tools:visibility="visible" />
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/details_recipe_short_description_text"
+            <LinearLayout
+                android:id="@+id/details_recipe_content2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/details_description_text_padding"
-                style="@style/descriptionText"
-                tools:text="An easy, creamy chicken enchilada casserole. Slow cooking gently melds together the flavors of the chicken thigh meat, cream of chicken soup, sour cream, and green chiles"
-                />
+                android:orientation="vertical" >
 
-            <View
-                android:id="@+id/details_line_separator_bottom"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:layout_marginLeft="@dimen/details_line_separator_padding"
-                android:layout_marginRight="@dimen/details_line_separator_padding"
-                android:visibility="invisible"
-                android:background="@color/grey_300"
-                tools:visibility="visible" />
+                <TextView
+                    android:id="@+id/details_direction_title_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/list_direction_title"
+                    android:gravity="center_horizontal"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    style="@style/subtitleText"
+                    tools:visibility="visible" />
 
-            <TextView
-                android:id="@+id/details_ingredient_title_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/list_ingredient_title"
-                android:gravity="center_horizontal"
-                android:visibility="invisible"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                style="@style/subtitleText"
-                tools:visibility="visible" />
+                <project.hnoct.kitchen.view.NonScrollingRecyclerView
+                    android:id="@+id/details_direction_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/activity_vertical_margin"
+                    android:layout_marginTop="@dimen/default_text_vertical_padding" />
+            </LinearLayout>
 
-            <project.hnoct.kitchen.view.NonScrollingRecyclerView
-                android:id="@+id/details_ingredient_recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_text_vertical_padding"
-                app:layout_columnSpan="3" />
-
-            <TextView
-                android:id="@+id/details_direction_title_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/list_direction_title"
-                android:gravity="center_horizontal"
-                android:visibility="invisible"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                app:layout_columnSpan="3"
-                style="@style/subtitleText"
-                tools:visibility="visible" />
-
-            <project.hnoct.kitchen.view.NonScrollingRecyclerView
-                android:id="@+id/details_direction_recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/activity_vertical_margin"
-                android:layout_marginTop="@dimen/default_text_vertical_padding"
-                app:layout_columnSpan="3" />
 
         </LinearLayout>
 

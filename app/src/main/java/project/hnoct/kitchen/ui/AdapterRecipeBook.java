@@ -17,6 +17,11 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -42,6 +47,7 @@ public class AdapterRecipeBook extends RecyclerView.Adapter<AdapterRecipeBook.Re
     private CursorManager mCursorManager;
     private RecipeBookAdapterOnClickHandler mClickHandler;
     private int editBook = -1;
+    private List<Map<String, Object>> mList;
 
     public AdapterRecipeBook(Context context, RecipeBookAdapterOnClickHandler clickHandler, CursorManager cursorManager) {
         // Initialize member variables
@@ -99,9 +105,9 @@ public class AdapterRecipeBook extends RecyclerView.Adapter<AdapterRecipeBook.Re
         mCursor.moveToPosition(position);
 
         // Retrieve the information from database to populate the view holder
-        long bookId = mCursor.getLong(RecipeBookEntry.IDX_BOOK_ID);
-        String bookTitle = mCursor.getString(RecipeBookEntry.IDX_BOOK_NAME);
-        String bookDescription = mCursor.getString(RecipeBookEntry.IDX_BOOK_DESCRIPTION);
+        long bookId = (long) mList.get(position).get(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID);
+        String bookTitle = (String) mList.get(position).get(RecipeBookEntry.COLUMN_RECIPE_BOOK_NAME);
+        String bookDescription = (String) mList.get(position).get(RecipeBookEntry.COLUMN_RECIPE_BOOK_DESCRIPTION);
 
         // Populate the views of the view holder
         holder.recipeBookTitleText.setText(bookTitle);
@@ -152,7 +158,6 @@ public class AdapterRecipeBook extends RecyclerView.Adapter<AdapterRecipeBook.Re
                 holder.image3.setVisibility(View.GONE);
             }
         } else {
-            Log.d(LOG_TAG, "Hiding all views for position " + position);
             holder.image0.setVisibility(View.GONE);
             holder.image1.setVisibility(View.GONE);
             holder.image2.setVisibility(View.GONE);
@@ -180,12 +185,33 @@ public class AdapterRecipeBook extends RecyclerView.Adapter<AdapterRecipeBook.Re
 
     @Override
     public int getItemCount() {
-        return mCursor != null ? mCursor.getCount() : 0;
+        return mList != null ? mList.size() : 0;
     }
 
     public void swapCursor(Cursor cursor) {
         mCursor = cursor;
+        if (cursor != null) {
+            mList = new ArrayList<>(mCursor.getCount());
+            if (mCursor.moveToFirst()) {
+                do {
+                    String bookTitle = mCursor.getString(RecipeBookEntry.IDX_BOOK_NAME);
+                    String bookDescription = mCursor.getString(RecipeBookEntry.IDX_BOOK_DESCRIPTION);
+                    long bookId = mCursor.getLong(RecipeBookEntry.IDX_BOOK_ID);
+
+                    Map<String, Object> map = new HashMap<>();
+                    map.put(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID, bookId);
+                    map.put(RecipeBookEntry.COLUMN_RECIPE_BOOK_NAME, bookTitle);
+                    map.put(RecipeBookEntry.COLUMN_RECIPE_BOOK_DESCRIPTION, bookDescription);
+
+                    mList.add(map);
+                } while (cursor.moveToNext());
+            }
+        }
         notifyDataSetChanged();
+    }
+
+    public List<Map<String, Object>> getList() {
+        return mList;
     }
 
     public class RecipeBookViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

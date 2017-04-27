@@ -21,10 +21,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -54,6 +61,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     private AdapterIngredient mIngredientAdapter;
     private AdapterDirection mDirectionAdapter;
     private CursorLoaderListener listener;
+    private long time;
 
     private boolean mSyncing = false;
 
@@ -82,6 +90,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         View rootView = inflater.inflate(R.layout.fragment_recipe_details, container, false);
         ButterKnife.bind(this, rootView);
         setHasOptionsMenu(true);
+        time = Utilities.getCurrentTime();
 
         // Initialize member variables
         mContext = getActivity();
@@ -152,7 +161,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         );
     }
 
-    void setCursorLoaderListener(CursorLoaderListener listener) {
+    public void setCursorLoaderListener(CursorLoaderListener listener) {
         this.listener = listener;
     }
 
@@ -169,6 +178,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         if (!mCursor.moveToFirst()) {
             if (!mSyncing) {
                 mSyncing = true;
+                setInvisible();
 
                 // If recipe is missing information, then load details from web
                 RecipeImporter.importRecipeFromUrl(mContext, new RecipeImporter.UtilitySyncer() {
@@ -177,6 +187,8 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                         if (getActivity() != null)
                         getLoaderManager().restartLoader(DETAILS_LOADER, null, FragmentRecipeDetails.this);
                         mSyncing = false;
+
+
                     }
                 }, mRecipeUrl);
             }
@@ -200,7 +212,25 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         // Populate the views with the data
         Glide.with(mContext)
                 .load(recipeImageUrl)
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .listener(new RequestListener<String, GlideDrawable>() {
+                    @Override
+                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                        // When image has finished loading, load image into target
+//                        target.onResourceReady(resource, null);
+
+                        if (getActivity() instanceof ActivityRecipeDetails) startTransition();
+                        Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
+                        return false;
+                    }
+                })
                 .into(mRecipeImageView);
+
         mRecipeTitleText.setText(recipeTitle);
         mRecipeAuthorText.setText(Utilities.formatAuthor(mContext, recipeAuthor));
         mRecipeAttributionText.setText(recipeSource);
@@ -215,13 +245,16 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
             mRecipeReviewsText.setText(Utilities.formatReviews(mContext, recipeReviews));
         }
 
-
         mRecipeShortDescriptionText.setText(recipeDescription);
 
-
         // Set the visibility of the ingredient and direction section titles to VISIBLE
-        mIngredientTitleText.setVisibility(View.VISIBLE);
-        mDirectionTitleText.setVisibility(View.VISIBLE);
+
+//        mIngredientTitleText.setVisibility(View.VISIBLE);
+//        mDirectionTitleText.setVisibility(View.VISIBLE);
+//        mIngredientTitleText.startAnimation(fadeInAnim);
+//        mDirectionTitleText.startAnimation(fadeInAnim);
+//        mIngredientsRecyclerView.startAnimation(fadeInAnim);
+//        mDirectionsRecyclerView.startAnimation(fadeInAnim);
 
         // Set visibility of line separators to VISIBLE
         mLineSeparatorTop.setVisibility(View.VISIBLE);
@@ -235,10 +268,75 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
             mDirectionAdapter.setDirectionList(Utilities.getDirectionList(recipeDirections));
         }
 
+        if (mRecipeTitleText.getVisibility() == View.INVISIBLE) fadeIn();
 
         if (listener != null) {
             listener.onCursorLoaded(cursor, recipeServings);
         }
+    }
+
+    void fadeIn() {
+        Animation fadeInAnim = AnimationUtils.loadAnimation(mContext, R.anim.fade);
+
+        mIngredientTitleText.setVisibility(View.VISIBLE);
+        mDirectionTitleText.setVisibility(View.VISIBLE);
+        mIngredientsRecyclerView.setVisibility(View.VISIBLE);
+        mDirectionsRecyclerView.setVisibility(View.VISIBLE);
+        mRecipeImageView.setVisibility(View.VISIBLE);
+        mRecipeTitleText.setVisibility(View.VISIBLE);
+        mRecipeAuthorText.setVisibility(View.VISIBLE);
+        mRecipeAttributionText.setVisibility(View.VISIBLE);
+        mRecipeReviewsText.setVisibility(View.VISIBLE);
+        mRecipeRatingText.setVisibility(View.VISIBLE);
+        mRecipeShortDescriptionText.setVisibility(View.VISIBLE);
+        mIngredientTitleText.setVisibility(View.VISIBLE);
+        mDirectionTitleText.setVisibility(View.VISIBLE);
+        mLineSeparatorTop.setVisibility(View.VISIBLE);
+        mLineSeparatorBottom.setVisibility(View.VISIBLE);
+
+        mIngredientTitleText.startAnimation(fadeInAnim);
+        mDirectionTitleText.startAnimation(fadeInAnim);
+        mIngredientsRecyclerView.startAnimation(fadeInAnim);
+        mDirectionsRecyclerView.startAnimation(fadeInAnim);
+        mRecipeImageView.startAnimation(fadeInAnim);
+        mRecipeTitleText.startAnimation(fadeInAnim);
+        mRecipeAuthorText.startAnimation(fadeInAnim);
+        mRecipeAttributionText.startAnimation(fadeInAnim);
+        mRecipeReviewsText.startAnimation(fadeInAnim);
+        mRecipeRatingText.startAnimation(fadeInAnim);
+        mRecipeShortDescriptionText.startAnimation(fadeInAnim);
+        mIngredientTitleText.startAnimation(fadeInAnim);
+        mDirectionTitleText.startAnimation(fadeInAnim);
+        mLineSeparatorTop.startAnimation(fadeInAnim);
+        mLineSeparatorBottom.startAnimation(fadeInAnim);
+    }
+
+    void setInvisible() {
+        mIngredientTitleText.setVisibility(View.INVISIBLE);
+        mDirectionTitleText.setVisibility(View.INVISIBLE);
+        mIngredientsRecyclerView.setVisibility(View.INVISIBLE);
+        mDirectionsRecyclerView.setVisibility(View.INVISIBLE);
+        mRecipeImageView.setVisibility(View.INVISIBLE);
+        mRecipeTitleText.setVisibility(View.INVISIBLE);
+        mRecipeAuthorText.setVisibility(View.INVISIBLE);
+        mRecipeAttributionText.setVisibility(View.INVISIBLE);
+        mRecipeReviewsText.setVisibility(View.INVISIBLE);
+        mRecipeRatingText.setVisibility(View.INVISIBLE);
+        mRecipeShortDescriptionText.setVisibility(View.INVISIBLE);
+        mIngredientTitleText.setVisibility(View.INVISIBLE);
+        mDirectionTitleText.setVisibility(View.INVISIBLE);
+        mLineSeparatorTop.setVisibility(View.INVISIBLE);
+        mLineSeparatorBottom.setVisibility(View.INVISIBLE);
+    }
+
+    void startTransition() {
+        getView().getViewTreeObserver().addOnDrawListener(new ViewTreeObserver.OnDrawListener() {
+            @Override
+            public void onDraw() {
+                // Start the transition animation
+                getActivity().supportStartPostponedEnterTransition();
+            }
+        });
     }
 
     @Override
@@ -249,6 +347,23 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if (getActivity() instanceof ActivityRecipeDetails) {
+            Cursor cursor = getContext().getContentResolver().query(
+                    getActivity().getIntent().getData(),
+                    LinkIngredientEntry.LINK_PROJECTION,
+                    null,
+                    null,
+                    null
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                // Delay transition animation
+                getActivity().supportPostponeEnterTransition();
+                cursor.close();
+            }
+        }
+
 
         // Initialize CursorLoader
         getLoaderManager().initLoader(DETAILS_LOADER, null, this);
@@ -273,7 +388,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
 
             // Set the icon for the favorites action depending on the favorite status of the recipe
             menuFavorite.setIcon(cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1 ?
-                    R.drawable.favorite_star_enabled : R.drawable.favorite_star_disabled);
+                    R.drawable.btn_rating_star_on_normal_holo_light : R.drawable.btn_rating_star_off_normal_holo_light);
         }
 
         // Close the Cursor
@@ -291,9 +406,9 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                 // Update the favorite status of the recipe when selected and change the icon accordingly
                 boolean favorite = Utilities.setRecipeFavorite(mContext, mRecipeId);
                 if (favorite) {
-                    item.setIcon(R.drawable.favorite_star_enabled);
+                    item.setIcon(R.drawable.btn_rating_star_on_normal_holo_light);
                 } else {
-                    item.setIcon(R.drawable.favorite_star_disabled);
+                    item.setIcon(R.drawable.btn_rating_star_off_normal_holo_light);
                 }
                 return true;
             }
@@ -358,7 +473,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         return super.onOptionsItemSelected(item);
     }
 
-    interface CursorLoaderListener {
+    public interface CursorLoaderListener {
         void onCursorLoaded(Cursor cursor, int recipeServings);
     }
 }

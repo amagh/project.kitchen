@@ -113,18 +113,17 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
 
                     Map<String, Object> map = new HashMap<>();
 
-                    map.put(RECIPE_ID, recipeId);
-                    map.put(RECIPE_SOURCE_ID, recipeSourceId);
-                    map.put(RECIPE_TITLE, recipeTitle);
-                    map.put(RECIPE_AUTHOR, recipeAuthor);
-                    map.put(RECIPE_ATTRIBUTION, recipeAttribution);
-                    map.put(RECIPE_DESCRIPTION, recipeDescription);
-                    map.put(RECIPE_IMG_URL, recipeImgUrl);
-                    map.put(RECIPE_REVIEWS, recipeReviews);
-                    map.put(RECIPE_RATING, recipeRating);
-                    map.put(RECIPE_FAVORITE, favorite);
-                    String RECIPE_URL = "recipeUrl";
-                    map.put(RECIPE_URL, recipeUrl);
+                    map.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
+                    map.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeSourceId);
+                    map.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeTitle);
+                    map.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, recipeAuthor);
+                    map.put(RecipeEntry.COLUMN_SOURCE, recipeAttribution);
+                    map.put(RecipeEntry.COLUMN_SHORT_DESC, recipeDescription);
+                    map.put(RecipeEntry.COLUMN_IMG_URL, recipeImgUrl);
+                    map.put(RecipeEntry.COLUMN_REVIEWS, recipeReviews);
+                    map.put(RecipeEntry.COLUMN_RATING, recipeRating);
+                    map.put(RecipeEntry.COLUMN_FAVORITE, favorite);
+                    map.put(RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);
 
                     mList.add(map);
                 } while (mCursor.moveToNext());
@@ -313,17 +312,17 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         // Return the data located at the position of the ViewHolder
         Map<String, Object> map = mList.get(position);
 
-        long recipeId = (long) map.get(RECIPE_ID);
-        long recipeSourceId = (long) map.get(RECIPE_SOURCE_ID);
-        String recipeTitle = (String) map.get(RECIPE_TITLE);
-        String recipeAuthor = (String) map.get(RECIPE_AUTHOR);
-        String recipeAttribution = (String) map.get(RECIPE_ATTRIBUTION);
-        String recipeDescription = (String) map.get(RECIPE_DESCRIPTION);
-        String recipeImgUrl = (String) map.get(RECIPE_IMG_URL);
-        long recipeReviews = (long) map.get(RECIPE_REVIEWS);
-        Double recipeRating = (double) map.get(RECIPE_RATING);
-        boolean favorite = (boolean) map.get(RECIPE_FAVORITE);
-        String recipeUrl = (String) map.get(RECIPE_TITLE);
+        long recipeId = (long) map.get(RecipeEntry.COLUMN_RECIPE_ID);
+        long recipeSourceId = (long) map.get(RecipeEntry.COLUMN_RECIPE_SOURCE_ID);
+        String recipeTitle = (String) map.get(RecipeEntry.COLUMN_RECIPE_NAME);
+        String recipeAuthor = (String) map.get(RecipeEntry.COLUMN_RECIPE_AUTHOR);
+        String recipeAttribution = (String) map.get(RecipeEntry.COLUMN_SOURCE);
+        String recipeDescription = (String) map.get(RecipeEntry.COLUMN_SHORT_DESC);
+        String recipeImgUrl = (String) map.get(RecipeEntry.COLUMN_IMG_URL);
+        long recipeReviews = (long) map.get(RecipeEntry.COLUMN_REVIEWS);
+        Double recipeRating = (double) map.get(RecipeEntry.COLUMN_RATING);
+        boolean favorite = (boolean) map.get(RecipeEntry.COLUMN_FAVORITE);
+        String recipeUrl = (String) map.get(RecipeEntry.COLUMN_RECIPE_URL);
 
         if (useDetailView && position == mDetailCardPosition) {
             // Instantiate a new RecipeDetailsFragmeent
@@ -465,7 +464,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     public long getItemId(int position) {
         // ItemId will be the recipeId since it is a UNIQUE primary key
         // Allows for smoother scrolling with StaggeredGridLayout and less shuffling
-        return (long) mList.get(position).get(RECIPE_ID);
+        return (long) mList.get(position).get(RecipeEntry.COLUMN_RECIPE_ID);
     }
 
     /**
@@ -498,11 +497,11 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         @Nullable @BindView(R.id.list_recipe_description_text) TextView recipeDescription;
         @Nullable @BindView(R.id.list_recipe_reviews_text) TextView recipeReviews;
         @Nullable @BindView(R.id.list_recipe_rating_text) TextView recipeRating;
-        @Nullable @BindView(R.id.list_thumbnail) ImageView recipeImage;
+        @Nullable @BindView(R.id.list_recipe_image) ImageView recipeImage;
         @Nullable @BindView(R.id.list_recipe_favorite_button) ImageView favoriteButton;
         @Nullable @BindView(R.id.fragment_container) FrameLayout container;
         @Nullable @BindView(R.id.list_recipe_image_container) RelativeLayout imageContainer;
-        @Nullable @BindView(R.id.list_recipe_text_container) android.support.v7.widget.GridLayout textContainer;
+//        @Nullable @BindView(R.id.list_recipe_text_container) android.support.v7.widget.GridLayout textContainer;
         @Nullable @BindView(R.id.list_recipe_overlay) FrameLayout overlay;
 
         @Optional
@@ -553,18 +552,20 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
             mCursor.moveToPosition(position);
             long recipeId = mCursor.getLong(RecipeEntry.IDX_RECIPE_ID);
 
-            // Reload the view that used to be using the detailed layout
-            if (mDetailCardPosition != -1) notifyItemChanged(mDetailCardPosition);
+            if (useDetailView) {
+                // Reload the view that used to be using the detailed layout
+                if (mDetailCardPosition != -1) notifyItemChanged(mDetailCardPosition);
 
-            // Set the clicked recipe to utilize detailed layout
-            mDetailCardPosition = position;
+                // Set the clicked recipe to utilize detailed layout
+                mDetailCardPosition = position;
 
-            // Reload the view
-            notifyItemChanged(mDetailCardPosition);
+                // Reload the view
+                notifyItemChanged(mDetailCardPosition);
 
-            // Scroll to the layout just clicked
-            StaggeredGridLayoutManager sglm = (StaggeredGridLayoutManager)mRecyclerView.getLayoutManager();
-            sglm.scrollToPositionWithOffset(mDetailCardPosition, 0);
+                // Scroll to the layout just clicked
+                StaggeredGridLayoutManager sglm = (StaggeredGridLayoutManager)mRecyclerView.getLayoutManager();
+                sglm.scrollToPositionWithOffset(mDetailCardPosition, 0);
+            }
 
             // Utilize the interface to pass information to the UI thread if detailed view is not
             // being used

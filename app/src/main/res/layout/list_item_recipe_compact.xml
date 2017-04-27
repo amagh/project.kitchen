@@ -24,7 +24,7 @@
             android:src="@drawable/ic_touchpad_custom"/>
 
         <ImageView
-            android:id="@+id/list_thumbnail"
+            android:id="@+id/list_recipe_image"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:scaleType="centerCrop"

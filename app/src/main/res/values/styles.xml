@@ -13,7 +13,9 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.TransparentToolbar" parent="AppTheme.NoActionBar">
+    <style name="AppTheme.TransparentToolbar" parent="AppTheme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="windowActionBarOverlay">true</item>
         <item name="android:actionBarStyle">@style/TransparentToolbar</item>
@@ -31,6 +33,9 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="AppTheme.RecipeList" parent="AppTheme" />
+    <style name="AppTheme.Details" parent="AppTheme" />
 
     <style name="titleText">
         <item name="android:fontFamily">sans-serif</item>

@@ -6,13 +6,17 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -206,13 +210,13 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         long seedTime = Utilities.getCurrentTime();
 
         AllRecipesListAsyncTask allRecipesAsyncTask = new AllRecipesListAsyncTask(this, seedTime);
-        allRecipesAsyncTask.execute();
+        allRecipesAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         FoodDotComListAsyncTask foodAsyncTask = new FoodDotComListAsyncTask(this, seedTime);
-        foodAsyncTask.execute();
+        foodAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         SeriousEatsListAsyncTask seriouseatsAsyncTask = new SeriousEatsListAsyncTask(this, seedTime);
-        seriouseatsAsyncTask.execute();
+        seriouseatsAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
 //        temp();
     }
@@ -344,9 +348,13 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     public void onItemSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
         if (!mTwoPane) {
             // If in single-view mode, then start the ActivityRecipeDetails
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    this,
+                    new Pair(viewHolder.recipeImage, getString(R.string.transition_recipe_image))
+            );
             Intent intent = new Intent(this, ActivityRecipeDetails.class);
             intent.setData(Uri.parse(recipeUrl));
-            startActivity(intent);
+            ActivityCompat.startActivity(this, intent, options.toBundle());
         } else {
             mDetailsVisible = true;
 

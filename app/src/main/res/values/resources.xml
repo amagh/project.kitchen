@@ -2,4 +2,5 @@
 <resources>
     <integer name="recipe_columns">1</integer>
     <bool name="recipeAdapterUseDetailView">false</bool>
+    <integer name="detail_transition_duration">500</integer>
 </resources>

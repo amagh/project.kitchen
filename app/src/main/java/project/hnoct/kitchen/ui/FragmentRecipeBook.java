@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +23,8 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.CursorManager;
 import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.ui.AdapterRecipe;
+import project.hnoct.kitchen.ui.AdapterRecipeBook;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -74,6 +78,10 @@ public class FragmentRecipeBook extends Fragment implements LoaderManager.Loader
 
         // Set mRecipeBookAdapter to mRecyclerView
         mRecyclerView.setAdapter(mRecipeBookAdapter);
+
+        // Setup and attach the ItemTouchHelper for enabled swipe-to-delete recipe books
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(ithCallback);
+        itemTouchHelper.attachToRecyclerView(mRecyclerView);
 
         return rootView;
     }
@@ -223,4 +231,57 @@ public class FragmentRecipeBook extends Fragment implements LoaderManager.Loader
         // Detailed View in Master-Flow layout
         sglm.scrollToPositionWithOffset(mPosition, 0);
     }
+
+    /**
+     * Callback interface to allow for swipe to delete recipe books
+     */
+    ItemTouchHelper.SimpleCallback ithCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            // Get the position of the item to be removed
+            int position = viewHolder.getAdapterPosition();
+
+            // Retrieve the recipe book ID to be removed from database
+            long bookId = (long) mRecipeBookAdapter.getList()
+                    .get(position)
+                    .get(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID);
+
+            // Remove the recipe book from the internal list of mRecipeBookAdapter and notify the
+            // Adapter of the change
+            mRecipeBookAdapter.getList().remove(position);
+            mRecipeBookAdapter.notifyItemRemoved(position);
+
+            // Remove the recipe book from the database using an AsyncTask
+            ModifyDatabase asyncTask = new ModifyDatabase();
+            asyncTask.execute(bookId);
+        }
+
+        @Override
+        public boolean isLongPressDragEnabled() {
+            // Disable long-press to drag. Recipe books are sorted alphabetically
+            return false;
+        }
+
+        class ModifyDatabase extends AsyncTask<Long, Void, Void> {
+            @Override
+            protected Void doInBackground(Long... params) {
+                // Retrieve the ID of the recipe book to remove from the database
+                long bookId = params[0];
+
+                // Delete the entry from the database
+                mContext.getContentResolver().delete(
+                        RecipeBookEntry.CONTENT_URI,
+                        RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = ?",
+                        new String[] {Long.toString(bookId)}
+                );
+
+                return null;
+            }
+        }
+    };
 }

@@ -3,6 +3,9 @@ package project.hnoct.kitchen.ui;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -35,9 +38,13 @@ public class ActivityFavorites extends AppCompatActivity implements FragmentFavo
 
     @Override
     public void onItemSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
-        // Start the ActivityRecipeDetails utilizing the URL of the recipe
+        // If in single-view mode, then start the ActivityRecipeDetails
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                this,
+                new Pair(viewHolder.recipeImage, getString(R.string.transition_recipe_image))
+        );
         Intent intent = new Intent(this, ActivityRecipeDetails.class);
         intent.setData(Uri.parse(recipeUrl));
-        startActivity(intent);
+        ActivityCompat.startActivity(this, intent, options.toBundle());
     }
 }

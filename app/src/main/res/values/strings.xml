@@ -154,9 +154,9 @@
     <string name="attribution_food">Food.com</string>
     <string name="attribution_seriouseats">Serious Eats</string>
 
-    <string name="title_activity_favorites">FavoritesActivity</string>
-    <string name="title_activity_recipe_book">RecipeBookActivity</string>
-    <string name="title_activity_chapter">ChapterActivity</string>
+    <string name="title_activity_favorites">My Favorites</string>
+    <string name="title_activity_recipe_book">My Recipe Books</string>
+    <string name="title_activity_chapter">Chapters</string>
 
     <!-- Bundle Keys -->
     <string name="uri_key">uri</string>
@@ -167,5 +167,8 @@
 
     <!-- Search -->
     <string name="search_hint">Search</string>
-    <string name="title_activity_my_recipes">MyRecipesActivity</string>
+    <string name="title_activity_my_recipes">My Recipes</string>
+
+    <!-- Transition Strings -->
+    <string name="transition_recipe_image">tn_recipe_image</string>
 </resources>

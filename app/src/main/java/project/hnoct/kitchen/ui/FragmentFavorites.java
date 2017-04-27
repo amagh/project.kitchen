@@ -72,7 +72,7 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
                 // Set position to the position of the clicked item
                 mPosition = viewHolder.getAdapterPosition();
 
-                if (resetLayout) setLayoutColumns();
+//                if (resetLayout) setLayoutColumns();
             }
         });
 
