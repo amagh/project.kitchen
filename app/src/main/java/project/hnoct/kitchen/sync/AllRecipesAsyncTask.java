@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.util.Pair;
 import android.util.Log;
@@ -271,6 +272,20 @@ class AllRecipesAsyncTask extends AsyncTask<Object, Void, Void> {
             }
 
             // Link values should not have any overlap so it should be safe to just add values
+            Uri linkUri = LinkIngredientEntry.buildIngredientUriFromRecipe(recipeId);
+            Cursor cursor = mContext.getContentResolver().query(
+                    linkUri,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                cursor.close();
+                return null;
+            }
+
             ContentValues[] linkValues = new ContentValues[linkCVList.size()];
             linkCVList.toArray(linkValues);
 

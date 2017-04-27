@@ -10,6 +10,14 @@
     android:layout_marginLeft="@dimen/card_horizontal_margin"
     app:cardCornerRadius="@dimen/card_corner_radius">
 
+    <!--<FrameLayout-->
+        <!--android:id="@+id/fragment_container"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:minHeight="400dp">-->
+
+    <!--</FrameLayout>-->
+
     <FrameLayout
         android:id="@+id/list_recipe_content_container"
         android:layout_width="wrap_content"

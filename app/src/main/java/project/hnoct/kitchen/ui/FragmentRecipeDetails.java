@@ -189,8 +189,6 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                         if (getActivity() != null)
                         getLoaderManager().restartLoader(DETAILS_LOADER, null, FragmentRecipeDetails.this);
                         mSyncing = false;
-
-
                     }
                 }, mRecipeUrl);
             }

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.util.Pair;
 import android.util.Log;
@@ -336,6 +337,20 @@ public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
         linkCVList.toArray(linkCVArray);
 
         // Insert the link ingredient values
+        Uri linkUri = LinkIngredientEntry.buildIngredientUriFromRecipe(recipeId);
+        Cursor cursor = mContext.getContentResolver().query(
+                linkUri,
+                null,
+                null,
+                null,
+                null
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            cursor.close();
+            return null;
+        }
+
         mContext.getContentResolver().bulkInsert(
                 LinkIngredientEntry.CONTENT_URI,
                 linkCVArray
@@ -350,7 +365,4 @@ public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
         mSyncCallback.onFinishLoad();
     }
 
-    public interface RecipeSyncCallback {
-        public void onFinishLoad();
-    }
 }

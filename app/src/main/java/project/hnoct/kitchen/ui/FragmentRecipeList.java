@@ -23,6 +23,8 @@ import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
+import project.hnoct.kitchen.ui.adapter.RecipeItemAnimator;
+import project.hnoct.kitchen.view.StaggeredGridLayoutManagerWithSmoothScroll;
 
 /**
  * Fragment for the main view displaying all recipes loaded from web
@@ -37,6 +39,7 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
     private ContentResolver mResolver;          // Reference to ContentResolver
     AdapterRecipe mRecipeAdapter;
     private int mPosition;                      // Position of mCursor
+    StaggeredGridLayoutManager mStaggeredLayoutManager;
 
     // Views bound by ButterKnife
     @BindView(R.id.recipe_recycler_view) RecyclerView mRecipeRecyclerView;
@@ -61,14 +64,20 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
             public void onClick(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
                 boolean resetLayout = !ActivityRecipeList.mDetailsVisible;
 
+                // Set position to the position of the clicked item
+                mPosition = viewHolder.getAdapterPosition();
+
+                if (getResources().getBoolean(R.bool.recipeAdapterUseDetailView)) {
+                    return;
+                }
+
                 // Initiate Callback to Activity which will launch Details Activity
                 ((RecipeCallBack) getActivity()).onItemSelected(
                         Utilities.getRecipeUrlFromRecipeId(mContext, recipeId),
                         viewHolder
                 );
 
-                // Set position to the position of the clicked item
-                mPosition = viewHolder.getAdapterPosition();
+
 
 //                if (resetLayout) setLayoutColumns();
             }
@@ -93,6 +102,14 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
 
         // Set the adapter to the RecyclerView
         mRecipeRecyclerView.setAdapter(mRecipeAdapter);
+        RecipeItemAnimator animator = new RecipeItemAnimator();
+        animator.setRecipeAnimatorListener(new RecipeItemAnimator.RecipeAnimatorListener() {
+            @Override
+            public void onFinishAnimateDetail() {
+                mRecipeRecyclerView.smoothScrollToPosition(mPosition);
+            }
+        });
+        mRecipeRecyclerView.setItemAnimator(animator);
 
         ((ActivityRecipeList) getActivity()).setSearchListener(new ActivityRecipeList.SearchListener() {
             @Override
@@ -181,14 +198,22 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
             columns = getResources().getInteger(R.integer.recipe_columns);
         }
 
-        // Instantiate the LayoutManager
-        StaggeredGridLayoutManager sglm = new StaggeredGridLayoutManager(
-                columns,
-                StaggeredGridLayoutManager.VERTICAL
-        );
+
+
+        if (mRecipeRecyclerView.getLayoutManager() == null) {
+            // Instantiate the LayoutManager
+            mStaggeredLayoutManager = new StaggeredGridLayoutManagerWithSmoothScroll(
+                    columns,
+                    StaggeredGridLayoutManager.VERTICAL
+            );
+        } else {
+            mStaggeredLayoutManager =
+                    (StaggeredGridLayoutManagerWithSmoothScroll) mRecipeRecyclerView
+                            .getLayoutManager();
+        }
 
         // Set the LayoutManager for the RecyclerView
-        mRecipeRecyclerView.setLayoutManager(sglm);
+        mRecipeRecyclerView.setLayoutManager(mStaggeredLayoutManager);
 
         AdapterRecipe adapter = ((AdapterRecipe) mRecipeRecyclerView.getAdapter());
         if (adapter != null) {
@@ -197,6 +222,6 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
 
         // Scroll to the position of the recipe last clicked due to change in visibility of the
         // Detailed View in Master-Flow layout
-        sglm.scrollToPositionWithOffset(mPosition, 0);
+        mStaggeredLayoutManager.scrollToPositionWithOffset(mPosition, 0);
     }
 }

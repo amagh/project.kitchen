@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -46,7 +47,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     public static final String LOG_TAG = AdapterRecipe.class.getSimpleName();
     private static final int RECIPE_VIEW_NORMAL = 0;
     private static final int RECIPE_VIEW_LAST = 1;
-    private static final int RECIPE_VIEW_DETAIL = 2;
+    public static final int RECIPE_VIEW_DETAIL = 2;
     private static final int RECIPE_VIEW_DETAIL_LAST = 3;
     private static final int RECIPE_VIEW_COMPACT = 4;
     private static final int RECIPE_VIEW_COMPACT_LAST = 5;
@@ -64,21 +65,13 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
 
     private boolean useDetailView = false;
     private boolean editMode = false;
+    private boolean detailLoaded = false;
 
     private DetailVisibilityListener mVisibilityListener;
     private OnStartDragListener mDragListener;
 
-    // Map Key Values
-    private String RECIPE_ID = "recipeId";
-    private String RECIPE_SOURCE_ID = "recipeSourceId";
-    private String RECIPE_TITLE = "recipeTitle";
-    private String RECIPE_AUTHOR = "recipeAuthor";
-    private String RECIPE_ATTRIBUTION = "recipeAttribution";
-    private String RECIPE_DESCRIPTION = "recipeDescription";
-    private String RECIPE_IMG_URL = "recipeImgUrl";
-    private String RECIPE_REVIEWS = "recipeReviews";
-    private String RECIPE_RATING = "recipeRating";
-    private String RECIPE_FAVORITE = "favorite";
+    // Actions
+    static Integer ACTION_OPEN_DETAILS = 0;
 
     public int[] editInstructions = new int[] {-1, -1, -1};
 
@@ -310,7 +303,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     }
 
     @Override
-    public void onBindViewHolder(RecipeViewHolder holder, int position) {
+    public void onBindViewHolder(final RecipeViewHolder holder, int position) {
         // Return the data located at the position of the ViewHolder
         Map<String, Object> map = mList.get(position);
 
@@ -326,15 +319,20 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         boolean favorite = (boolean) map.get(RecipeEntry.COLUMN_FAVORITE);
         String recipeUrl = (String) map.get(RecipeEntry.COLUMN_RECIPE_URL);
 
-        if (useDetailView && position == mDetailCardPosition) {
-            // Instantiate a new RecipeDetailsFragmeent
+        if (holder.getItemViewType() == RECIPE_VIEW_DETAIL || holder.getItemViewType() == RECIPE_VIEW_DETAIL_LAST) {
+            // Instantiate a new RecipeDetailsFragment
             FragmentRecipeDetails fragment = new FragmentRecipeDetails();
             fragment.setCursorLoaderListener(new FragmentRecipeDetails.CursorLoaderListener() {
                 @Override
                 public void onCursorLoaded(Cursor cursor, int recipeServings) {
                     // When finished loading the fragment, scroll to the recipe
-                    StaggeredGridLayoutManager sglm = (StaggeredGridLayoutManager)mRecyclerView.getLayoutManager();
-                    sglm.scrollToPositionWithOffset(mDetailCardPosition, 0);
+//                    StaggeredGridLayoutManager sglm = (StaggeredGridLayoutManager)mRecyclerView.getLayoutManager();
+//                    sglm.scrollToPositionWithOffset(mDetailCardPosition, 0);
+                    holder.itemView.invalidate();
+//                    if (!detailLoaded) {
+//                        detailLoaded = true;
+//                        notifyItemChanged(mDetailCardPosition);
+//                    }
                 }
             });
 
@@ -551,27 +549,40 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         public void onClick(View view) {
             // Get the recipeId of the RecipeViewHolder just clicked
             int position = getAdapterPosition();
-            mCursor.moveToPosition(position);
-            long recipeId = mCursor.getLong(RecipeEntry.IDX_RECIPE_ID);
+
+            if (position == -1) {
+                notifyItemRemoved(position);
+                return;
+            }
+
+            long recipeId = (long) mList.get(position).get(RecipeEntry.COLUMN_RECIPE_ID);
 
             if (useDetailView) {
-                // Reload the view that used to be using the detailed layout
-                if (mDetailCardPosition != -1) notifyItemChanged(mDetailCardPosition);
+                detailLoaded = false;
 
-                // Set the clicked recipe to utilize detailed layout
-                mDetailCardPosition = position;
+                // Reload the view that used to be using the detailed layout
+                if (mDetailCardPosition != -1) {
+                    int oldPosition = mDetailCardPosition;
+                    mDetailCardPosition = position;
+                    notifyItemChanged(oldPosition);
+                    if (oldPosition < mDetailCardPosition) {
+                        mRecyclerView.scrollToPosition(mDetailCardPosition);
+                    }
+                }
+
 
                 // Reload the view
-                notifyItemChanged(mDetailCardPosition);
+                mDetailCardPosition = position;
+                notifyItemChanged(mDetailCardPosition, ACTION_OPEN_DETAILS);
 
                 // Scroll to the layout just clicked
-                StaggeredGridLayoutManager sglm = (StaggeredGridLayoutManager)mRecyclerView.getLayoutManager();
-                sglm.scrollToPositionWithOffset(mDetailCardPosition, 0);
+//                StaggeredGridLayoutManager sglm = (StaggeredGridLayoutManager)mRecyclerView.getLayoutManager();
+//                sglm.scrollToPositionWithOffset(mDetailCardPosition, 0);
             }
 
             // Utilize the interface to pass information to the UI thread if detailed view is not
             // being used
-            if (!useDetailView) mClickHandler.onClick(recipeId, this);
+            mClickHandler.onClick(recipeId, this);
         }
     }
 }
