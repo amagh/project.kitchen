@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
 public class ActivityFavorites extends AppCompatActivity implements FragmentFavorites.RecipeCallBack {
 

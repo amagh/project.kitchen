@@ -1,4 +1,4 @@
-package project.hnoct.kitchen.ui;
+package project.hnoct.kitchen.ui.adapter;
 
 import android.content.ContentProviderOperation;
 import android.content.Context;
@@ -39,6 +39,7 @@ import project.hnoct.kitchen.data.CursorManager;
 import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
+import project.hnoct.kitchen.ui.ActivityRecipeList;
 import project.hnoct.kitchen.view.NonScrollingRecyclerView;
 
 /**
@@ -149,13 +150,13 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
         return mCursor;
     }
 
-    void enterEditMode() {
+    public void enterEditMode() {
         editMode = true;
         editChapters = new ArrayList<>();
         notifyDataSetChanged();
     }
 
-    void exitEditMode() {
+    public void exitEditMode() {
         editMode = false;
 
         if (editChapters.size() > 0) {
@@ -166,7 +167,7 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
         notifyDataSetChanged();
     }
 
-    boolean isInEditMode() {
+    public boolean isInEditMode() {
         return editMode;
     }
 
@@ -318,12 +319,12 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
      * Interface for a listener to notify a registered observer of whether a specific recipe was
      * selected or if user clicked to add a new recipe to the Chapter
      */
-    interface RecipeClickListener {
+    public interface RecipeClickListener {
         void onRecipeClicked(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder);
         void onAddRecipeClicked(long chapterId);
     }
 
-    interface OnStartDragListener {
+    public interface OnStartDragListener {
         void onStartDrag(ChapterViewHolder viewHolder);
     }
 
@@ -335,7 +336,7 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
         mChapterClickListener = listener;
     }
 
-    void setOnStartDragListener(OnStartDragListener listener) {
+    public void setOnStartDragListener(OnStartDragListener listener) {
         mDragListener = listener;
     }
 
@@ -343,15 +344,15 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
      * Registers an observer to be notified of user interaction with the Adapter
      * @param listener
      */
-    void setRecipeClickListener(RecipeClickListener listener) {
+    public void setRecipeClickListener(RecipeClickListener listener) {
         mRecipeClickListener = listener;
     }
 
-    interface DeleteChapterListener {
+    public interface DeleteChapterListener {
         void onDelete(int position);
     }
 
-    void setDeleteChapterListener(DeleteChapterListener listener) {
+    public void setDeleteChapterListener(DeleteChapterListener listener) {
         mDeleteListener = listener;
     }
 
@@ -370,7 +371,7 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
         return (long) mList.get(position).get(CHAPTER_ID);
     }
 
-    class ChapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ChapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // Views bound by ButterKnife
         @BindView(R.id.list_chapter_title) TextView titleText;
         @BindView(R.id.list_chapter_description) TextView descriptionText;

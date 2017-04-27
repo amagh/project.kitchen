@@ -40,6 +40,8 @@ import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.dialog.AddToRecipeBookDialog;
 import project.hnoct.kitchen.sync.RecipeImporter;
+import project.hnoct.kitchen.ui.adapter.AdapterDirection;
+import project.hnoct.kitchen.ui.adapter.AdapterIngredient;
 
 /**
  * A placeholder fragment containing a simple view.

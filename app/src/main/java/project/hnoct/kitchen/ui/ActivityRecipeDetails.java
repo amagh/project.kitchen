@@ -24,6 +24,7 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.Utilities;
+import project.hnoct.kitchen.ui.adapter.AdapterNutrition;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 

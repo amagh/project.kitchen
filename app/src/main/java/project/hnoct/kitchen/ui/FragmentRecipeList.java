@@ -22,6 +22,7 @@ import project.hnoct.kitchen.R;
 
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
+import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
 /**
  * Fragment for the main view displaying all recipes loaded from web

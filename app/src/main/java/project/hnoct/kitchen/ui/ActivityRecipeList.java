@@ -26,9 +26,6 @@ import android.view.View;
 import android.view.MenuItem;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -36,15 +33,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -60,6 +52,7 @@ import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
 import project.hnoct.kitchen.sync.FoodDotComListAsyncTask;
 import project.hnoct.kitchen.sync.RecipeImporter;
 import project.hnoct.kitchen.sync.SeriousEatsListAsyncTask;
+import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
 public class ActivityRecipeList extends AppCompatActivity implements FragmentRecipeList.RecipeCallBack, ImportRecipeDialog.ImportRecipeDialogListener {
     /** Constants **/

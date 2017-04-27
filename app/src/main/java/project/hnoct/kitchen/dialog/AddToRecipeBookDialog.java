@@ -17,8 +17,8 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.ui.ActivityRecipeList;
-import project.hnoct.kitchen.ui.AdapterChapter;
-import project.hnoct.kitchen.ui.AdapterRecipeBook;
+import project.hnoct.kitchen.ui.adapter.AdapterChapter;
+import project.hnoct.kitchen.ui.adapter.AdapterRecipeBook;
 
 /**
  * Created by hnoct on 4/20/2017.

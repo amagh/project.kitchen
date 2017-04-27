@@ -1,12 +1,10 @@
-package project.hnoct.kitchen.ui;
+package project.hnoct.kitchen.ui.adapter;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.inputmethodservice.InputMethodService;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

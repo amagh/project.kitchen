@@ -1,4 +1,4 @@
-package project.hnoct.kitchen.ui;
+package project.hnoct.kitchen.ui.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -34,6 +34,8 @@ import project.hnoct.kitchen.R;
 
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
+import project.hnoct.kitchen.ui.FragmentRecipeDetails;
+import project.hnoct.kitchen.ui.FragmentRecipeList;
 
 /**
  * Created by hnoct on 2/20/2017.
@@ -78,7 +80,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     private String RECIPE_RATING = "recipeRating";
     private String RECIPE_FAVORITE = "favorite";
 
-    int[] editInstructions = new int[] {-1, -1, -1};
+    public int[] editInstructions = new int[] {-1, -1, -1};
 
     /**
      * Public constructor for AdapterRecipe. Used to inflate view used for Recycle View in the
@@ -145,7 +147,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
      * Sets the position of this Adapter within another Adapter
      * @param position Int position of this AdapterRecipe
      */
-    void setPosition(int position) {
+    public void setPosition(int position) {
         mPosition = position;
     }
 
@@ -154,7 +156,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
      * @param useDetailView Boolean value for whether the DetailView Fragment should be used
      * @param fragmentManager FragmentManager used to inflate the DetailView if being used
      */
-    void setUseDetailView(boolean useDetailView, FragmentManager fragmentManager) {
+    public void setUseDetailView(boolean useDetailView, FragmentManager fragmentManager) {
         this.useDetailView = useDetailView;
         mFragmentManager = fragmentManager;
     }
@@ -163,7 +165,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
      * Enters "edit mode" in which the layout used for the ViewHolder is condensed so that more
      * items can be viewed and therefore be more easily re-arranged and removed
      */
-    void enterEditMode() {
+    public void enterEditMode() {
         // Set editMode to true
         editMode = true;
 
@@ -174,7 +176,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     /**
      * Exits "edit mode" so that recipes are viewed with more detail
      */
-    void exitEditMode() {
+    public void exitEditMode() {
         // Set editMode to false
         editMode = false;
 
@@ -186,7 +188,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
      * Used to tell whether the Adapter is currently in edit mode
      * @return true if in edit mode, false if not in edit mode
      */
-    boolean isInEditMode() {
+    public boolean isInEditMode() {
         return editMode;
     }
 
@@ -277,7 +279,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     /**
      * Hides the detailed layout if user scrolls it out of position
      */
-    void hideDetails() {
+    public void hideDetails() {
         // Get the layout manager
         final StaggeredGridLayoutManager sglm = (StaggeredGridLayoutManager) mRecyclerView.getLayoutManager();
 
@@ -425,7 +427,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
      * be shown at a time
      * @param position Position of the ViewHolder that should be utilizing DetailedView Fragment
      */
-    void setDetailCardPosition(int position) {
+    public void setDetailCardPosition(int position) {
         // Get the position of the ViewHolder currently utilizing the DetailedView Fragment
         int oldPosition = mDetailCardPosition;
 
@@ -474,19 +476,19 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         void onClick(long recipeId, RecipeViewHolder viewHolder);
     }
 
-    interface DetailVisibilityListener {
+    public interface DetailVisibilityListener {
         void onDetailsHidden();
     }
 
-    void setVisibilityListener(DetailVisibilityListener mVisibilityListener) {
+    public void setVisibilityListener(DetailVisibilityListener mVisibilityListener) {
         this.mVisibilityListener = mVisibilityListener;
     }
 
-    interface OnStartDragListener {
+    public interface OnStartDragListener {
         void onStartDrag(RecipeViewHolder viewHolder);
     }
 
-    void setOnStartDragListener(OnStartDragListener listener) {
+    public void setOnStartDragListener(OnStartDragListener listener) {
         mDragListener = listener;
     }
 
@@ -497,7 +499,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         @Nullable @BindView(R.id.list_recipe_description_text) TextView recipeDescription;
         @Nullable @BindView(R.id.list_recipe_reviews_text) TextView recipeReviews;
         @Nullable @BindView(R.id.list_recipe_rating_text) TextView recipeRating;
-        @Nullable @BindView(R.id.list_recipe_image) ImageView recipeImage;
+        public @Nullable @BindView(R.id.list_recipe_image) ImageView recipeImage;
         @Nullable @BindView(R.id.list_recipe_favorite_button) ImageView favoriteButton;
         @Nullable @BindView(R.id.fragment_container) FrameLayout container;
         @Nullable @BindView(R.id.list_recipe_image_container) RelativeLayout imageContainer;

@@ -1,4 +1,4 @@
-package project.hnoct.kitchen.ui;
+package project.hnoct.kitchen.ui.adapter;
 
 import android.content.Context;
 import android.support.v4.util.Pair;

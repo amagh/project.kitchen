@@ -21,6 +21,7 @@ import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.dialog.AddRecipeDialog;
 import project.hnoct.kitchen.dialog.ChapterDetailsDialog;
+import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
 public class ActivityChapter extends AppCompatActivity implements ChapterDetailsDialog.ChapterDetailsListener, FragmentChapter.RecipeCallBack {
     /** Constants**/

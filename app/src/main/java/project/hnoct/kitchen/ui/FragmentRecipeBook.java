@@ -23,8 +23,8 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.CursorManager;
 import project.hnoct.kitchen.data.RecipeContract.*;
-import project.hnoct.kitchen.ui.AdapterRecipe;
-import project.hnoct.kitchen.ui.AdapterRecipeBook;
+import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
+import project.hnoct.kitchen.ui.adapter.AdapterRecipeBook;
 
 /**
  * A placeholder fragment containing a simple view.

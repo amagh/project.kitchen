@@ -44,6 +44,8 @@ import butterknife.OnClick;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.ui.adapter.AdapterAddDirection;
+import project.hnoct.kitchen.ui.adapter.AdapterAddIngredient;
 import project.hnoct.kitchen.view.NonScrollingRecyclerView;
 
 /**

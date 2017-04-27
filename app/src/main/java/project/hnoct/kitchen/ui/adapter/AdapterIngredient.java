@@ -1,4 +1,4 @@
-package project.hnoct.kitchen.ui;
+package project.hnoct.kitchen.ui.adapter;
 
 
 import android.content.ContentResolver;

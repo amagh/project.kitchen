@@ -1,4 +1,4 @@
-package project.hnoct.kitchen.ui;
+package project.hnoct.kitchen.ui.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -229,7 +229,7 @@ public class AdapterAddIngredient extends RecyclerView.Adapter<AdapterAddIngredi
      * Remove an ingredient from mIngredientList
      * @param position Position of the item to be removed
      */
-    void deleteIngredient(int position) {
+    public void deleteIngredient(int position) {
         // Remove the ingredient from mIngredientList
         mIngredientList.remove(position);
 
@@ -240,7 +240,7 @@ public class AdapterAddIngredient extends RecyclerView.Adapter<AdapterAddIngredi
         notifyItemRemoved(position);
     }
 
-    interface OnStartDragListener {
+    public interface OnStartDragListener {
         /**
          * Called when a view is requesting a start of a drag
          *

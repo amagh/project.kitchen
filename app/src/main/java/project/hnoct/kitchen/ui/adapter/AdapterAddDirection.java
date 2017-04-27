@@ -1,4 +1,4 @@
-package project.hnoct.kitchen.ui;
+package project.hnoct.kitchen.ui.adapter;
 
 import android.content.Context;
 import android.support.v4.view.MotionEventCompat;
@@ -179,11 +179,11 @@ public class AdapterAddDirection extends RecyclerView.Adapter<AdapterAddDirectio
         mDirectionList.addAll(directionList);
     }
 
-    interface OnStartDragListener {
+    public interface OnStartDragListener {
         void onStartDrag(AddDirectionViewHolder viewHolder);
     }
 
-    class AddDirectionViewHolder extends RecyclerView.ViewHolder {
+    public class AddDirectionViewHolder extends RecyclerView.ViewHolder {
         // ButterKnife bound views
         @BindView(R.id.list_add_direction_step_text) TextView directionStepText;
         @BindView(R.id.list_add_direction_edit_text) EditText directionEditText;

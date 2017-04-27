@@ -16,7 +16,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
-import project.hnoct.kitchen.ui.AdapterRecipe;
+import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 import project.hnoct.kitchen.ui.ActivityRecipeList;
 
 /**

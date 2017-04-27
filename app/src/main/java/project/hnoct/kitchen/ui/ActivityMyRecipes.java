@@ -3,16 +3,14 @@ package project.hnoct.kitchen.ui;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
 public class ActivityMyRecipes extends AppCompatActivity implements FragmentMyRecipes.RecipeCallback {
 

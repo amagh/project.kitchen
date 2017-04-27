@@ -18,7 +18,7 @@ import android.util.Log;
 
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
-import project.hnoct.kitchen.ui.AdapterNutrition;
+import project.hnoct.kitchen.ui.adapter.AdapterNutrition;
 
 import java.io.File;
 import java.io.FileOutputStream;
