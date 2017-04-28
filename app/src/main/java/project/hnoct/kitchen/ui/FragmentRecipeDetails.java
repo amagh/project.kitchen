@@ -212,7 +212,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         // Populate the views with the data
         Glide.with(mContext)
                 .load(recipeImageUrl)
-                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+//                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .listener(new RequestListener<String, GlideDrawable>() {
                     @Override
                     public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {

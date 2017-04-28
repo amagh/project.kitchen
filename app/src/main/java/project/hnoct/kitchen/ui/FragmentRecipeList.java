@@ -62,7 +62,7 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
         mRecipeAdapter = new AdapterRecipe(getActivity(), new AdapterRecipe.RecipeAdapterOnClickHandler() {
             @Override
             public void onClick(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
-                boolean resetLayout = !ActivityRecipeList.mDetailsVisible;
+
 
                 // Set position to the position of the clicked item
                 mPosition = viewHolder.getAdapterPosition();
@@ -71,17 +71,18 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
                     // If using the detail fragment within AdapterRecipe, do not launch a new
                     // FragmentRecipeDetails
                     return;
+                } else {
+                    // Initiate Callback to Activity which will launch Details Activity
+                    ((RecipeCallBack) getActivity()).onItemSelected(
+                            Utilities.getRecipeUrlFromRecipeId(mContext, recipeId),
+                            viewHolder
+                    );
+
+                    setLayoutColumns();
                 }
 
-                // Initiate Callback to Activity which will launch Details Activity
-                ((RecipeCallBack) getActivity()).onItemSelected(
-                        Utilities.getRecipeUrlFromRecipeId(mContext, recipeId),
-                        viewHolder
-                );
 
 
-
-//                if (resetLayout) setLayoutColumns();
             }
         });
 
@@ -222,14 +223,17 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
                     columns,
                     StaggeredGridLayoutManager.VERTICAL
             );
+
+            // Set the LayoutManager for the RecyclerView
+            mRecipeRecyclerView.setLayoutManager(mStaggeredLayoutManager);
+
         } else {
-            mStaggeredLayoutManager =
-                    (StaggeredGridLayoutManagerWithSmoothScroll) mRecipeRecyclerView
-                            .getLayoutManager();
+//            mStaggeredLayoutManager =
+//                    (StaggeredGridLayoutManagerWithSmoothScroll) mRecipeRecyclerView
+//                            .getLayoutManager();
+            mStaggeredLayoutManager.setSpanCount(columns);
         }
 
-        // Set the LayoutManager for the RecyclerView
-        mRecipeRecyclerView.setLayoutManager(mStaggeredLayoutManager);
 
         AdapterRecipe adapter = ((AdapterRecipe) mRecipeRecyclerView.getAdapter());
         if (adapter != null) {
@@ -238,6 +242,10 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
 
         // Scroll to the position of the recipe last clicked due to change in visibility of the
         // Detailed View in Master-Flow layout
-        mStaggeredLayoutManager.scrollToPositionWithOffset(mPosition, 0);
+        if (ActivityRecipeList.mTwoPane) {
+            mRecipeRecyclerView.smoothScrollToPosition(mPosition);
+        } else {
+
+        }
     }
 }

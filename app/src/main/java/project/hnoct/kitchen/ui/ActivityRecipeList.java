@@ -24,12 +24,14 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -77,7 +79,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     @BindView(R.id.main_import_recipe_text) TextView mImportRecipeText;
     @BindView(R.id.main_drawer_layout) DrawerLayout mDrawerLayout;
     @Nullable @BindView(R.id.recipe_detail_container) FrameLayout mDetailsContainer;
-    @Nullable @BindView(R.id.detail_fragment_container) RelativeLayout mContainer;
+    @Nullable @BindView(R.id.detail_fragment_container) FrameLayout mContainer;
     @Nullable @BindView(R.id.temp_button) ImageView mTempButton;
     @Nullable @BindView(R.id.searchview) EditText mSearchView;
     @Nullable @BindView(R.id.search_icon) ImageView mSearchIcon;
@@ -87,7 +89,9 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     @OnClick(R.id.temp_button)
     public void closePreview() {
         mDetailsVisible = false;
-        mContainer.setVisibility(View.GONE);
+        ViewGroup.LayoutParams params = mContainer.getLayoutParams();
+        params.width = 0;
+        mContainer.setLayoutParams(params);
         FragmentRecipeList fragment = (FragmentRecipeList) getSupportFragmentManager().findFragmentById(R.id.fragment);
         fragment.setLayoutColumns();
 //        fragment.mRecipeRecyclerView.scrollToPosition(mPosition);
@@ -190,7 +194,10 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
 
                 // Set the visibility of the container to GONE to allow the FragmentRecipeList
                 // to take the full width of the view
-                mContainer.setVisibility(View.GONE);
+                ViewGroup.LayoutParams params = mContainer.getLayoutParams();
+                params.width = 0;
+                mContainer.setLayoutParams(params);
+//                mContainer.setVisibility(View.GONE);
 
                 // Create a new FragmentRecipeDetails and load it into the container
                 FragmentRecipeDetails fragment = new FragmentRecipeDetails();
@@ -366,7 +373,9 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
                     .commit();
 
             // Show the FragmentRecipeDetails in the master-flow view
-            mContainer.setVisibility(View.VISIBLE);
+            ViewGroup.LayoutParams params = mContainer.getLayoutParams();
+            params.width = (int) Utilities.convertDpToPixels(600);
+            mContainer.setLayoutParams(params);
         }
     }
 

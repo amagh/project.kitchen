@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -380,6 +381,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
                 Glide.with(mContext)
                         .load(recipeImgUrl)
                         .into(holder.recipeImage);
+                Log.d(LOG_TAG, "Loading image " + position);
             }
 
             // Populate the title and description because it is used in all layouts
