@@ -25,6 +25,7 @@ import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -82,6 +83,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     @BindView(R.id.details_direction_title_text) TextView mDirectionTitleText;
     @BindView(R.id.details_line_separator_top) View mLineSeparatorTop;
     @BindView(R.id.details_line_separator_bottom) View mLineSeparatorBottom;
+    @BindView(R.id.details_recipe_progressbar) ProgressBar mProgressBar;
 
 
     public FragmentRecipeDetails() {
@@ -306,15 +308,6 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
 
         mRecipeShortDescriptionText.setText(recipeDescription);
 
-        // Set the visibility of the ingredient and direction section titles to VISIBLE
-
-//        mIngredientTitleText.setVisibility(View.VISIBLE);
-//        mDirectionTitleText.setVisibility(View.VISIBLE);
-//        mIngredientTitleText.startAnimation(fadeInAnim);
-//        mDirectionTitleText.startAnimation(fadeInAnim);
-//        mIngredientsRecyclerView.startAnimation(fadeInAnim);
-//        mDirectionsRecyclerView.startAnimation(fadeInAnim);
-
         // Set visibility of line separators to VISIBLE
         mLineSeparatorTop.setVisibility(View.VISIBLE);
         mLineSeparatorBottom.setVisibility(View.VISIBLE);
@@ -347,7 +340,11 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     }
 
     void fadeIn() {
-        Animation fadeInAnim = AnimationUtils.loadAnimation(mContext, R.anim.fade);
+        Animation fadeOutAnim = AnimationUtils.loadAnimation(mContext, R.anim.fade_out);
+        mProgressBar.startAnimation(fadeOutAnim);
+        mProgressBar.setVisibility(View.INVISIBLE);
+
+        Animation fadeInAnim = AnimationUtils.loadAnimation(mContext, R.anim.fade_in);
 
         mIngredientTitleText.setVisibility(View.VISIBLE);
         mDirectionTitleText.setVisibility(View.VISIBLE);
@@ -420,6 +417,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
 
             if (cursor != null && cursor.moveToFirst() && !cursor.getString(LinkIngredientEntry.IDX_IMG_URL).isEmpty()) {
                 // Delay transition animation
+                mProgressBar.setVisibility(View.INVISIBLE);
                 getActivity().supportPostponeEnterTransition();
                 cursor.close();
             }
