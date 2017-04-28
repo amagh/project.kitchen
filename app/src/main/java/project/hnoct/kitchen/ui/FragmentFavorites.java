@@ -24,7 +24,9 @@ import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
+import project.hnoct.kitchen.ui.adapter.RecipeItemAnimator;
 import project.hnoct.kitchen.view.SlidingAlphabeticalIndex;
+import project.hnoct.kitchen.view.StaggeredGridLayoutManagerWithSmoothScroll;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -65,14 +67,19 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
             public void onClick(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
                 boolean resetLayout = !ActivityRecipeList.mDetailsVisible;
 
+                // Set position to the position of the clicked item
+                mPosition = viewHolder.getAdapterPosition();
+
+                if (mContext.getResources().getBoolean(R.bool.recipeAdapterUseDetailView)) {
+                    // If using the detail fragment within AdapterRecipe, do not launch a new
+                    // FragmentRecipeDetails
+                    return;
+                }
+
                 ((RecipeCallBack) getActivity()).onItemSelected(
                         Utilities.getRecipeUrlFromRecipeId(mContext, recipeId),
                         viewHolder
                 );
-
-                // Set position to the position of the clicked item
-                mPosition = viewHolder.getAdapterPosition();
-
 //                if (resetLayout) setLayoutColumns();
             }
         });
@@ -95,6 +102,16 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
 
         // Set the adapter to the RecyclerView
         mRecipeRecyclerView.setAdapter(mRecipeAdapter);
+
+        RecipeItemAnimator recipeItemAnimator = new RecipeItemAnimator(mContext);
+        recipeItemAnimator.setRecipeAnimatorListener(new RecipeItemAnimator.RecipeAnimatorListener() {
+            @Override
+            public void onFinishAnimateDetail() {
+                mRecipeRecyclerView.scrollToPosition(mPosition);
+            }
+        });
+
+        mRecipeRecyclerView.setItemAnimator(recipeItemAnimator);
 
         // Set the onValueChangedListener to allow for scrolling to the appropriate recipe as the
         // user slides their finger along mIndex
@@ -220,11 +237,15 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
             columns = getResources().getInteger(R.integer.recipe_columns);
         }
 
-        // Instantiate the LayoutManager
-        mLayoutManager = new StaggeredGridLayoutManager(
-                columns,
-                StaggeredGridLayoutManager.VERTICAL
-        );
+        // Retrieve/Instantiate the LayoutManager
+        if (mLayoutManager == null) {
+            mLayoutManager = new StaggeredGridLayoutManagerWithSmoothScroll(
+                    columns,
+                    StaggeredGridLayoutManager.VERTICAL
+            );
+        } else {
+            mLayoutManager = (StaggeredGridLayoutManagerWithSmoothScroll) mRecipeRecyclerView.getLayoutManager();
+        }
 
         // Set the LayoutManager for the RecyclerView
         mRecipeRecyclerView.setLayoutManager(mLayoutManager);

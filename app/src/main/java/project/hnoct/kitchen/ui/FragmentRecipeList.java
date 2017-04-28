@@ -68,6 +68,8 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
                 mPosition = viewHolder.getAdapterPosition();
 
                 if (getResources().getBoolean(R.bool.recipeAdapterUseDetailView)) {
+                    // If using the detail fragment within AdapterRecipe, do not launch a new
+                    // FragmentRecipeDetails
                     return;
                 }
 
@@ -213,8 +215,6 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
         } else {
             columns = getResources().getInteger(R.integer.recipe_columns);
         }
-
-
 
         if (mRecipeRecyclerView.getLayoutManager() == null) {
             // Instantiate the LayoutManager

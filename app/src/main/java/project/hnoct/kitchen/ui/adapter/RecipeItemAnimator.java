@@ -39,8 +39,16 @@ public class RecipeItemAnimator extends DefaultItemAnimator {
     @Override
     public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
         // Allow re-use of ViewHolders
-        return true;
+        AdapterRecipe.RecipeViewHolder holder = (AdapterRecipe.RecipeViewHolder) viewHolder;
+        if (holder.getItemViewType() == AdapterRecipe.RECIPE_VIEW_DETAIL ||
+                holder.getItemViewType() == AdapterRecipe.RECIPE_VIEW_DETAIL_LAST) {
+            return true;
+        }  else {
+            return true;
+        }
     }
+
+
 
     @NonNull
     @Override
@@ -89,6 +97,31 @@ public class RecipeItemAnimator extends DefaultItemAnimator {
 //        dispatchAnimationFinished(newHolder);
         return false;
     }
+
+    @Override
+    public boolean animateRemove(final RecyclerView.ViewHolder holder) {
+        AnimatorSet animSet = new AnimatorSet();
+
+        ObjectAnimator scaleXanim = ObjectAnimator.ofFloat(holder.itemView, "scaleX", 1f, 0.1f);
+        scaleXanim.setDuration(300);
+        scaleXanim.setInterpolator(ACCELERATE_DECELERATE_INTERPOLATOR);
+
+        ObjectAnimator scaleYanim = ObjectAnimator.ofFloat(holder.itemView, "scaleY", 1f, 0.1f);
+        scaleXanim.setDuration(300);
+        scaleXanim.setInterpolator(ACCELERATE_DECELERATE_INTERPOLATOR);
+
+        animSet.playTogether(scaleXanim, scaleYanim);
+        animSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                holder.itemView.setVisibility(View.GONE);
+            }
+        });
+        animSet.start();
+        return false;
+    }
+
+
 
     /**
      * Animates favorite button to show a yellow star

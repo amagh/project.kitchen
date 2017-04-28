@@ -381,7 +381,7 @@ public class Utilities {
                 );
 
             } else {
-                /** See above **/
+                // See above
                 favoriteValue.put(RecipeEntry.COLUMN_FAVORITE, 1);
                 context.getContentResolver().update(
                         RecipeEntry.CONTENT_URI,

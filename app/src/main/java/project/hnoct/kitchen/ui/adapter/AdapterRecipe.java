@@ -65,6 +65,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     private boolean useDetailView = false;
     private boolean editMode = false;
     private boolean detailLoaded = false;
+    private boolean favoriteView = false;
 
     private DetailVisibilityListener mVisibilityListener;
     private OnStartDragListener mDragListener;
@@ -90,12 +91,15 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         mDetailCardPosition = -1;
     }
 
+    public void inFavoriteView() {
+        favoriteView = true;
+    }
+
     public Cursor swapCursor(Cursor newCursor) {
         mCursor = newCursor;
+        mList = new ArrayList<>();
 
         if (mCursor != null) {
-            mList = new ArrayList<>();
-
             if (mCursor.moveToFirst()) {
 
                 do {
@@ -129,6 +133,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
                 } while (mCursor.moveToNext());
             }
         }
+
         notifyDataSetChanged();
         return mCursor;
     }
@@ -541,15 +546,23 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
             // Get the favorite status of the
             boolean favorite = (boolean) mList.get(position).get(RecipeEntry.COLUMN_FAVORITE);
 
-            if (favorite) {
-                // If already a favorite, play animation to unfavorite the recipe
-                notifyItemChanged(position, ACTION_UNFAVORITE);
+            if (favoriteView) {
+                mList.remove(position);
+                Utilities.setRecipeFavorite(mContext, recipeId);
+                notifyItemRemoved(position);
+                notifyDataSetChanged();
             } else {
-                // If not a favorite, play animation to favorite the recipe
-                notifyItemChanged(position, ACTION_FAVORITE);
+                if (favorite) {
+                    // If already a favorite, play animation to unfavorite the recipe
+                    notifyItemChanged(position, ACTION_UNFAVORITE);
+                } else {
+                    // If not a favorite, play animation to favorite the recipe
+                    notifyItemChanged(position, ACTION_FAVORITE);
+                }
             }
-
         }
+
+
 
         RecipeViewHolder(View view) {
             super(view);
