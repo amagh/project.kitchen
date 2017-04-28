@@ -20,6 +20,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -380,6 +381,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
                 // Use Glide to load image into view
                 Glide.with(mContext)
                         .load(recipeImgUrl)
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                         .into(holder.recipeImage);
                 Log.d(LOG_TAG, "Loading image " + position);
             }

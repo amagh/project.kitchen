@@ -35,7 +35,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:transitionGroup="true">
+                android:transitionGroup="true"
+                android:background="@color/background_light">
 
                 <TextView
                     android:id="@+id/details_recipe_title_text"
@@ -141,7 +142,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:transitionGroup="true">
+                android:transitionGroup="true"
+                android:background="@color/background_light">
 
                 <TextView
                     android:id="@+id/details_direction_title_text"

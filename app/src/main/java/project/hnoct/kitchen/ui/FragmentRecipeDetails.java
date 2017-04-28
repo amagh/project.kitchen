@@ -66,6 +66,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     private long time;
 
     private boolean mSyncing = false;
+    private boolean loaded = false;
 
     // Views bound by ButterKnife
     @BindView(R.id.details_ingredient_recycler_view) RecyclerView mIngredientsRecyclerView;
@@ -106,6 +107,11 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
 
                 // Get the recipeId and generate recipeUri for database
                 mRecipeId = Utilities.getRecipeIdFromUrl(mContext, mRecipeUrl);
+
+                if (mRecipeId == -1) {
+                    mRecipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
+                }
+
                 mRecipeUri = LinkIngredientEntry.buildIngredientUriFromRecipe(mRecipeId);
             }
         } else {
@@ -140,7 +146,55 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mIngredientsRecyclerView.setAdapter(mIngredientAdapter);
         mDirectionsRecyclerView.setAdapter(mDirectionAdapter);
 
+        loadImageView();
+
         return rootView;
+    }
+
+    private void loadImageView() {
+        Cursor cursor = mContentResolver.query(
+                RecipeEntry.CONTENT_URI,
+                RecipeEntry.RECIPE_PROJECTION,
+                RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                new String[] {Long.toString(mRecipeId)},
+                null
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            String recipeImageUrl = cursor.getString(RecipeEntry.IDX_IMG_URL);
+            if (!recipeImageUrl.isEmpty()) {
+                loaded = true;
+            }
+
+            Glide.with(mContext)
+                    .load(recipeImageUrl)
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                    .listener(new RequestListener<String, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            // When image has finished loading, load image into target
+                            target.onResourceReady(resource, null);
+
+                            if (getActivity() instanceof ActivityRecipeDetails && loaded) {
+                                scheduleStartPostponedTransition(mRecipeImageView);
+                            }
+
+                            Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
+                            return false;
+
+                            }
+                    })
+                    .into(mRecipeImageView);
+
+            cursor.close();
+        }
+
+
     }
 
     @Override
@@ -210,26 +264,31 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         int recipeServings = mCursor.getInt(LinkIngredientEntry.IDX_RECIPE_SERVINGS);
 
         // Populate the views with the data
-        Glide.with(mContext)
-                .load(recipeImageUrl)
-//                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .listener(new RequestListener<String, GlideDrawable>() {
-                    @Override
-                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                        // When image has finished loading, load image into target
-//                        target.onResourceReady(resource, null);
-
-                        if (getActivity() instanceof ActivityRecipeDetails) startTransition();
-                        Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
-                        return false;
-                    }
-                })
-                .into(mRecipeImageView);
+        if (!loaded) {
+            loadImageView();
+        }
+//        Glide.with(mContext)
+//                .load(recipeImageUrl)
+////                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+//                .listener(new RequestListener<String, GlideDrawable>() {
+//                    @Override
+//                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+//                        return false;
+//                    }
+//
+//                    @Override
+//                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+//                        // When image has finished loading, load image into target
+////                        target.onResourceReady(resource, null);
+//
+//                        if (getActivity() instanceof ActivityRecipeDetails) {
+//                            scheduleStartPostponedTransition(mRecipeImageView);
+//                        }
+//                        Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
+//                        return false;
+//                    }
+//                })
+//                .into(mRecipeImageView);
 
         mRecipeTitleText.setText(recipeTitle);
         mRecipeAuthorText.setText(Utilities.formatAuthor(mContext, recipeAuthor));
@@ -275,6 +334,18 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         }
     }
 
+    void scheduleStartPostponedTransition(final View sharedElement) {
+        sharedElement.getViewTreeObserver().addOnPreDrawListener(
+                new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        sharedElement.getViewTreeObserver().removeOnPreDrawListener(this);
+                        getActivity().supportStartPostponedEnterTransition();
+                        return true;
+                    }
+                });
+    }
+
     void fadeIn() {
         Animation fadeInAnim = AnimationUtils.loadAnimation(mContext, R.anim.fade);
 
@@ -282,7 +353,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mDirectionTitleText.setVisibility(View.VISIBLE);
         mIngredientsRecyclerView.setVisibility(View.VISIBLE);
         mDirectionsRecyclerView.setVisibility(View.VISIBLE);
-        mRecipeImageView.setVisibility(View.VISIBLE);
+//        mRecipeImageView.setVisibility(View.VISIBLE);
         mRecipeTitleText.setVisibility(View.VISIBLE);
         mRecipeAuthorText.setVisibility(View.VISIBLE);
         mRecipeAttributionText.setVisibility(View.VISIBLE);
@@ -297,7 +368,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mDirectionTitleText.startAnimation(fadeInAnim);
         mIngredientsRecyclerView.startAnimation(fadeInAnim);
         mDirectionsRecyclerView.startAnimation(fadeInAnim);
-        mRecipeImageView.startAnimation(fadeInAnim);
+//        mRecipeImageView.startAnimation(fadeInAnim);
         mRecipeTitleText.startAnimation(fadeInAnim);
         mRecipeAuthorText.startAnimation(fadeInAnim);
         mRecipeAttributionText.startAnimation(fadeInAnim);
@@ -314,7 +385,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mDirectionTitleText.setVisibility(View.INVISIBLE);
         mIngredientsRecyclerView.setVisibility(View.INVISIBLE);
         mDirectionsRecyclerView.setVisibility(View.INVISIBLE);
-        mRecipeImageView.setVisibility(View.INVISIBLE);
+//        mRecipeImageView.setVisibility(View.INVISIBLE);
         mRecipeTitleText.setVisibility(View.INVISIBLE);
         mRecipeAuthorText.setVisibility(View.INVISIBLE);
         mRecipeAttributionText.setVisibility(View.INVISIBLE);
@@ -326,16 +397,6 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mLineSeparatorBottom.setVisibility(View.INVISIBLE);
     }
 
-    void startTransition() {
-        getView().getViewTreeObserver().addOnDrawListener(new ViewTreeObserver.OnDrawListener() {
-            @Override
-            public void onDraw() {
-                // Start the transition animation
-                getActivity().supportStartPostponedEnterTransition();
-            }
-        });
-    }
-
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mIngredientAdapter.swapCursor(null);
@@ -345,16 +406,19 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        long recipeId = Utilities.getRecipeIdFromUrl(getContext(), getActivity().getIntent().getData().toString());
+        Uri linkUri = LinkIngredientEntry.buildIngredientUriFromRecipe(recipeId);
+
         if (getActivity() instanceof ActivityRecipeDetails) {
             Cursor cursor = getContext().getContentResolver().query(
-                    getActivity().getIntent().getData(),
+                    linkUri,
                     LinkIngredientEntry.LINK_PROJECTION,
                     null,
                     null,
                     null
             );
 
-            if (cursor != null && cursor.moveToFirst()) {
+            if (cursor != null && cursor.moveToFirst() && !cursor.getString(LinkIngredientEntry.IDX_IMG_URL).isEmpty()) {
                 // Delay transition animation
                 getActivity().supportPostponeEnterTransition();
                 cursor.close();

@@ -369,6 +369,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
 
             // Replace the existing FragmentRecipeDetails with the newly created one
             getSupportFragmentManager().beginTransaction()
+                    .addSharedElement(viewHolder.recipeImage, getString(R.string.transition_recipe_image))
                     .replace(R.id.recipe_detail_container, fragment, DETAILS_FRAGMENT)
                     .commit();
 
