@@ -10,18 +10,11 @@
     android:layout_marginLeft="@dimen/card_horizontal_margin"
     app:cardCornerRadius="@dimen/card_corner_radius">
 
-    <!--<FrameLayout-->
-        <!--android:id="@+id/fragment_container"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:minHeight="400dp">-->
-
-    <!--</FrameLayout>-->
-
     <FrameLayout
         android:id="@+id/list_recipe_content_container"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        >
 
         <RelativeLayout
             android:id="@+id/list_recipe_image_container"
@@ -161,78 +154,20 @@
                             android:src="@drawable/btn_rating_star_on_normal_holo_light" />
                     </FrameLayout>
 
-
-
-
                 </LinearLayout>
 
             </LinearLayout>
 
         </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/list_recipe_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:background="@drawable/user_card_overlay"/>
+
     </FrameLayout>
-
-
-
-    <!--<android.support.v7.widget.GridLayout-->
-        <!--android:id="@+id/list_recipe_text_container"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginTop="@dimen/card_thumbnail_height_single"-->
-        <!--android:layout_marginLeft="@dimen/card_text_horizontal_margin"-->
-        <!--android:layout_marginRight="@dimen/card_text_horizontal_margin"-->
-        <!--android:layout_marginBottom="@dimen/card_vertical_padding"-->
-        <!--app:columnCount="2">-->
-
-        <!--<TextView-->
-            <!--android:id="@+id/list_recipe_description_text"-->
-            <!--android:maxLines="8"-->
-            <!--android:paddingBottom="@dimen/default_text_vertical_padding"-->
-            <!--app:layout_columnSpan="2"-->
-            <!--tools:text="Simple fried chicken from Kentucky" />-->
-
-        <!--<TextView-->
-            <!--android:id="@+id/list_recipe_author_text"-->
-            <!--android:maxWidth="250dp"-->
-            <!--android:maxLines="1"-->
-            <!--app:layout_gravity="fill"-->
-            <!--tools:text="Recipe by hnocturna a;lsdkjfas ;laksdjf la;sdjf;a skjsdalkfjasd;flk" />-->
-
-        <!--<TextView-->
-            <!--android:id="@+id/list_recipe_attribution_text"-->
-            <!--android:gravity="end"-->
-            <!--app:layout_gravity="fill_horizontal"-->
-            <!--tools:text="Allrecipes"-->
-            <!--/>-->
-
-        <!--<TextView-->
-            <!--android:id="@+id/list_recipe_reviews_text"-->
-            <!--app:layout_gravity="fill_horizontal"-->
-            <!--tools:text="25 reviews" />-->
-
-        <!--<ImageView-->
-            <!--android:id="@+id/list_recipe_favorite_button"-->
-            <!--android:tint="@color/review_star_grey"-->
-            <!--android:scaleType="fitCenter"-->
-            <!--android:layout_height="0dp"-->
-            <!--app:layout_rowSpan="2"-->
-            <!--app:layout_gravity="end|fill_vertical"-->
-            <!--android:src="@drawable/favorite_star_disabled"-->
-             <!--/>-->
-
-        <!--<TextView-->
-            <!--android:id="@+id/list_recipe_rating_text"-->
-            <!--android:gravity="center_vertical"-->
-            <!--app:layout_gravity="fill_horizontal"-->
-            <!--tools:text="4.9\u2605" />-->
-
-    <!--</android.support.v7.widget.GridLayout>-->
-
-    <FrameLayout
-        android:id="@+id/list_recipe_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        android:background="@drawable/user_card_overlay"/>
 
 </android.support.v7.widget.CardView>
 <!-- TODO -->

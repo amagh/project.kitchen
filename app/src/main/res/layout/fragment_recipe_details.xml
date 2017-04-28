@@ -125,6 +125,7 @@
                     android:gravity="center_horizontal"
                     android:layout_marginTop="@dimen/activity_vertical_margin"
                     style="@style/subtitleText"
+                    android:visibility="invisible"
                     tools:visibility="visible" />
 
                 <project.hnoct.kitchen.view.NonScrollingRecyclerView
@@ -139,7 +140,8 @@
                 android:id="@+id/details_recipe_content2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" >
+                android:orientation="vertical"
+                android:transitionGroup="true">
 
                 <TextView
                     android:id="@+id/details_direction_title_text"

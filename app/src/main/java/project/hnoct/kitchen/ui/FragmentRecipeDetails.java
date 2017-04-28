@@ -289,8 +289,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mRecipeReviewsText.setVisibility(View.VISIBLE);
         mRecipeRatingText.setVisibility(View.VISIBLE);
         mRecipeShortDescriptionText.setVisibility(View.VISIBLE);
-        mIngredientTitleText.setVisibility(View.VISIBLE);
-        mDirectionTitleText.setVisibility(View.VISIBLE);
+
         mLineSeparatorTop.setVisibility(View.VISIBLE);
         mLineSeparatorBottom.setVisibility(View.VISIBLE);
 
@@ -305,8 +304,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mRecipeReviewsText.startAnimation(fadeInAnim);
         mRecipeRatingText.startAnimation(fadeInAnim);
         mRecipeShortDescriptionText.startAnimation(fadeInAnim);
-        mIngredientTitleText.startAnimation(fadeInAnim);
-        mDirectionTitleText.startAnimation(fadeInAnim);
+
         mLineSeparatorTop.startAnimation(fadeInAnim);
         mLineSeparatorBottom.startAnimation(fadeInAnim);
     }
@@ -323,8 +321,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mRecipeReviewsText.setVisibility(View.INVISIBLE);
         mRecipeRatingText.setVisibility(View.INVISIBLE);
         mRecipeShortDescriptionText.setVisibility(View.INVISIBLE);
-        mIngredientTitleText.setVisibility(View.INVISIBLE);
-        mDirectionTitleText.setVisibility(View.INVISIBLE);
+
         mLineSeparatorTop.setVisibility(View.INVISIBLE);
         mLineSeparatorBottom.setVisibility(View.INVISIBLE);
     }

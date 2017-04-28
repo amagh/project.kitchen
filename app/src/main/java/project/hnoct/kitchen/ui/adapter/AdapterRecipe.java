@@ -96,6 +96,11 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     }
 
     public Cursor swapCursor(Cursor newCursor) {
+        boolean firstLoad = false;
+        if (mCursor == null) {
+            firstLoad = true;
+        }
+
         mCursor = newCursor;
         mList = new ArrayList<>();
 
@@ -134,7 +139,12 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
             }
         }
 
-        notifyDataSetChanged();
+        if (firstLoad) {
+            notifyItemRangeInserted(0, mList.size());
+        } else {
+            notifyDataSetChanged();
+        }
+
         return mCursor;
     }
 

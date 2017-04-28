@@ -11,14 +11,15 @@
     <slide android:slideEdge="bottom">
         <targets>
             <target android:targetId="@id/details_recipe_content1" />
-            <!--<target android:targetId="@id/details_recipe_content2" />-->
+            <target android:targetId="@id/details_recipe_content2" />
         </targets>
     </slide>
-    <fade>
-        <targets>
-            <target android:excludeId="@android:id/statusBarBackground" />
-            <target android:excludeId="@android:id/navigationBarBackground" />
-            <target android:excludeId="@id/details_recipe_image" />
-        </targets>
-    </fade>
+    <!--<fade>-->
+        <!--<targets>-->
+            <!--<target android:excludeId="@android:id/statusBarBackground" />-->
+            <!--<target android:excludeId="@android:id/navigationBarBackground" />-->
+            <!--<target android:excludeId="@id/details_recipe_image" />-->
+            <!--<target android:excludeId="@id/details_recipe_content2" />-->
+        <!--</targets>-->
+    <!--</fade>-->
 </transitionSet>
