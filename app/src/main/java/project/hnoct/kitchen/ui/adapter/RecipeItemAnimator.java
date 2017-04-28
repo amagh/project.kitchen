@@ -31,6 +31,7 @@ public class RecipeItemAnimator extends DefaultItemAnimator {
     // Member Variables
     private Context mContext;
     private RecipeAnimatorListener mListener;
+    private int lastAddAnimatedItem = -2;
 
     public RecipeItemAnimator(Context context) {
         mContext = context;
@@ -222,10 +223,17 @@ public class RecipeItemAnimator extends DefaultItemAnimator {
 
             animateDetails((AdapterRecipe.RecipeViewHolder) holder);
             return false;
+        } else if (holder.getLayoutPosition() > lastAddAnimatedItem) {
+            lastAddAnimatedItem++;
+            animateFirstEnter((AdapterRecipe.RecipeViewHolder) holder);
         }
 
         dispatchAddFinished(holder);
         return false;
+    }
+
+    private void animateFirstEnter(AdapterRecipe.RecipeViewHolder holder) {
+
     }
 
     private class RecipeItemHolderInfo extends ItemHolderInfo {

@@ -85,6 +85,7 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
         });
 
         mRecipeAdapter.setHasStableIds(true);
+        mRecipeAdapter.inFavoriteView();
 
         // Set whether the RecyclerAdapter should utilize the detail layout
         boolean useDetailView = getResources().getBoolean(R.bool.recipeAdapterUseDetailView);

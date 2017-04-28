@@ -550,7 +550,6 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
                 mList.remove(position);
                 Utilities.setRecipeFavorite(mContext, recipeId);
                 notifyItemRemoved(position);
-                notifyDataSetChanged();
             } else {
                 if (favorite) {
                     // If already a favorite, play animation to unfavorite the recipe
