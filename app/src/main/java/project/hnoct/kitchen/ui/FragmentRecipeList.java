@@ -39,7 +39,7 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
     private ContentResolver mResolver;          // Reference to ContentResolver
     AdapterRecipe mRecipeAdapter;
     private int mPosition;                      // Position of mCursor
-    StaggeredGridLayoutManager mStaggeredLayoutManager;
+    StaggeredGridLayoutManagerWithSmoothScroll mStaggeredLayoutManager;
 
     // Views bound by ButterKnife
     @BindView(R.id.recipe_recycler_view) RecyclerView mRecipeRecyclerView;
@@ -244,8 +244,6 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
         // Detailed View in Master-Flow layout
         if (ActivityRecipeList.mTwoPane) {
             mRecipeRecyclerView.smoothScrollToPosition(mPosition);
-        } else {
-
         }
     }
 }

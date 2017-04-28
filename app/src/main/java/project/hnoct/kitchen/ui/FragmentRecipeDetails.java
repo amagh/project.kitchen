@@ -402,11 +402,12 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        long recipeId = Utilities.getRecipeIdFromUrl(getContext(), getActivity().getIntent().getData().toString());
-        Uri linkUri = LinkIngredientEntry.buildIngredientUriFromRecipe(recipeId);
-
+        // Check whether the Fragment is attached to ActivityRecipesDetails
         if (getActivity() instanceof ActivityRecipeDetails) {
+            // Query the database to see whether the image url exists
+            long recipeId = Utilities.getRecipeIdFromUrl(getContext(), getActivity().getIntent().getData().toString());
+            Uri linkUri = LinkIngredientEntry.buildIngredientUriFromRecipe(recipeId);
+
             Cursor cursor = getContext().getContentResolver().query(
                     linkUri,
                     LinkIngredientEntry.LINK_PROJECTION,
@@ -416,11 +417,13 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
             );
 
             if (cursor != null && cursor.moveToFirst() && !cursor.getString(LinkIngredientEntry.IDX_IMG_URL).isEmpty()) {
-                // Delay transition animation
+                // Delay transition animation if an image can be loaded
                 mProgressBar.setVisibility(View.INVISIBLE);
                 getActivity().supportPostponeEnterTransition();
                 cursor.close();
             }
+        } else {
+            mProgressBar.setVisibility(View.INVISIBLE);
         }
 
 

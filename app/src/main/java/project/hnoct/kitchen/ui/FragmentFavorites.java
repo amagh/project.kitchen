@@ -43,7 +43,7 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
     private Cursor mCursor;
     private int mPosition;
     private Map<String, Integer> mRecipeIndex;
-    private StaggeredGridLayoutManager mLayoutManager;
+    private StaggeredGridLayoutManagerWithSmoothScroll mStaggeredLayoutManager;
 
     // Views bound by ButterKnife
     @BindView(R.id.favorites_sliding_index) SlidingAlphabeticalIndex mIndex;
@@ -137,7 +137,7 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
      * @param letter Letter the user is scrolling to
      */
     private void scrollToIndex(String letter) {
-        mLayoutManager.scrollToPositionWithOffset(mRecipeIndex.get(letter), 0);
+        mStaggeredLayoutManager.scrollToPositionWithOffset(mRecipeIndex.get(letter), 0);
     }
 
     @Override
@@ -229,7 +229,7 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
     /**
      * Sets the number columns used by the StaggeredGridLayoutManager
      */
-    private void setLayoutColumns() {
+    void setLayoutColumns() {
         // Retrieve the number of columns needed by the device/orientation
         int columns;
         if (ActivityRecipeList.mTwoPane && ActivityRecipeList.mDetailsVisible) {
@@ -238,18 +238,23 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
             columns = getResources().getInteger(R.integer.recipe_columns);
         }
 
-        // Retrieve/Instantiate the LayoutManager
-        if (mLayoutManager == null) {
-            mLayoutManager = new StaggeredGridLayoutManagerWithSmoothScroll(
+        if (mRecipeRecyclerView.getLayoutManager() == null) {
+            // Instantiate the LayoutManager
+            mStaggeredLayoutManager = new StaggeredGridLayoutManagerWithSmoothScroll(
                     columns,
                     StaggeredGridLayoutManager.VERTICAL
             );
+
+            // Set the LayoutManager for the RecyclerView
+            mRecipeRecyclerView.setLayoutManager(mStaggeredLayoutManager);
+
         } else {
-            mLayoutManager = (StaggeredGridLayoutManagerWithSmoothScroll) mRecipeRecyclerView.getLayoutManager();
+//            mStaggeredLayoutManager =
+//                    (StaggeredGridLayoutManagerWithSmoothScroll) mRecipeRecyclerView
+//                            .getLayoutManager();
+            mStaggeredLayoutManager.setSpanCount(columns);
         }
 
-        // Set the LayoutManager for the RecyclerView
-        mRecipeRecyclerView.setLayoutManager(mLayoutManager);
 
         AdapterRecipe adapter = ((AdapterRecipe) mRecipeRecyclerView.getAdapter());
         if (adapter != null) {
@@ -258,6 +263,8 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
 
         // Scroll to the position of the recipe last clicked due to change in visibility of the
         // Detailed View in Master-Flow layout
-        mLayoutManager.scrollToPositionWithOffset(mPosition, 0);
+        if (ActivityRecipeList.mTwoPane) {
+            mRecipeRecyclerView.smoothScrollToPosition(mPosition);
+        }
     }
 }

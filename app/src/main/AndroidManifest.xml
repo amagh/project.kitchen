@@ -61,7 +61,7 @@
             android:name=".ui.ActivityFavorites"
             android:label="@string/title_activity_favorites"
             android:parentActivityName=".ui.ActivityRecipeList"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme.Favorites">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
@@ -80,7 +80,7 @@
             android:name=".ui.ActivityChapter"
             android:label="@string/title_activity_chapter"
             android:parentActivityName=".ui.ActivityRecipeBook"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme.Chapter">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="project.hnoct.kitchen.ui.ActivityRecipeBook" />
@@ -89,7 +89,7 @@
             android:name=".ui.ActivityMyRecipes"
             android:label="@string/title_activity_my_recipes"
             android:parentActivityName=".ui.ActivityRecipeList"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme.MyRecipes">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
