@@ -308,6 +308,38 @@ public class Utilities {
     }
 
     /**
+     * Queries the databse for the favorite status of a recipe
+     * @param context Interface to global Context
+     * @param recipeId Recipe ID of the recipe to be queried
+     * @return boolean value for whether the recipe is a favorite
+     */
+    public static boolean getRecipeFavorite(Context context, long recipeId) {
+        // Setup selection and selection arguments for querying the database
+        String selection = RecipeEntry.COLUMN_RECIPE_ID + " = ?";
+        String[] selectionArgs = new String[] {Long.toString(recipeId)};
+
+        // Query the database to get current favorite status of the recipe
+        Cursor cursor = context.getContentResolver().query(
+                RecipeEntry.CONTENT_URI,
+                RecipeEntry.RECIPE_PROJECTION,
+                selection,
+                selectionArgs,
+                null
+        );
+
+        // Instantiate the boolean value to return
+        boolean favorite = false;
+
+        if (cursor != null && cursor.moveToFirst()) {
+            // Retrieve the favorite status from the database
+            favorite = (cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1);
+            cursor.close();
+        }
+
+        return favorite;
+    }
+
+    /**
      * Toggles the favorite status of the recipe
      * @param context Interface for global Context
      * @param recipeId Id of the recipe to be toggle favorite status
@@ -326,44 +358,45 @@ public class Utilities {
                 selectionArgs,
                 null
         );
-        cursor.moveToFirst();
 
-        // Favorite is set to true if 1, else false
-        boolean favorite = (cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1);
+        if (cursor != null && cursor.moveToFirst()) {
+            // Favorite is set to true if 1, else false
+            boolean favorite = (cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1);
 
-        // Close the cursor so the new status can be written to the database
-        cursor.close();
+            // Close the cursor so the new status can be written to the database
+            cursor.close();
 
-        // Instantiate the ContentValues that will contain the new favorite value
-        ContentValues favoriteValue = new ContentValues();
-        if (favorite) {
-            // If true, set the favorite value to false (0)
-            favoriteValue.put(RecipeEntry.COLUMN_FAVORITE, 0);
+            // Instantiate the ContentValues that will contain the new favorite value
+            ContentValues favoriteValue = new ContentValues();
+            if (favorite) {
+                // If true, set the favorite value to false (0)
+                favoriteValue.put(RecipeEntry.COLUMN_FAVORITE, 0);
 
-            // Update the database with the new value
-            context.getContentResolver().update(
-                    RecipeEntry.CONTENT_URI,
-                    favoriteValue,
-                    selection,
-                    selectionArgs
-            );
+                // Update the database with the new value
+                context.getContentResolver().update(
+                        RecipeEntry.CONTENT_URI,
+                        favoriteValue,
+                        selection,
+                        selectionArgs
+                );
+
+            } else {
+                /** See above **/
+                favoriteValue.put(RecipeEntry.COLUMN_FAVORITE, 1);
+                context.getContentResolver().update(
+                        RecipeEntry.CONTENT_URI,
+                        favoriteValue,
+                        selection,
+                        selectionArgs
+                );
+            }
+
+            // Return the new favorite value
+            return !favorite;
 
         } else {
-            /** See above **/
-            favoriteValue.put(RecipeEntry.COLUMN_FAVORITE, 1);
-            context.getContentResolver().update(
-                    RecipeEntry.CONTENT_URI,
-                    favoriteValue,
-                    selection,
-                    selectionArgs
-            );
+            return false;
         }
-
-        // Close the cursor so the new status can be written to the database
-        cursor.close();
-
-        // Return the new favorite value
-        return !favorite;
     }
 
     /**

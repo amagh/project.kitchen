@@ -9,7 +9,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -48,7 +47,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     private static final int RECIPE_VIEW_NORMAL = 0;
     private static final int RECIPE_VIEW_LAST = 1;
     public static final int RECIPE_VIEW_DETAIL = 2;
-    private static final int RECIPE_VIEW_DETAIL_LAST = 3;
+    public static final int RECIPE_VIEW_DETAIL_LAST = 3;
     private static final int RECIPE_VIEW_COMPACT = 4;
     private static final int RECIPE_VIEW_COMPACT_LAST = 5;
 
@@ -71,7 +70,11 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     private OnStartDragListener mDragListener;
 
     // Actions
-    static Integer ACTION_OPEN_DETAILS = 0;
+    static final String ACTION_OPEN_DETAILS = "openDetails";
+    static final String ACTION_FAVORITE = "favorite";
+    static final String ACTION_UNFAVORITE = "unfavorite";
+
+    static final String test = "test";
 
     public int[] editInstructions = new int[] {-1, -1, -1};
 
@@ -88,11 +91,13 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     }
 
     public Cursor swapCursor(Cursor newCursor) {
-        if (mCursor != newCursor) {
-            mCursor = newCursor;
+        mCursor = newCursor;
 
-            if (mCursor != null && mCursor.moveToFirst()) {
-                mList = new ArrayList<>(mCursor.getCount());
+        if (mCursor != null) {
+            mList = new ArrayList<>();
+
+            if (mCursor.moveToFirst()) {
+
                 do {
                     long recipeId = mCursor.getLong(RecipeEntry.IDX_RECIPE_ID);
                     long recipeSourceId = mCursor.getLong(RecipeEntry.IDX_RECIPE_SOURCE_ID);
@@ -123,8 +128,8 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
                     mList.add(map);
                 } while (mCursor.moveToNext());
             }
-            notifyDataSetChanged();
         }
+        notifyDataSetChanged();
         return mCursor;
     }
 
@@ -326,13 +331,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
                 @Override
                 public void onCursorLoaded(Cursor cursor, int recipeServings) {
                     // When finished loading the fragment, scroll to the recipe
-//                    StaggeredGridLayoutManager sglm = (StaggeredGridLayoutManager)mRecyclerView.getLayoutManager();
-//                    sglm.scrollToPositionWithOffset(mDetailCardPosition, 0);
                     holder.itemView.invalidate();
-//                    if (!detailLoaded) {
-//                        detailLoaded = true;
-//                        notifyItemChanged(mDetailCardPosition);
-//                    }
                 }
             });
 
@@ -412,9 +411,9 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
 
                 // Set the icon of the favorite button depending on its favorite status
                 if (favorite) {
-                    holder.favoriteButton.setColorFilter(mContext.getResources().getColor(R.color.favorite_enabled));
+                    holder.favoriteButtonOn.setVisibility(View.VISIBLE);
                 } else {
-                    holder.favoriteButton.setColorFilter(mContext.getResources().getColor(R.color.favorite_disabled));
+                    holder.favoriteButtonOn.setVisibility(View.INVISIBLE);
                 }
             }
         }
@@ -498,7 +497,8 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         @Nullable @BindView(R.id.list_recipe_reviews_text) TextView recipeReviews;
         @Nullable @BindView(R.id.list_recipe_rating_text) TextView recipeRating;
         public @Nullable @BindView(R.id.list_recipe_image) ImageView recipeImage;
-        @Nullable @BindView(R.id.list_recipe_favorite_button) ImageView favoriteButton;
+        @Nullable @BindView(R.id.list_recipe_favorite_button_on) ImageView favoriteButtonOn;
+        @Nullable @BindView(R.id.list_recipe_favorite_button_off) ImageView favoriteButtonOff;
         @Nullable @BindView(R.id.fragment_container) FrameLayout container;
         @Nullable @BindView(R.id.list_recipe_image_container) RelativeLayout imageContainer;
 //        @Nullable @BindView(R.id.list_recipe_text_container) android.support.v7.widget.GridLayout textContainer;
@@ -518,23 +518,37 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         }
 
         @Optional
-        @OnClick(R.id.list_recipe_favorite_button)
+        @OnClick(R.id.list_recipe_favorite_button_off)
         void favorite(ImageView view) {
-            if (mCursor.getCount() == 0) {
-                // If cursor hasn't loaded anything yet, then do nothing
+            int position = -1;
+
+            // Check to see whether the internal list of recipe information has been initialized
+            if (mList.size() > 0) {
+                // Retrieve the position of the ViewHolder
+                position = getAdapterPosition();
+            } else {
+                // If not, do nothing
                 return;
             }
 
-            // Toggle the favorite status of the recipe
-            mCursor.moveToPosition(getAdapterPosition());
-            long recipeId = mCursor.getLong(RecipeEntry.IDX_RECIPE_ID);
-            boolean favorite = Utilities.setRecipeFavorite(mContext, recipeId);
+            // Retrieve the recipe ID to check for favorite status
+            long recipeId = (long) mList.get(position).get(RecipeEntry.COLUMN_RECIPE_ID);
+
+            // Set the recipe ID as a tag so it can be retrieved after the animation has finished
+            // and the favorite status for the recipe can be toggled
+            itemView.setTag(recipeId);
+
+            // Get the favorite status of the
+            boolean favorite = (boolean) mList.get(position).get(RecipeEntry.COLUMN_FAVORITE);
+
             if (favorite) {
-                view.setColorFilter(mContext.getResources().getColor(R.color.favorite_enabled));
+                // If already a favorite, play animation to unfavorite the recipe
+                notifyItemChanged(position, ACTION_UNFAVORITE);
             } else {
-                view.setColorFilter(mContext.getResources().getColor(R.color.favorite_disabled));
+                // If not a favorite, play animation to favorite the recipe
+                notifyItemChanged(position, ACTION_FAVORITE);
             }
-            notifyItemChanged(getAdapterPosition());
+
         }
 
         RecipeViewHolder(View view) {
@@ -549,23 +563,23 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         public void onClick(View view) {
             // Get the recipeId of the RecipeViewHolder just clicked
             int position = getAdapterPosition();
-
-            if (position == -1) {
-                notifyItemRemoved(position);
-                return;
-            }
-
             long recipeId = (long) mList.get(position).get(RecipeEntry.COLUMN_RECIPE_ID);
 
+            // Check whether the detail fragment is being utilized
             if (useDetailView) {
-                detailLoaded = false;
-
                 // Reload the view that used to be using the detailed layout
+
                 if (mDetailCardPosition != -1) {
+                    // If another recipe is utilizing detail fragment, reset it to use the normal
+                    // layout
                     int oldPosition = mDetailCardPosition;
                     mDetailCardPosition = position;
                     notifyItemChanged(oldPosition);
+
                     if (oldPosition < mDetailCardPosition) {
+                        // If the recipe using the detail fragment is below the previous item utilizing
+                        // the detail fragment, scroll to its position so that it will not automatically
+                        // be closed by #hideDetails()
                         mRecyclerView.scrollToPosition(mDetailCardPosition);
                     }
                 }
@@ -574,10 +588,6 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
                 // Reload the view
                 mDetailCardPosition = position;
                 notifyItemChanged(mDetailCardPosition, ACTION_OPEN_DETAILS);
-
-                // Scroll to the layout just clicked
-//                StaggeredGridLayoutManager sglm = (StaggeredGridLayoutManager)mRecyclerView.getLayoutManager();
-//                sglm.scrollToPositionWithOffset(mDetailCardPosition, 0);
             }
 
             // Utilize the interface to pass information to the UI thread if detailed view is not

@@ -102,15 +102,20 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
 
         // Set the adapter to the RecyclerView
         mRecipeRecyclerView.setAdapter(mRecipeAdapter);
-        RecipeItemAnimator animator = new RecipeItemAnimator();
+
+        // Initialize and set the RecipeItemAnimator
+        RecipeItemAnimator animator = new RecipeItemAnimator(mContext);
         animator.setRecipeAnimatorListener(new RecipeItemAnimator.RecipeAnimatorListener() {
             @Override
             public void onFinishAnimateDetail() {
+                // Listen for when the animation for the detail fragment inflation has been
+                // completed so that the view can be scrolled to the top of the recipe's view
                 mRecipeRecyclerView.smoothScrollToPosition(mPosition);
             }
         });
         mRecipeRecyclerView.setItemAnimator(animator);
 
+        // Initialize the listener for when the user attempts to search for a recipe
         ((ActivityRecipeList) getActivity()).setSearchListener(new ActivityRecipeList.SearchListener() {
             @Override
             public void onSearch(String searchTerm) {
@@ -121,12 +126,19 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
         return rootView;
     }
 
+    /**
+     * Reloads the CursorLoader to only show results that include the user's search term
+     * @param searchTerm The user-input search term for the recipes they wish to find
+     */
     private void search(String searchTerm) {
+        // Initialize the selection argument, passing in the searchTerm
         String[] selectionArgs = new String[] {"%" + searchTerm + "%"};
 
+        // Create a Bundle and add the search argument to it
         Bundle args = new Bundle();
         args.putStringArray(getString(R.string.selection_args_key), selectionArgs);
 
+        // Restart the CursorLoader and pass the Bundle as an argument
         getLoaderManager().restartLoader(RECIPE_LOADER, args, this);
     }
 
@@ -145,6 +157,7 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
         String[] selectionArgs = null;
 
         if (args != null) {
+            // If arguments have been passed, set the new selection and selection arguments
             selection = RecipeEntry.COLUMN_RECIPE_NAME + " LIKE ?";
             selectionArgs = args.getStringArray(getString(R.string.selection_args_key));
         }
@@ -161,8 +174,11 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        // Set member variable mCursor to the loaded Cursor
+        mCursor = cursor;
+
         // Swap in the loaded Cursor into the Adapter
-        mRecipeAdapter.swapCursor(cursor);
+        mRecipeAdapter.swapCursor(mCursor);
     }
 
     @Override

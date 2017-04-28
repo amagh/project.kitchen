@@ -136,13 +136,33 @@
 
                     </LinearLayout>
 
-                    <ImageView
+                    <FrameLayout
                         android:layout_width="@dimen/touchpad_size"
-                        android:layout_height="@dimen/touchpad_size"
-                        android:id="@+id/list_recipe_favorite_button"
-                        android:scaleType="fitCenter"
-                        android:layout_gravity="end"
-                        android:src="@drawable/btn_rating_star_off_normal_holo_light" />
+                        android:layout_height="@dimen/touchpad_size">
+                        <ImageView
+                            android:id="@+id/list_recipe_favorite_button_off"
+                            android:layout_width="@dimen/touchpad_size"
+                            android:layout_height="@dimen/touchpad_size"
+                            android:padding="@dimen/button_margin_small"
+                            android:scaleType="fitCenter"
+                            android:layout_gravity="end"
+                            android:background="@drawable/favorite_ripple"
+                            android:src="@drawable/btn_rating_star_off_normal_holo_light" />
+
+                        <ImageView
+                            android:id="@+id/list_recipe_favorite_button_on"
+                            android:layout_width="@dimen/touchpad_size"
+                            android:layout_height="@dimen/touchpad_size"
+                            android:padding="@dimen/button_margin_small"
+                            android:scaleType="fitCenter"
+                            android:layout_gravity="end"
+                            android:background="@drawable/favorite_ripple"
+                            android:visibility="invisible"
+                            android:src="@drawable/btn_rating_star_on_normal_holo_light" />
+                    </FrameLayout>
+
+
+
 
                 </LinearLayout>
 
