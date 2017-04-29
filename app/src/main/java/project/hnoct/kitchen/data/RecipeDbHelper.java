@@ -32,7 +32,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 RecipeEntry.COLUMN_RECIPE_URL + " TEXT NOT NULL, " +
                 RecipeEntry.COLUMN_SHORT_DESC + " TEXT, " +
                 RecipeEntry.COLUMN_RATING + " REAL, " +
-                RecipeEntry.COLUMN_REVIEWS + " INTER, " +
+                RecipeEntry.COLUMN_REVIEWS + " INTEGER, " +
                 RecipeEntry.COLUMN_DIRECTIONS + " TEXT, " +
                 RecipeEntry.COLUMN_DATE_ADDED + " TEXT NOT NULL, " +
                 RecipeEntry.COLUMN_FAVORITE + " INTEGER NOT NULL, " +

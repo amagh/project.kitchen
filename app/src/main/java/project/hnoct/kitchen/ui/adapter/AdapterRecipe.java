@@ -383,7 +383,6 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
                         .load(recipeImgUrl)
                         .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                         .into(holder.recipeImage);
-                Log.d(LOG_TAG, "Loading image " + position);
             }
 
             // Populate the title and description because it is used in all layouts
@@ -599,14 +598,13 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
                     // If another recipe is utilizing detail fragment, reset it to use the normal
                     // layout
                     int oldPosition = mDetailCardPosition;
-                    mDetailCardPosition = position;
                     notifyItemChanged(oldPosition);
 
-                    if (oldPosition < mDetailCardPosition) {
+                    if (oldPosition < position) {
                         // If the recipe using the detail fragment is below the previous item utilizing
                         // the detail fragment, scroll to its position so that it will not automatically
                         // be closed by #hideDetails()
-                        mRecyclerView.scrollToPosition(mDetailCardPosition);
+                        mRecyclerView.scrollToPosition(position);
                     }
                 }
 

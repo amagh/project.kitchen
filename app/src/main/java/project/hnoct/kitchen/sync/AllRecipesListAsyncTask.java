@@ -3,6 +3,7 @@ package project.hnoct.kitchen.sync;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -30,15 +31,39 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
     /** Member Variables **/
     private Context mContext;       // Interface to global context
-    private ContentResolver mContentResolver;
     private long mTimeInMillis;
+    private String mSearchUrl;
 
     public AllRecipesListAsyncTask(Context context, long timeInMillis) {
         // Initialize member variables
         mContext = context;
-        mContentResolver = mContext.getContentResolver();
         mTimeInMillis = timeInMillis;
     }
+
+//    public AllRecipesListAsyncTask(Context context, long timeInMillis, String searchTerm) {
+//        mContext = context;
+//        mTimeInMillis = timeInMillis;
+//
+//        if (!searchTerm.trim().isEmpty()) {
+//            String ALL_RECIPES_BASE_SEARCH_URL = "http://allrecipes.com";
+//            String ALL_RECIPES_SEARCH_PATH = "search";
+//            String ALL_RECIPES_RESULTS_PATH = "results";
+//            String ALL_RECIPES_QUERY_PARAM = "wt";
+//            String ALL_RECIPES_SORT_PARAM = "sort";
+//            String ALL_RECIPES_SORT_VALUE = "re";
+//            searchTerm = searchTerm.trim().replace(" ", "%20");
+//            Uri searchUri = Uri.parse(ALL_RECIPES_BASE_SEARCH_URL).buildUpon()
+//                    .appendPath(ALL_RECIPES_SEARCH_PATH)
+//                    .appendPath(ALL_RECIPES_RESULTS_PATH)
+//                    .appendPath("")
+//                    .appendQueryParameter(ALL_RECIPES_QUERY_PARAM, searchTerm)
+//                    .appendQueryParameter(ALL_RECIPES_SORT_PARAM, ALL_RECIPES_SORT_VALUE)
+//                    .build();
+//
+//            mSearchUrl = searchUri.toString();
+//            Log.d(LOG_TAG, mSearchUrl);
+//        }
+//    }
 
     @Override
     protected Void doInBackground(Void... params) {
@@ -50,10 +75,16 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
             List<ContentValues> recipeCVList = new ArrayList<>();
             // Connect and downloading the HTML document
             String ALL_RECIPES_BASE_URL = "http://www.allrecipes.com";
-            Document document = Jsoup.connect(ALL_RECIPES_BASE_URL).get();
+            Document document;
+
+            if (mSearchUrl == null) {
+                document = Jsoup.connect(ALL_RECIPES_BASE_URL).get();
+            }  else {
+                document = Jsoup.connect(mSearchUrl).get();
+            }
 
             // Select the elements from the document to add to the database as part of the recipe
-            Elements recipes = document.select("article.grid-col--fixed-tiles").select("article:not(.marketing-card)");
+            Elements recipes = document.select("article.grid-col--fixed-tiles:not(.marketing-card):not(.hub-card)");
 
             Random random = new Random();
 

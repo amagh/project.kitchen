@@ -171,4 +171,5 @@
 
     <!-- Transition Strings -->
     <string name="transition_recipe_image">tn_recipe_image</string>
+    <string name="title_activity_search">ActivitySearch</string>
 </resources>

@@ -35,6 +35,7 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="AppTheme.RecipeList" parent="AppTheme" />
+
     <style name="AppTheme.Details" parent="AppTheme" />
 
     <style name="titleText">

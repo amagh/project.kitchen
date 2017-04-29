@@ -94,6 +94,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
         </activity>
+        <activity
+            android:name=".ui.ActivitySearch"
+            android:label="@string/title_activity_search"
+            android:parentActivityName=".ui.ActivityRecipeList"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
+        </activity>
     </application>
 
 </manifest>

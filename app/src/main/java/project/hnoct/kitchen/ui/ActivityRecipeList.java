@@ -20,6 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.transition.ChangeBounds;
 import android.transition.ChangeImageTransform;
@@ -33,11 +34,20 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.ConsoleMessage;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -82,6 +92,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     @BindView(R.id.main_add_recipe_text) TextView mAddRecipeText;
     @BindView(R.id.main_import_recipe_text) TextView mImportRecipeText;
     @BindView(R.id.main_drawer_layout) DrawerLayout mDrawerLayout;
+    @BindView(R.id.recipe_search_more) CardView mSearchMore;
     @Nullable @BindView(R.id.recipe_detail_container) FrameLayout mDetailsContainer;
     @Nullable @BindView(R.id.detail_fragment_container) FrameLayout mContainer;
     @Nullable @BindView(R.id.temp_button) ImageView mTempButton;
@@ -105,14 +116,42 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     @OnEditorAction(R.id.searchview)
     boolean onEditorAction(int actionId) {
         if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            // Re-query the database with the search term when user presses the search button on the
+            // soft keyboard
+            // Retrieve the search term from mSearchView
             String searchTerm = mSearchView != null ? mSearchView.getText().toString() : null;
-            if (mSearchListener != null && searchTerm != null) mSearchListener.onSearch(searchTerm);
+            if (mSearchListener != null && searchTerm != null && !searchTerm.trim().isEmpty()) {
+                // Inform FragmentRecipeList of the change in query parameters
+                mSearchListener.onSearch(searchTerm);
 
+                // Show the CardView allowing the user to import additional recipes from online if
+                // they cannot find a recipe
+                mSearchMore.setVisibility(View.VISIBLE);
+            }
+
+            // Hide the soft keyboard
             InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
             return true;
         }
         return false;
+    }
+
+    @Optional
+    @OnClick(R.id.recipe_search_more)
+    void searchMore() {
+        // Start ActivitySearch and pass the searchTerm from mSearchView in a Bundle
+        Intent intent = new Intent(this, ActivitySearch.class);
+
+        // Retrieve the user-added search term
+        String searchTerm = mSearchView != null ? mSearchView.getText().toString() : null;
+
+        if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+            // Pass the search term as an extra within the Intent
+            intent.putExtra(ActivitySearch.SEARCH_TERM, searchTerm);
+            // Start ActivitySearch with the Bundle
+            startActivity(intent);
+        }
     }
 
     @Optional
@@ -129,6 +168,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         mSearchView.setVisibility(View.VISIBLE);
         mSearchView.requestFocus();
         mSearchIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_close_clear_cancel));
+
         mTitle.setVisibility(View.GONE);
 
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -138,6 +178,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     void hideSearch() {
         mSearchView.setVisibility(View.GONE);
         mSearchIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_search));
+        mSearchMore.setVisibility(View.GONE);
         mTitle.setVisibility(View.VISIBLE);
         if (mSearchListener != null) {
             mSearchView.setText("");
@@ -221,8 +262,6 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
 
         SeriousEatsListAsyncTask seriouseatsAsyncTask = new SeriousEatsListAsyncTask(this, seedTime);
         seriouseatsAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-//        temp();
     }
 
     private void selectDrawerItem(MenuItem item) {
