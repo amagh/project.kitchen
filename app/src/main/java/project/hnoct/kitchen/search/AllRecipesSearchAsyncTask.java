@@ -103,7 +103,7 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                         .attr("href");
 
                 String imgUrl = recipeElement.select("img.grid-col__rec-image")
-                        .attr("data-lazy-load data-original-src");
+                        .attr("data-original-src");
 
                 // Modify the image URL to point to a medium-resolution version
                 imgUrl = imgUrl.replace("250x250", "560x315");
@@ -124,9 +124,6 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                         .text();
 
                 String author = recipeElement.select("div.profile")
-                        .select("a")
-                        .select("ul")
-                        .select("li")
                         .select("h4")
                         .text()
                         .replace("Recipe by ", "");
@@ -146,9 +143,10 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                 recipeMap.put(RecipeEntry.COLUMN_FAVORITE, 0);
                 recipeMap.put(RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_allrecipes));
 
-                for (String key : recipeMap.keySet()) {
-                    Log.d(LOG_TAG, "Key: " + key + " | Value: " + recipeMap.get(key).toString());
-                }
+//                for (String key : recipeMap.keySet()) {
+//                    Log.d(LOG_TAG, "Key: " + key + " | Value: " + recipeMap.get(key).toString());
+//                }
+
                 recipeList.add(recipeMap);
             }
         } catch (IOException e) {

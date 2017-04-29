@@ -8,10 +8,13 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.webkit.WebView;
 
 import java.util.List;
 import java.util.Map;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.search.AllRecipesSearchAsyncTask;
 
@@ -22,10 +25,14 @@ public class ActivitySearch extends AppCompatActivity {
     // Member Variables
     private String mSearchTerm;
 
+    // Views bound by ButterKnife
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
+        ButterKnife.bind(this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -40,22 +47,27 @@ public class ActivitySearch extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Retrieve the search term from the Intent
-        mSearchTerm = getIntent().getStringExtra(SEARCH_TERM);
+        mSearchTerm = getIntent().getStringExtra(SEARCH_TERM).trim();
 
-        // Check to make sure search term is not empty and not null
-        if (mSearchTerm == null || mSearchTerm.trim().isEmpty()) {
+        // Check to make sure search term is not empty
+        if (mSearchTerm.isEmpty()) {
             return;
         }
 
-        // Initialize and pass the searchTerm to the search AsyncTasks
-        AllRecipesSearchAsyncTask allrecipesSearchTask = new AllRecipesSearchAsyncTask(this, new AllRecipesSearchAsyncTask.SyncListener() {
-            @Override
-            public void onFinishLoad(List<Map<String, Object>> recipeList) {
+        if (savedInstanceState == null) {
+            // Create a Bundle and add the search term to it
+            Bundle args = new Bundle();
+            args.putString(SEARCH_TERM, mSearchTerm);
 
-            }
-        });
-        allrecipesSearchTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mSearchTerm);
+            // Attach the Bundle to a new FragmentSearch
+            FragmentSearch fragment = new FragmentSearch();
+            fragment.setArguments(args);
 
+            // Add FragmentSearch
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.search_container, fragment)
+                    .commit();
+        }
     }
 
 }
