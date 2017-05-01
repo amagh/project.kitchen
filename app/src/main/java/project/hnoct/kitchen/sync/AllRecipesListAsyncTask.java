@@ -106,7 +106,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
                 recipeUrl = ALL_RECIPES_BASE_URL + recipeUrl;
 
                 // Get the recipe Id by converting the link to a URI and selecting the 2nd segment
-                long recipeId = Utilities.getRecipeSourceIdFromUrl(mContext, recipeUrl);
+                String recipeSourceId = Utilities.getRecipeSourceIdFromUrl(mContext, recipeUrl);
 
                 // Retrieve the recipe name, thumbnail URL, and description
                 Element recipeElement = recipe.getElementsByClass("grid-col__rec-image").first();
@@ -146,7 +146,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
                 // Create ContentValues from values
                 ContentValues recipeValues = new ContentValues();
-                recipeValues.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeId);
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeSourceId);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, recipeAuthor);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);

@@ -8,6 +8,14 @@
     tools:context="project.hnoct.kitchen.ui.FragmentRecipeList"
     tools:showIn="@layout/activity_main">
 
+    <!--<WebView-->
+        <!--android:id="@+id/recipe_webview"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:visibility="invisible">-->
+
+    <!--</WebView>-->
+
     <android.support.v7.widget.CardView
         android:id="@+id/recipe_search_more"
         android:layout_width="match_parent"

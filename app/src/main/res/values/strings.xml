@@ -153,6 +153,7 @@
     <string name="attribution_allrecipes">Allrecipes.com</string>
     <string name="attribution_food">Food.com</string>
     <string name="attribution_seriouseats">Serious Eats</string>
+    <string name="attribution_epicurious">epicurious</string>
 
     <string name="title_activity_favorites">My Favorites</string>
     <string name="title_activity_recipe_book">My Recipe Books</string>

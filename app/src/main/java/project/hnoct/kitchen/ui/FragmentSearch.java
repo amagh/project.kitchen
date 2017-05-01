@@ -32,7 +32,6 @@ public class FragmentSearch extends Fragment {
     // MemberVariables
     private Context mContext;
     private String mSearchTerm;
-    private WebViewCallback mWebViewCallback;
 
     // Views bound by ButterKnife
     @BindView(R.id.search_recyclerview) RecyclerView mRecyclerView;
@@ -123,9 +122,5 @@ public class FragmentSearch extends Fragment {
                 .build();
 
         return foodSearchUri.toString();
-    }
-
-    interface WebViewCallback {
-        void onFinishLoad(String htmlDoc);
     }
 }

@@ -29,10 +29,8 @@ public class FoodDotComListAsyncTask extends AsyncTask<Void, Void, Void> {
     private static final String LOG_TAG = FoodDotComListAsyncTask.class.getSimpleName();
 
     /** Member Variables **/
-    private Cursor mCursor;
     private Context mContext;
     private long mTimeInMillis;
-    private String mSearchUrl;
 
     public FoodDotComListAsyncTask(Context context, long timeInMillis) {
         mContext = context;
@@ -77,13 +75,7 @@ public class FoodDotComListAsyncTask extends AsyncTask<Void, Void, Void> {
                 }
 
                 // Retrieve the html document from the website
-                Document document;
-
-                if (mSearchUrl == null) {
-                    document = Jsoup.connect(FOOD_BASE_URL).get();
-                } else {
-                    document = Jsoup.connect(mSearchUrl).get();
-                }
+                Document document = document = Jsoup.connect(FOOD_BASE_URL).get();
 
                 String html = document.toString();
 

@@ -60,7 +60,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
 
     /** Member Variables **/
     private Context mContext;
-    private long mRecipeSourceId;
+    private String mRecipeSourceId;
     private long mRecipeId;
     private Uri mRecipeImageUri;
     private String mRecipeDescription;
@@ -166,12 +166,13 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                     mFavorite = cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1;
                     mRecipeImageUri = Uri.parse(cursor.getString(RecipeEntry.IDX_IMG_URL));
                     mSource = cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
+                    mRecipeId = cursor.getLong(RecipeEntry.IDX_RECIPE_ID);
 
                     // If the recipe is not user added, set the recipeId as the negative of the recipe
                     // so the original can be easily referenced
                     mRecipeSourceId = mSource.equals(getString(R.string.attribution_custom))
-                            ? cursor.getLong(RecipeEntry.IDX_RECIPE_SOURCE_ID)
-                            : -cursor.getLong(RecipeEntry.IDX_RECIPE_SOURCE_ID);
+                            ? cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE_ID)
+                            : "*" + cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE_ID);
 
                     // Retrieve the directions in String form
                     String directions = cursor.getString(RecipeEntry.IDX_RECIPE_DIRECTIONS);
@@ -188,10 +189,12 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
 
                 // Set the Cursor to query all tables and filtering by recipeId and recipe source
                 cursor = mContext.getContentResolver().query(
-                        LinkIngredientEntry.CONTENT_URI,
+                        LinkIngredientEntry.buildIngredientUriFromRecipe(mRecipeId),
                         LinkIngredientEntry.LINK_PROJECTION,
-                        RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ? AND " + RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = ?",
-                        new String[] {Long.toString(mSource.equals(mContext.getString(R.string.attribution_custom))? mRecipeSourceId : -mRecipeSourceId), mSource},
+                        null,
+                        null,
+//                        RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ? AND " + RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = ?",
+//                        new String[] {mSource.equals(mContext.getString(R.string.attribution_custom))? mRecipeSourceId : "*" + mRecipeSourceId, mSource},
                         LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + " ASC"  // Sort by ingredient order to maintain order of ingredients
                 );
 
@@ -221,9 +224,9 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
 
         }
 
-        if (mRecipeSourceId == 0) {
+        if (mRecipeSourceId.equals("0")) {
             // If no saved data exists, generate a new recipeId
-            mRecipeSourceId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
+            mRecipeSourceId = Long.toString(Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE));
 
         } else {
             // Insert saved data into EditText
@@ -394,7 +397,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
     if (mRecipeName != null || mRecipeDescription != null || mRecipeImageUri != null ||
             mIngredientList != null || mDirectionList != null) {
             // If at least one piece of data was retrieved, then get the recipeId
-            mRecipeSourceId = prefs.getLong(mContext.getString(R.string.edit_recipe_id_key), 0);
+            mRecipeSourceId = prefs.getString(mContext.getString(R.string.edit_recipe_id_key), "0");
         }
     }
 
@@ -494,7 +497,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
         if (mRecipeName != null || mRecipeDescription != null || mRecipeImageUri != null ||
                 mIngredientList != null || mDirectionList != null) {
             // RecipeId only needs to be saved if other data was saved as well.
-            editor.putLong(
+            editor.putString(
                     mContext.getString(R.string.edit_recipe_id_key),
                     mRecipeSourceId
             );
@@ -616,7 +619,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                 RecipeEntry.CONTENT_URI,
                 null,
                 RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-                new String[] {Long.toString(mRecipeSourceId)},
+                new String[] {mRecipeSourceId},
                 null
         );
 
@@ -740,7 +743,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                     RecipeEntry.CONTENT_URI,
                     recipeValues,
                     RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-                    new String[] {Long.toString(mRecipeSourceId)}
+                    new String[] {mRecipeSourceId}
             );
 
             // Generate a List from the Array of ContentValues

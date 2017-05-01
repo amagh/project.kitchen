@@ -51,7 +51,6 @@ public class FoodDotComSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
 
         // Parse through each element and collect the recipe information
         for (Element recipeElement : recipeElements) {
-//            Log.d(LOG_TAG, recipeElement.toString());
             // Retrieve the recipe information
             long recipeSourceId = Long.parseLong(recipeElement.select("div.fd-recipe")
                     .attr("data-id")
@@ -87,6 +86,8 @@ public class FoodDotComSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                     .select("a[href]")
                     .text();
 
+            // Rating is stored as a percentage, so it needs to be converted to a decimal and then
+            // multiplied by five to get its five-star-rating
             double rating = 5 * Double.parseDouble("." + recipeElement.select("div.tile-content")
                     .select("div.meta-data")
                     .select("div.fd-rating")
@@ -95,11 +96,6 @@ public class FoodDotComSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                     .attr("style")
                     .replaceAll("[a-z]*:|\\.|%;", "")
             );
-
-            Elements reviewElements = recipeElement.select("div.tile-content")
-                    .select("div.meta-data")
-                    .select("div.fd-rating")
-                    .select("div.five-star");
 
             int reviews = Integer.parseInt(recipeElement.select("div.tile-content")
                     .select("div.meta-data")

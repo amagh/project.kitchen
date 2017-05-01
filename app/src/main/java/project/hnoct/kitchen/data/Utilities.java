@@ -1,5 +1,6 @@
 package project.hnoct.kitchen.data;
 
+import android.annotation.SuppressLint;
 import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
@@ -26,8 +27,10 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -159,7 +162,7 @@ public class Utilities {
      * @param recipeUrl URL for the recipe
      * @return recipeId as long
      */
-    public static long getRecipeIdFromAllRecipesUrl(String recipeUrl) {
+    public static String getRecipeIdFromAllRecipesUrl(String recipeUrl) {
         // Check to ensure that the URL is prepended with "http://"
         if (!recipeUrl.contains("http://") && !recipeUrl.substring(0, 7).equals("http://")) {
             // Correct the URL
@@ -169,7 +172,7 @@ public class Utilities {
         Uri recipeLinkUri = Uri.parse(recipeUrl);
 
         // Return 2nd segment of the URI as the recipeId
-        return Long.parseLong(recipeLinkUri.getPathSegments().get(1));
+        return recipeLinkUri.getPathSegments().get(1);
     }
 
     /**
@@ -199,11 +202,11 @@ public class Utilities {
      * @param recipeId Allrecipes recipeId
      * @return String URL for link to recipe on AllRecipes website
      */
-    public static String generateAllRecipesUrlFromRecipeId(long recipeId) {
+    public static String generateAllRecipesUrlFromRecipeId(String recipeId) {
         final String ALL_RECIPES_BASE_URL = "http://www.allrecipes.com";
         Uri recipeUri = Uri.parse(ALL_RECIPES_BASE_URL).buildUpon()
                 .appendPath("recipe")
-                .appendPath(Long.toString(recipeId))
+                .appendPath(recipeId)
                 .build();
 
         return recipeUri.toString();
@@ -726,7 +729,7 @@ public class Utilities {
      * @param recipeUrl String form of link to website containing recipe
      * @return recipeId
      */
-    public static long getRecipeSourceIdFromUrl(Context context, String recipeUrl) {
+    public static String getRecipeSourceIdFromUrl(Context context, String recipeUrl) {
         // Parse the URL into a Uri
         Uri recipeUri = Uri.parse(recipeUrl);
 
@@ -778,16 +781,16 @@ public class Utilities {
         }
     }
 
-    public static long getRecipeIdFromFoodUrl(String recipeUrl) {
+    public static String getRecipeIdFromFoodUrl(String recipeUrl) {
         Pattern pattern = Pattern.compile("[0-9]+$");
 
         Matcher match = pattern.matcher(recipeUrl);
 
         if (match.find()) {
-            long recipeId = Long.parseLong(match.group());
+            String recipeId = match.group();
             return recipeId;
         }
-        return -1;
+        return null;
     }
 
     /**
@@ -849,9 +852,9 @@ public class Utilities {
      * @param recipeUrl String form of the recipe's URL
      * @return Long recipeId
      */
-    private static long getRecipeIdFromCustomUrl(String recipeUrl) {
+    private static String getRecipeIdFromCustomUrl(String recipeUrl) {
         Uri recipeUri = Uri.parse(recipeUrl);
-        return Long.parseLong(recipeUri.getPathSegments().get(0));
+        return recipeUri.getPathSegments().get(0);
     }
 
     /**
@@ -861,7 +864,7 @@ public class Utilities {
      * @param bitmap Image supplied by the user
      * @return URI for the image location on file
      */
-    public static Uri saveImageToFile(Context context, long recipeId, Bitmap bitmap) {
+    public static Uri saveImageToFile(Context context, String recipeId, Bitmap bitmap) {
         File directory = context.getDir(
                 context.getString(R.string.food_image_dir),
                 Context.MODE_PRIVATE
@@ -1186,14 +1189,14 @@ public class Utilities {
         Uri recipeUri = RecipeEntry.CONTENT_URI;
 
         for (ContentValues recipeValue : workingList) {
-            long recipeId = recipeValue.getAsLong(RecipeEntry.COLUMN_RECIPE_SOURCE_ID);
+            String recipeSourceId = recipeValue.getAsString(RecipeEntry.COLUMN_RECIPE_SOURCE_ID);
             // Check if recipe exists in database
 
             Cursor cursor = context.getContentResolver().query(
                     recipeUri,
                     RecipeEntry.RECIPE_PROJECTION,
                     RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ?",
-                    new String[] {Long.toString(recipeId)},
+                    new String[] {recipeSourceId},
                     null
             );
 
@@ -1222,7 +1225,7 @@ public class Utilities {
                             recipeUri,
                             recipeValue,
                             RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ?",
-                            new String[]{Long.toString(recipeId)}
+                            new String[]{recipeSourceId}
                     );
                 }
             }
@@ -1248,13 +1251,13 @@ public class Utilities {
      * @param recipeSource The source where the recipe was imported from
      * @return Internal ID from the database for the recipe
      */
-    public static long getRecipeIdFromSourceId(Context context, long recipeSourceId, String recipeSource) {
+    public static long getRecipeIdFromSourceId(Context context, String recipeSourceId, String recipeSource) {
         // Query the database and filter for entries with the recipe source and recipe source ID
         Cursor cursor = context.getContentResolver().query(
                 RecipeEntry.CONTENT_URI,
                 null,
                 RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ? AND " + RecipeEntry.COLUMN_SOURCE + " = ?",
-                new String[] {Long.toString(recipeSourceId), recipeSource},
+                new String[] {recipeSourceId, recipeSource},
                 null
         );
 
@@ -1271,5 +1274,54 @@ public class Utilities {
 
         // Return either recipe ID if found or -1 if none found
         return recipeId;
+    }
+
+    public static class IngredientHelper {
+        Context mContext;
+        Map<Long, String> ingredientIdNameMap;
+
+        @SuppressLint("UseSparseArrays")
+        public IngredientHelper(Context context) {
+            mContext = context;
+            ingredientIdNameMap = new HashMap<>();
+        }
+
+        public Pair<Boolean, Long> addIngredient(String ingredient) {
+            // Check to see if ingredient already exists in database
+            long ingredientId = getIngredientIdFromName(mContext, ingredient);
+            boolean skipAddIngredient = false;
+
+            if (ingredientId == -1) {
+                // If it does not, find the ID that will be automatically generated for this
+                // ingredient
+                ingredientId = Utilities.generateNewId(mContext, Utilities.INGREDIENT_TYPE);
+            } else {
+                skipAddIngredient = true;
+            }
+
+            // Check to see if the ingredient ID has already been used by a previous ingredient
+            // for this recipe
+            while (ingredientIdNameMap.containsKey(ingredientId) &&
+                    !ingredient.equals(ingredientIdNameMap.get(ingredientId))) {
+                // If so, increment the ingredientID until an unused one is found
+                ingredientId++;
+            }
+
+            // Final check to see if ingredient already exists in ingredientIdNameMap
+
+            String ingredientMapName = ingredientIdNameMap.get(ingredientId);
+
+            if (ingredient.equals(ingredientMapName)) {
+                // If it exists, there is no need to add a duplicate to the ingredient table
+                skipAddIngredient = true;
+            }
+
+            // Add the ingredient ID to ingredientIdNameMap to keep track of which IDs have
+            // already been used
+            ingredientIdNameMap.put(ingredientId, ingredient);
+
+            // Return the ingredient ID of the ingredient that was just added
+            return new Pair<>(skipAddIngredient, ingredientId);
+        }
     }
 }

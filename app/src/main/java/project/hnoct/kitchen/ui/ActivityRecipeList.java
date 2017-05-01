@@ -65,6 +65,7 @@ import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.dialog.ImportRecipeDialog;
 import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
+import project.hnoct.kitchen.sync.EpicuriousListAsyncTask;
 import project.hnoct.kitchen.sync.FoodDotComListAsyncTask;
 import project.hnoct.kitchen.sync.RecipeImporter;
 import project.hnoct.kitchen.sync.SeriousEatsListAsyncTask;
@@ -254,14 +255,17 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
 
         long seedTime = Utilities.getCurrentTime();
 
-        AllRecipesListAsyncTask allRecipesAsyncTask = new AllRecipesListAsyncTask(this, seedTime);
-        allRecipesAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//        AllRecipesListAsyncTask allRecipesAsyncTask = new AllRecipesListAsyncTask(this, seedTime);
+//        allRecipesAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//
+//        FoodDotComListAsyncTask foodAsyncTask = new FoodDotComListAsyncTask(this, seedTime);
+//        foodAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//
+//        SeriousEatsListAsyncTask seriouseatsAsyncTask = new SeriousEatsListAsyncTask(this, seedTime);
+//        seriouseatsAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        FoodDotComListAsyncTask foodAsyncTask = new FoodDotComListAsyncTask(this, seedTime);
-        foodAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-        SeriousEatsListAsyncTask seriouseatsAsyncTask = new SeriousEatsListAsyncTask(this, seedTime);
-        seriouseatsAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        EpicuriousListAsyncTask epicuriousAsyncTask = new EpicuriousListAsyncTask(this, seedTime);
+        epicuriousAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void selectDrawerItem(MenuItem item) {

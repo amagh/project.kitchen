@@ -25,7 +25,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
         // Table storing a recipe and its details
         final String SQL_CREATE_RECIPE_TABLE = "CREATE TABLE " + RecipeEntry.TABLE_NAME + " (" +
                 RecipeEntry.COLUMN_RECIPE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " INTEGER NOT NULL, " +
+                RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " TEXT NOT NULL, " +
                 RecipeEntry.COLUMN_RECIPE_NAME + " TEXT NOT NULL, " +
                 RecipeEntry.COLUMN_RECIPE_AUTHOR + " TEXT NOT NULL, " +
                 RecipeEntry.COLUMN_IMG_URL + " TEXT, " +

@@ -46,7 +46,7 @@ class AllRecipesAsyncTask extends AsyncTask<Object, Void, Void> {
     protected Void doInBackground(Object... params) {
         /** Variables **/
         String recipeUrl = (String) params[0];
-        long recipeSourceId = Utilities.getRecipeSourceIdFromUrl(mContext, recipeUrl);
+        String recipeSourceId = Utilities.getRecipeSourceIdFromUrl(mContext, recipeUrl);
         int ingredientOrder = 0;        // Used to ensure ingredient order is kept the same when added to db
         String source =  mContext.getString(R.string.attribution_allrecipes);
 
@@ -200,7 +200,7 @@ class AllRecipesAsyncTask extends AsyncTask<Object, Void, Void> {
                         RecipeEntry.CONTENT_URI,
                         recipeValues,
                         RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ? AND " + RecipeEntry.COLUMN_SOURCE + " = ?",
-                        new String[] {Long.toString(recipeSourceId), mContext.getString(R.string.attribution_allrecipes)}
+                        new String[] {recipeSourceId, mContext.getString(R.string.attribution_allrecipes)}
                 );
             }
 

@@ -37,7 +37,7 @@ import project.hnoct.kitchen.data.Utilities;
 
 public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
     /** Constants **/
-    private static final String LOG_TAG = AllRecipesAsyncTask.class.getSimpleName();
+    private static final String LOG_TAG = FoodDotComAsyncTask.class.getSimpleName();
 
     /** Member Variables **/
     private Context mContext;                       // Interface for global context
@@ -52,7 +52,7 @@ public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
     protected Void doInBackground(Object... params) {
         /** Variables **/
         String recipeUrl = (String) params[0];
-        long recipeSourceId = Utilities.getRecipeSourceIdFromUrl(mContext, recipeUrl);
+        String recipeSourceId = Utilities.getRecipeSourceIdFromUrl(mContext, recipeUrl);
         int ingredientOrder = 0;        // Used to ensure ingredient order is kept the same when added to db
 
         long recipeId = Utilities.getRecipeIdFromSourceId(

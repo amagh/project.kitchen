@@ -70,9 +70,8 @@ public class SeriousEatsAsyncTask extends AsyncTask<Object, Void, Void> {
 
             // Retrieve the recipe information from the HTML document
             // Recipe Source ID
-            long recipeSourceId = Long.parseLong(document.select("div.content-main")
-                    .attr("data-id")
-            );
+            String recipeSourceId =document.select("div.content-main")
+                    .attr("data-id");
 
             if (recipeId == -1) {
                 // If recipe does not already exist in database, then all information needs to be
@@ -165,7 +164,7 @@ public class SeriousEatsAsyncTask extends AsyncTask<Object, Void, Void> {
             if (recipeId != -1) {
                 // If it already exists in database, then update database values with new values
                 String selection = RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ? AND " + RecipeEntry.COLUMN_SOURCE + " = ?";
-                String[] selectionArgs = new String[] {Long.toString(recipeSourceId), mContext.getString(R.string.attribution_seriouseats)};
+                String[] selectionArgs = new String[] {recipeSourceId, mContext.getString(R.string.attribution_seriouseats)};
 
                 mContext.getContentResolver().update(
                         RecipeEntry.CONTENT_URI,
