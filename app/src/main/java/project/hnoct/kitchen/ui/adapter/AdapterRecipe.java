@@ -111,7 +111,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
 
                 do {
                     long recipeId = mCursor.getLong(RecipeEntry.IDX_RECIPE_ID);
-                    long recipeSourceId = mCursor.getLong(RecipeEntry.IDX_RECIPE_SOURCE_ID);
+                    String recipeSourceId = mCursor.getString(RecipeEntry.IDX_RECIPE_SOURCE_ID);
                     String recipeTitle = mCursor.getString(RecipeEntry.IDX_RECIPE_NAME);
                     String recipeAuthor = mCursor.getString(RecipeEntry.IDX_RECIPE_AUTHOR);
                     String recipeAttribution = mCursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
@@ -330,7 +330,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         Map<String, Object> map = mList.get(position);
 
         long recipeId = (long) map.get(RecipeEntry.COLUMN_RECIPE_ID);
-        long recipeSourceId = (long) map.get(RecipeEntry.COLUMN_RECIPE_SOURCE_ID);
+        String recipeSourceId = (String) map.get(RecipeEntry.COLUMN_RECIPE_SOURCE_ID);
         String recipeTitle = (String) map.get(RecipeEntry.COLUMN_RECIPE_NAME);
         String recipeAuthor = (String) map.get(RecipeEntry.COLUMN_RECIPE_AUTHOR);
         String recipeAttribution = (String) map.get(RecipeEntry.COLUMN_SOURCE);
@@ -398,7 +398,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
             holder.recipeDescription.setText(recipeDescription);
 
             if (!editMode) {
-                if (recipeAttribution.equals(mContext.getString(R.string.attribution_custom)) || recipeSourceId < 0) {
+                if (recipeAttribution.equals(mContext.getString(R.string.attribution_custom)) || recipeSourceId.substring(0, 1).equals("*")) {
                     // Hide non-utilized views if recipe was made or edited by user
                     holder.recipeAttribution.setVisibility(View.INVISIBLE);
                     holder.recipeReviews.setVisibility(View.INVISIBLE);

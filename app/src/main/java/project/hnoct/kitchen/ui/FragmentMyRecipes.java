@@ -149,8 +149,8 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         // Initialize variables for the CursorLoader
-        String selection = RecipeContract.RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " < ?";
-        String[] selectionArgs = new String[] {Integer.toString(0)};
+        String selection = RecipeContract.RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " LIKE ?";
+        String[] selectionArgs = new String[] {"*%"};
         String sortOrder = RecipeContract.RecipeEntry.COLUMN_RECIPE_NAME + " ASC";
 
         // Initialize and return the CursorLoader

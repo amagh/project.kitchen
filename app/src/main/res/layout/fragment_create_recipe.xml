@@ -47,6 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/default_text_vertical_padding"
                 android:inputType="textAutoCorrect|textCapWords|textMultiLine"
+                android:imeOptions="actionNext"
                 android:maxLines="2"
                 android:hint="@string/create_recipe_name_hint"
                 />

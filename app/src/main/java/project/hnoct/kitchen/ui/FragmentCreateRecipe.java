@@ -166,10 +166,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                     mFavorite = cursor.getInt(RecipeEntry.IDX_FAVORITE) == 1;
                     mRecipeImageUri = Uri.parse(cursor.getString(RecipeEntry.IDX_IMG_URL));
                     mSource = cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
-
-                    mRecipeId = mSource.equals(getString(R.string.attribution_custom))
-                            ? cursor.getLong(RecipeEntry.IDX_RECIPE_ID)
-                            : Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
+                    mRecipeId = cursor.getLong(RecipeEntry.IDX_RECIPE_ID);
 
                     // If the recipe is not user added, set the recipeId as the negative of the recipe
                     // so the original can be easily referenced

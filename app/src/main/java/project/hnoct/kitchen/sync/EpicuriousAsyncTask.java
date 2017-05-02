@@ -111,20 +111,32 @@ public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {
             // Trim the last new line from the StringBuilder
             String directions = builder.toString().trim();
 
+            String servings = document.select("div.footer")
+                    .select("span.per-serving")
+                    .text()
+                    .replaceAll("\\D+", "");
+
             // Store recipe values in the ContentValues
             ContentValues recipeValues = new ContentValues();
-            recipeValues.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeSourceId);
-            recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
-            recipeValues.put(RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_epicurious));
-            recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);
-            recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, author);
-            recipeValues.put(RecipeEntry.COLUMN_RATING, rating);
-            recipeValues.put(RecipeEntry.COLUMN_REVIEWS, reviews);
-            recipeValues.put(RecipeEntry.COLUMN_IMG_URL, imageUrl);
-            recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, description);
-            recipeValues.put(RecipeEntry.COLUMN_DIRECTIONS, directions);
-            recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, Utilities.getCurrentTime());
-            recipeValues.put(RecipeEntry.COLUMN_FAVORITE, 0);
+
+            if (Utilities.getRecipeIdFromSourceId(mContext,
+                    recipeSourceId,
+                    mContext.getString(R.string.attribution_epicurious)) == -1) {
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeSourceId);
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
+                recipeValues.put(RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_epicurious));
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);
+                recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, author);
+                recipeValues.put(RecipeEntry.COLUMN_RATING, rating);
+                recipeValues.put(RecipeEntry.COLUMN_REVIEWS, reviews);
+                recipeValues.put(RecipeEntry.COLUMN_IMG_URL, imageUrl);
+                recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, description);
+                recipeValues.put(RecipeEntry.COLUMN_DIRECTIONS, directions);
+                recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, Utilities.getCurrentTime());
+                recipeValues.put(RecipeEntry.COLUMN_FAVORITE, 0);
+            }
+
+            recipeValues.put(RecipeEntry.COLUMN_SERVINGS, servings);
 
             // Retrieve the ingredient Elements
             Elements ingredientElements = document.select("div.recipe-and-additional-content")
@@ -136,6 +148,49 @@ public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {
 
             // Initialize the IngredientHelper to keep track of ingredient IDs
             Utilities.IngredientHelper helper = new Utilities.IngredientHelper(mContext);
+
+            Elements nutritionElements = document.select("div.recipe-and-additional-content")
+                    .select("div[id=additional-info-panels]")
+                    .select("div.edaman-nutrition")
+                    .select("div.nutrition")
+                    .select("ul")
+                    .select("li");
+
+            for (Element nutritionElement : nutritionElements) {
+                String nutrientType = nutritionElement.select("span.nutri-label").text();
+
+                double nutrientValue = 0;
+                if (!nutrientType.isEmpty()) {
+                    nutrientValue = Double.parseDouble(nutritionElement.select("span.nutri-data").text().replaceAll(" [mg]+\\(*.*\\)*", ""));
+                }
+
+                switch (nutrientType) {
+                    case "Calories": {
+                        recipeValues.put(RecipeEntry.COLUMN_CALORIES, nutrientValue);
+                        break;
+                    }
+                    case "Carbohydrates": {
+                        recipeValues.put(RecipeEntry.COLUMN_CARBS, nutrientValue);
+                        break;
+                    }
+                    case "Fat": {
+                        recipeValues.put(RecipeEntry.COLUMN_FAT, nutrientValue);
+                        break;
+                    }
+                    case "Protein": {
+                        recipeValues.put(RecipeEntry.COLUMN_PROTEIN, nutrientValue);
+                        break;
+                    }
+                    case "Sodium": {
+                        recipeValues.put(RecipeEntry.COLUMN_SODIUM, nutrientValue);
+                        break;
+                    }
+                    case "Cholesterol": {
+                        recipeValues.put(RecipeEntry.COLUMN_CHOLESTEROL, nutrientValue);
+                        break;
+                    }
+                }
+            }
 
             // Estimate the recipeID of the recipe to be added
             long recipeId = Utilities.getRecipeIdFromSourceId(mContext, recipeSourceId, mContext.getString(R.string.attribution_epicurious));
@@ -192,7 +247,18 @@ public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {
                         RecipeEntry.CONTENT_URI,
                         recipeValues
                 );
+            } else {
+                String selection = RecipeEntry.COLUMN_RECIPE_ID + " = ?";
+                String[] selectionArgs = new String[] {Long.toString(recipeId)};
+
+                mContext.getContentResolver().update(
+                        RecipeEntry.CONTENT_URI,
+                        recipeValues,
+                        selection,
+                        selectionArgs
+                );
             }
+
 
             // Bulk insert the ingredient values
             Utilities.insertAndUpdateIngredientValues(mContext, ingredientCVList);

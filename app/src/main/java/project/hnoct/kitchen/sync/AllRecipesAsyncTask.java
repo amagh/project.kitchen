@@ -134,21 +134,27 @@ class AllRecipesAsyncTask extends AsyncTask<Object, Void, Void> {
                 switch (nutrientType) {
                     case "calories": {
                         recipeValues.put(RecipeEntry.COLUMN_CALORIES, nutrientValue);
+                        break;
                     }
                     case "fatContent": {
                         recipeValues.put(RecipeEntry.COLUMN_FAT, nutrientValue);
+                        break;
                     }
                     case "carbohydrateContent": {
                         recipeValues.put(RecipeEntry.COLUMN_CARBS, nutrientValue);
+                        break;
                     }
                     case "proteinContent": {
                         recipeValues.put(RecipeEntry.COLUMN_PROTEIN, nutrientValue);
+                        break;
                     }
                     case "cholesterolContent": {
                         recipeValues.put(RecipeEntry.COLUMN_CHOLESTEROL, nutrientValue);
+                        break;
                     }
                     case "sodiumContent": {
                         recipeValues.put(RecipeEntry.COLUMN_SODIUM, nutrientValue);
+                        break;
                     }
                 }
             }

@@ -249,7 +249,7 @@ public class EpicuriousListAsyncTask extends AsyncTask<Void, Void, Void> {
                     linkValues.put(IngredientEntry.COLUMN_INGREDIENT_ID, ingredientId);
                     linkValues.put(RecipeEntry.COLUMN_RECIPE_ID, recipeId);
 
-                    linkCVList.add(linkValues);
+//                    linkCVList.add(linkValues);
                 }
 
                 // Increment the generated ID

@@ -22,6 +22,7 @@
         android:layout_height="wrap_content"
         android:minHeight="@dimen/touchpad_size"
         android:inputType="textAutoComplete|textAutoCorrect"
+        android:imeOptions="actionNext"
         android:hint="@string/list_add_ingredient_quantity_hint"
         style="@style/listEditText"
         android:gravity="center_vertical"
@@ -35,6 +36,7 @@
         android:layout_weight="1"
         android:minHeight="@dimen/touchpad_size"
         android:inputType="textAutoCorrect|textAutoComplete"
+        android:imeOptions="actionNext"
         android:hint="@string/list_add_ingredient_name_hint"
         style="@style/listEditText"
         tools:text="This ingredient happens to be more than one line long"/>
