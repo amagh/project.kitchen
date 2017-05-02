@@ -164,34 +164,63 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
 
         if (cursor != null && cursor.moveToFirst()) {
             String recipeImageUrl = cursor.getString(RecipeEntry.IDX_IMG_URL);
+            String source = cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
             if (!recipeImageUrl.isEmpty()) {
                 loaded = true;
             }
 
-            Glide.with(mContext)
-                    .load(recipeImageUrl)
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .listener(new RequestListener<String, GlideDrawable>() {
-                        @Override
-                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            // When image has finished loading, load image into target
-                            target.onResourceReady(resource, null);
-
-                            if (getActivity() instanceof ActivityRecipeDetails && loaded) {
-                                scheduleStartPostponedTransition(mRecipeImageView);
+            if (source.equals(mContext.getString(R.string.attribution_custom))) {
+                Glide.with(mContext)
+                        .load(recipeImageUrl)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true)
+                        .listener(new RequestListener<String, GlideDrawable>() {
+                            @Override
+                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                return false;
                             }
 
-                            Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
-                            return false;
+                            @Override
+                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                // When image has finished loading, load image into target
+                                target.onResourceReady(resource, null);
+
+                                if (getActivity() instanceof ActivityRecipeDetails && loaded) {
+                                    scheduleStartPostponedTransition(mRecipeImageView);
+                                }
+
+                                Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
+                                return false;
 
                             }
-                    })
-                    .into(mRecipeImageView);
+                        })
+                        .into(mRecipeImageView);
+            } else {
+                Glide.with(mContext)
+                        .load(recipeImageUrl)
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .listener(new RequestListener<String, GlideDrawable>() {
+                            @Override
+                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                // When image has finished loading, load image into target
+                                target.onResourceReady(resource, null);
+
+                                if (getActivity() instanceof ActivityRecipeDetails && loaded) {
+                                    scheduleStartPostponedTransition(mRecipeImageView);
+                                }
+
+                                Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
+                                return false;
+
+                            }
+                        })
+                        .into(mRecipeImageView);
+            }
 
             cursor.close();
         }

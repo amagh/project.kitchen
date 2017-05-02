@@ -378,11 +378,19 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
             holder.itemView.setLayoutParams(layoutParams);
 
             if (recipeImgUrl != null) {
-                // Use Glide to load image into view
-                Glide.with(mContext)
-                        .load(recipeImgUrl)
-                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                        .into(holder.recipeImage);
+                if (recipeAttribution.equals(mContext.getString(R.string.attribution_custom))) {
+                    Glide.with(mContext)
+                            .load(recipeImgUrl)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .skipMemoryCache(true)
+                            .into(holder.recipeImage);
+                } else {
+                    // Use Glide to load image into view
+                    Glide.with(mContext)
+                            .load(recipeImgUrl)
+                            .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                            .into(holder.recipeImage);
+                }
             }
 
             // Populate the title and description because it is used in all layouts

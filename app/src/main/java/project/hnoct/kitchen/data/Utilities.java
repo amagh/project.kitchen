@@ -49,6 +49,7 @@ public class Utilities {
     public static final int ALLRECIPES_URI = 1;
     public static final int FOOD_URI = 2;
     public static final int SERIOUSEATS_URI = 3;
+    public static final int EPICURIOUS_URI = 4;
 
     public static final String URI = "uri";
     public static final String PROJECTION = "projection";
@@ -811,6 +812,8 @@ public class Utilities {
         uriMatcher.addURI(context.getString(R.string.food_www_authority), "/recipe/*", FOOD_URI);
         uriMatcher.addURI(context.getString(R.string.seriouseats_authority), "/recipes/#/#/*", SERIOUSEATS_URI);
         uriMatcher.addURI(context.getString(R.string.seriouseats_www_authority), "/recipes/#/#/*", SERIOUSEATS_URI);
+        uriMatcher.addURI(context.getString(R.string.epicurious_authority), "/recipes/food/views/*", EPICURIOUS_URI);
+        uriMatcher.addURI(context.getString(R.string.epicurious_www_authority), "/recipes/food/views/*", EPICURIOUS_URI);
 
         // Return UriMatcher
         return uriMatcher;
@@ -1071,12 +1074,10 @@ public class Utilities {
         if (bypass) {
             ContentValues values = linkCVList.get(0);
             // Selection for querying the Link Table
-            String selection =  RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " +
-                    RecipeEntry.COLUMN_SOURCE + " = ?";
+            String selection =  RecipeEntry.COLUMN_RECIPE_ID + " = ?";
 
             String[] selectionArgs = new String[] {
                     values.getAsString(RecipeEntry.COLUMN_RECIPE_ID),
-                    values.getAsString(RecipeEntry.COLUMN_SOURCE)
             };
 
             int deleted = context.getContentResolver().delete(

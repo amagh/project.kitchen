@@ -120,6 +120,8 @@
     <string name="food_www_authority">www.food.com</string>
     <string name="seriouseats_authority">seriouseats.com</string>
     <string name="seriouseats_www_authority">www.seriouseats.com</string>
+    <string name="epicurious_authority">epicurious.com</string>
+    <string name="epicurious_www_authority">www.epicurious.com</string>
 
     <!-- Create Recipe -->
     <string name="create_recipe_name_hint">Recipe Name</string>

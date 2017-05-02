@@ -618,7 +618,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
         Cursor cursor = mContext.getContentResolver().query(
                 RecipeEntry.CONTENT_URI,
                 null,
-                RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ?",
                 new String[] {mRecipeSourceId},
                 null
         );

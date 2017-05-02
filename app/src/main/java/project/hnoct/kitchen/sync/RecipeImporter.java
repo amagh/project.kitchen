@@ -76,6 +76,16 @@ public class RecipeImporter {
                 });
                 break;
             }
+
+            case Utilities.EPICURIOUS_URI: {
+                syncTask = new EpicuriousAsyncTask(context, new AllRecipesAsyncTask.RecipeSyncCallback() {
+                    @Override
+                    public void onFinishLoad() {
+                        syncer.onFinishLoad();
+                    }
+                });
+                break;
+            }
             default: throw new UnsupportedOperationException("Unknown URL: " + recipeUrl);
         }
 
