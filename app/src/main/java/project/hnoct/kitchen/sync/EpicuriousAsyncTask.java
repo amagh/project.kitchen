@@ -152,8 +152,6 @@ public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {
                 // Retrieve the ingredient and quantity information
                 String ingredientQuantity = ingredientElement.text();
 
-                Log.d(LOG_TAG, ingredientQuantity);
-
                 // Split the String into separate quantity and ingredient
                 Pair<String, String> ingredientQuantityPair = Utilities.getIngredientQuantity(ingredientQuantity);
                 String ingredient = ingredientQuantityPair.first;
@@ -212,7 +210,6 @@ public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
 
         return null;
     }
