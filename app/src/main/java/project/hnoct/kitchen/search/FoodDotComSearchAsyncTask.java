@@ -52,10 +52,9 @@ public class FoodDotComSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
         // Parse through each element and collect the recipe information
         for (Element recipeElement : recipeElements) {
             // Retrieve the recipe information
-            long recipeSourceId = Long.parseLong(recipeElement.select("div.fd-recipe")
+            String recipeSourceId = recipeElement.select("div.fd-recipe")
                     .attr("data-id")
-                    .replace("recipe-", "")
-            );
+                    .replace("recipe-", "");
 
             String recipeUrl = recipeElement.select("div.fd-img-wrap")
                     .select("a[href]")
@@ -74,6 +73,8 @@ public class FoodDotComSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                 imgUrl = imgUrl.replaceAll("jpg&.*|JPG&.*", "jpg");
                 imgUrl = imgUrl + "&width=560&height=420&fit=crop&flags=progressive&quality=95";
             }
+
+            Log.d(LOG_TAG, imgUrl);
 
             String recipeName = recipeElement.select("div.tile-content")
                     .select("h2.title")
@@ -116,7 +117,7 @@ public class FoodDotComSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
             reviewMap.put(RecipeEntry.COLUMN_RATING, rating);
             reviewMap.put(RecipeEntry.COLUMN_REVIEWS, reviews);
             reviewMap.put(RecipeEntry.COLUMN_DATE_ADDED, Utilities.getCurrentTime());
-            reviewMap.put(RecipeEntry.COLUMN_FAVORITE, 0);
+            reviewMap.put(RecipeEntry.COLUMN_FAVORITE, false);
             reviewMap.put(RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_food));
 
 //            for (String key : reviewMap.keySet()) {
@@ -125,7 +126,7 @@ public class FoodDotComSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
 
             recipeList.add(reviewMap);
         }
-        return null;
+        return recipeList;
     }
 
     @Override

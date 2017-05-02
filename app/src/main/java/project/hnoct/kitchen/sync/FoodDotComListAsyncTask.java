@@ -37,32 +37,8 @@ public class FoodDotComListAsyncTask extends AsyncTask<Void, Void, Void> {
         mTimeInMillis = timeInMillis;
     }
 
-//    public FoodDotComListAsyncTask(Context context, long timeInMillis, String searchTerm) {
-//        mContext = context;
-//        mTimeInMillis = timeInMillis;
-//
-//        if (!searchTerm.trim().isEmpty()) {
-//            String FOOD_BASE_SEARCH_URL = "http://www.food.com";
-//            String FOOD_SEARCH_PATH = "search";
-//            searchTerm = searchTerm.trim().replace(" ", "+");
-//
-//            Uri searchUri = Uri.parse(FOOD_BASE_SEARCH_URL)
-//                    .buildUpon()
-//                    .appendPath(FOOD_SEARCH_PATH)
-//                    .appendPath(searchTerm)
-//                    .build();
-//
-//            mSearchUrl = searchUri.toString();
-//            Log.d(LOG_TAG, mSearchUrl);
-//        }
-//    }
-
     @Override
     protected Void doInBackground(Void... voids) {
-        // Instantiate variable to hold time recipes were added. Will subtract one to the time to
-        // each subsequent recipe added as to preserve order
-        long timeAdded = Utilities.getCurrentTime();
-
         // Initialize the List to hold all the ContentValues that need to be inserted into database
         List<ContentValues> recipeCVList = new ArrayList<>();
         try {
@@ -131,7 +107,7 @@ public class FoodDotComListAsyncTask extends AsyncTask<Void, Void, Void> {
                     // Retrieve the recipe information
                     String recipeName = jsonRecipe.getString(FOOD_RECIPE_NAME);
                     String recipeDescription = jsonRecipe.getString(FOOD_RECIPE_DESC);
-                    long recipeId = jsonRecipe.getLong(FOOD_RECIPE_ID);
+                    String recipeSourceId = jsonRecipe.getString(FOOD_RECIPE_ID);
                     String recipeAuthor = jsonRecipe.getString(FOOD_RECIPE_AUTHOR);
                     String recipeImgUrl = jsonRecipe.getString(FOOD_RECIPE_IMG_URL)
                             .replaceAll("\u0026", "&")
@@ -154,7 +130,7 @@ public class FoodDotComListAsyncTask extends AsyncTask<Void, Void, Void> {
                     ContentValues values = new ContentValues();
                     values.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
                     values.put(RecipeEntry.COLUMN_SHORT_DESC, recipeDescription);
-                    values.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeId);
+                    values.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeSourceId);
                     values.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, recipeAuthor);
                     values.put(RecipeEntry.COLUMN_IMG_URL, recipeImgUrl);
                     values.put(RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);

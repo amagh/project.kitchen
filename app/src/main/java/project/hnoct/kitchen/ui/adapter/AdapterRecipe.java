@@ -60,6 +60,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
     private RecipeAdapterOnClickHandler mClickHandler;
     private int mDetailCardPosition;
     private int mPosition;
+    private int mSearchLists = 0;
 
     private FragmentManager mFragmentManager;       // Used for inflating the FragmentRecipeDetails into the ViewHolder
     private RecyclerView mRecyclerView;
@@ -117,7 +118,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
                     String recipeAttribution = mCursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
                     String recipeDescription = mCursor.getString(RecipeEntry.IDX_SHORT_DESCRIPTION);
                     String recipeImgUrl = mCursor.getString(RecipeEntry.IDX_IMG_URL);
-                    Long recipeReviews = mCursor.getLong(RecipeEntry.IDX_RECIPE_REVIEWS);
+                    int recipeReviews = mCursor.getInt(RecipeEntry.IDX_RECIPE_REVIEWS);
                     Double recipeRating = mCursor.getDouble(RecipeEntry.IDX_RECIPE_RATING);
                     boolean favorite = mCursor.getInt(RecipeEntry.IDX_FAVORITE) == 1;
                     String recipeUrl = mCursor.getString(RecipeEntry.IDX_RECIPE_URL);
@@ -148,6 +149,59 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         }
 
         return mCursor;
+    }
+
+    /**
+     * Modifies the list being used to populate the ViewHolders by adding additional items to mList
+     * @param list List of recipes to be added
+     * @return mList after the addition of the input list
+     */
+    public List<Map<String, Object>> addList(List<Map<String, Object>> list) {
+        if (mList == null) {
+            // Set mList as the input List if it has not been initialized yet
+            mList = list;
+        } else if (mSearchLists == 0) {
+            // If it's the first item, then set mList to the input List
+            mList = list;
+        } else {
+            // Initialize a temporary List that will hold all the recipes
+            List<Map<String, Object>> tempList = new ArrayList<>();
+
+            // Add to find the size of the combined List
+            int size = mList.size() + list.size();
+
+            // Iterate through the Lists and add recipes in in shuffled order so that the sources
+            // are shuffled
+            while (tempList.size() < size) {
+                if (mList.size() > 0) {
+                    // Add recipes from mList based on how many lists have already been added to
+                    // mList
+                    for (int i = 0; i < mSearchLists; i++) {
+                        if (mList.size() > 0) {
+                            tempList.add(mList.get(0));
+                            mList.remove(0);
+                        }
+                    }
+                }
+
+                // Add a single item from the new List
+                if (list.size() > 0) {
+                    tempList.add(list.get(0));
+                    list.remove(0);
+                }
+            }
+            // Set the tempList with all recipes as the new mList;
+            mList = tempList;
+        }
+
+        // Increment mSearchLists to keep track of how many Lists have already been added
+        mSearchLists++;
+
+        // Notify the Adapter of the change
+        notifyDataSetChanged();
+
+        // Return mList
+        return mList;
     }
 
     /**
@@ -329,14 +383,13 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         // Return the data located at the position of the ViewHolder
         Map<String, Object> map = mList.get(position);
 
-        long recipeId = (long) map.get(RecipeEntry.COLUMN_RECIPE_ID);
         String recipeSourceId = (String) map.get(RecipeEntry.COLUMN_RECIPE_SOURCE_ID);
         String recipeTitle = (String) map.get(RecipeEntry.COLUMN_RECIPE_NAME);
         String recipeAuthor = (String) map.get(RecipeEntry.COLUMN_RECIPE_AUTHOR);
         String recipeAttribution = (String) map.get(RecipeEntry.COLUMN_SOURCE);
         String recipeDescription = (String) map.get(RecipeEntry.COLUMN_SHORT_DESC);
         String recipeImgUrl = (String) map.get(RecipeEntry.COLUMN_IMG_URL);
-        long recipeReviews = (long) map.get(RecipeEntry.COLUMN_REVIEWS);
+        int recipeReviews = (int) map.get(RecipeEntry.COLUMN_REVIEWS);
         Double recipeRating = (double) map.get(RecipeEntry.COLUMN_RATING);
         boolean favorite = (boolean) map.get(RecipeEntry.COLUMN_FAVORITE);
         String recipeUrl = (String) map.get(RecipeEntry.COLUMN_RECIPE_URL);

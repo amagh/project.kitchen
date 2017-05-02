@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +22,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.search.AllRecipesSearchAsyncTask;
+import project.hnoct.kitchen.search.EpicuriousSearchAsyncTask;
 import project.hnoct.kitchen.search.FoodDotComSearchAsyncTask;
+import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
+import project.hnoct.kitchen.view.StaggeredGridLayoutManagerWithSmoothScroll;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -29,9 +33,12 @@ import project.hnoct.kitchen.search.FoodDotComSearchAsyncTask;
 public class FragmentSearch extends Fragment {
     // Constants
 
-    // MemberVariables
+    // Member Variables
     private Context mContext;
     private String mSearchTerm;
+    private AdapterRecipe mAdapter;
+    private StaggeredGridLayoutManagerWithSmoothScroll mStaggeredLayoutManager;
+    private int mPosition;
 
     // Views bound by ButterKnife
     @BindView(R.id.search_recyclerview) RecyclerView mRecyclerView;
@@ -59,13 +66,35 @@ public class FragmentSearch extends Fragment {
         AllRecipesSearchAsyncTask allrecipesSearchTask = new AllRecipesSearchAsyncTask(mContext, new AllRecipesSearchAsyncTask.SyncListener() {
             @Override
             public void onFinishLoad(List<Map<String, Object>> recipeList) {
-
+                mAdapter.addList(recipeList);
             }
         });
-//        allrecipesSearchTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mSearchTerm);
+        allrecipesSearchTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mSearchTerm);
+
+        EpicuriousSearchAsyncTask epicuriousSearchTask = new EpicuriousSearchAsyncTask(mContext, new EpicuriousSearchAsyncTask.SyncListener() {
+            @Override
+            public void onFinishLoad(List<Map<String, Object>> recipeList) {
+                mAdapter.addList(recipeList);
+            }
+        });
+        epicuriousSearchTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mSearchTerm);
 
         setupWebView();
         mWebView.loadUrl(generateFoodUrl(mSearchTerm));
+
+        mAdapter = new AdapterRecipe(mContext, new AdapterRecipe.RecipeAdapterOnClickHandler() {
+            @Override
+            public void onClick(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
+                mPosition = viewHolder.getAdapterPosition();
+            }
+        });
+
+        mRecyclerView.setAdapter(mAdapter);
+
+        setLayoutColumns();
+
+
+
         return rootView;
     }
 
@@ -103,7 +132,7 @@ public class FragmentSearch extends Fragment {
                     new FoodDotComSearchAsyncTask.SyncListener() {
                         @Override
                         public void onFinishLoad(List<Map<String, Object>> recipeList) {
-
+                            mAdapter.addList(recipeList);
                         }
                     });
             foodSearchAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, html);
@@ -122,5 +151,47 @@ public class FragmentSearch extends Fragment {
                 .build();
 
         return foodSearchUri.toString();
+    }
+
+    /**
+     * Sets the number columns used by the StaggeredGridLayoutManager
+     */
+    void setLayoutColumns() {
+        // Retrieve the number of columns needed by the device/orientation
+        int columns;
+        if (ActivityRecipeList.mTwoPane && ActivityRecipeList.mDetailsVisible) {
+            columns = getResources().getInteger(R.integer.recipe_twopane_columns);
+        } else {
+            columns = getResources().getInteger(R.integer.recipe_columns);
+        }
+
+        if (mRecyclerView.getLayoutManager() == null) {
+            // Instantiate the LayoutManager
+            mStaggeredLayoutManager = new StaggeredGridLayoutManagerWithSmoothScroll(
+                    columns,
+                    StaggeredGridLayoutManager.VERTICAL
+            );
+
+            // Set the LayoutManager for the RecyclerView
+            mRecyclerView.setLayoutManager(mStaggeredLayoutManager);
+
+        } else {
+//            mStaggeredLayoutManager =
+//                    (StaggeredGridLayoutManagerWithSmoothScroll) mRecipeRecyclerView
+//                            .getLayoutManager();
+            mStaggeredLayoutManager.setSpanCount(columns);
+        }
+
+
+        AdapterRecipe adapter = ((AdapterRecipe) mRecyclerView.getAdapter());
+        if (adapter != null) {
+//            adapter.hideDetails();
+        }
+
+        // Scroll to the position of the recipe last clicked due to change in visibility of the
+        // Detailed View in Master-Flow layout
+        if (ActivityRecipeList.mTwoPane) {
+            mRecyclerView.smoothScrollToPosition(mPosition);
+        }
     }
 }

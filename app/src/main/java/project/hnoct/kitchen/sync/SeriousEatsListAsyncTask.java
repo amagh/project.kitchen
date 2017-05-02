@@ -61,7 +61,7 @@ public class SeriousEatsListAsyncTask extends AsyncTask<Void, Void, Void> {
 
             // Initialize a List to hold recipeIds that are to be inserted to prevent duplicate
             // recipes from being inserted multiple times
-            List<Long> importedRecipes = new ArrayList<>();
+            List<String> importedRecipes = new ArrayList<>();
 
             // Used to increment the timeAdded a random amount of time between 10-50ms for each recipe
             // This will allow recipes from each source to be woven into each other instead of being
@@ -81,7 +81,7 @@ public class SeriousEatsListAsyncTask extends AsyncTask<Void, Void, Void> {
                 if (dataType == null || !dataType.equals("Recipes")) continue;
 
                 // Get the recipe information
-                long recipeSourceId = Long.parseLong(recipeElement.attr("data-postid"));
+                String recipeSourceId = recipeElement.attr("data-postid");
 
                 // Check to ensure recipe isn't already in the list of recipe to be added
                 // If it is already on the List, then skip

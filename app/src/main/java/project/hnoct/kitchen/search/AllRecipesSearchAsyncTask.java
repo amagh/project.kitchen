@@ -51,6 +51,9 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
         // Retrieve the search term passed as an argument
         String searchTerm = (String) params[0];
 
+        // Initialize the List to hold all the recipe information
+        List<Map<String, Object>> recipeList = new ArrayList<>();
+
         try {
             // Build the URI for searching AllRecipes.com for the user's search term
             Uri allRecipesSearchUri = Uri.parse(ALL_RECIPES_BASE_URL)
@@ -64,20 +67,18 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
 
             // Convert the URI to a URL
             String searchUrl = allRecipesSearchUri.toString();
-//            Log.v(LOG_TAG, "URL: " + searchUrl);
 
             // Connect to the site and create a Jsoup Document from it
             Document document = Jsoup.connect(searchUrl).get();
+            Log.d(LOG_TAG, document.toString());
 
             // Parse the document for recipe information
-            Elements recipeElements = document.select("article.grid-col--fixed-tiles:not(.marketing-card):not(.hub-card)");
-
-            // Initialize the List to hold all the recipe information
-            List<Map<String, Object>> recipeList = new ArrayList<>();
+            Elements recipeElements = document.select("article"); //.grid-col--fixed-tiles"); //:not(.marketing-card):not(.hub-card)");
 
             // Iterate through the recipe Elements and retrieve the recipe information
             for (Element recipeElement : recipeElements) {
-//                Log.v(LOG_TAG, recipeElement.toString());
+                Log.d(LOG_TAG, "Recipe Element: " + recipeElement.toString());
+
                 // Retrieve the data type of the Element and check that it is a recipe
                 Element dataTypeElement = recipeElement.select("ar-save-item.favorite").first();
                 if (dataTypeElement == null) {
@@ -95,9 +96,8 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                 }
 
                 // Retrieve the recipe information
-                long recipeSourceId = Long.parseLong(recipeElement.select("ar-save-item.favorite")
-                        .attr("data-id")
-                );
+                String recipeSourceId = recipeElement.select("ar-save-item.favorite")
+                        .attr("data-id");
 
                 String recipeUrl = ALL_RECIPES_BASE_URL + recipeElement.select("a[href]")
                         .attr("href");
@@ -140,19 +140,19 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                 recipeMap.put(RecipeEntry.COLUMN_RATING, rating);
                 recipeMap.put(RecipeEntry.COLUMN_REVIEWS, reviews);
                 recipeMap.put(RecipeEntry.COLUMN_DATE_ADDED, Utilities.getCurrentTime());
-                recipeMap.put(RecipeEntry.COLUMN_FAVORITE, 0);
+                recipeMap.put(RecipeEntry.COLUMN_FAVORITE, false);
                 recipeMap.put(RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_allrecipes));
 
-//                for (String key : recipeMap.keySet()) {
-//                    Log.d(LOG_TAG, "Key: " + key + " | Value: " + recipeMap.get(key).toString());
-//                }
+                for (String key : recipeMap.keySet()) {
+                    Log.d(LOG_TAG, key + ": " + recipeMap.get(key));
+                }
 
                 recipeList.add(recipeMap);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return recipeList;
     }
 
     @Override

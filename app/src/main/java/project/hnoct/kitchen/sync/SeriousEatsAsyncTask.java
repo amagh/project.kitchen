@@ -70,7 +70,7 @@ public class SeriousEatsAsyncTask extends AsyncTask<Object, Void, Void> {
 
             // Retrieve the recipe information from the HTML document
             // Recipe Source ID
-            String recipeSourceId =document.select("div.content-main")
+            String recipeSourceId = document.select("div.content-main")
                     .attr("data-id");
 
             if (recipeId == -1) {
