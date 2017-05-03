@@ -33,9 +33,9 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
 
     // Member Variables
     Context mContext;
-    SyncListener mListener;
+    SearchListener mListener;
 
-    public AllRecipesSearchAsyncTask(Context context, SyncListener listener) {
+    public AllRecipesSearchAsyncTask(Context context, SearchListener listener) {
         mContext = context;
         mListener = listener;
     }
@@ -160,11 +160,7 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
     @Override
     protected void onPostExecute(List<Map<String, Object>> list) {
         if (mListener != null) {
-            mListener.onFinishLoad(list);
+            mListener.onSearchFinished(list);
         }
-    }
-
-    public interface SyncListener {
-        void onFinishLoad(List<Map<String, Object>> recipeList);
     }
 }

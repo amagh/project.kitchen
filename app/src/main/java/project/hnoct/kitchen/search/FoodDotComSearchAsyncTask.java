@@ -28,9 +28,9 @@ public class FoodDotComSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
 
     // Member Variables
     Context mContext;
-    SyncListener mListener;
+    SearchListener mListener;
 
-    public FoodDotComSearchAsyncTask(Context context, SyncListener listener) {
+    public FoodDotComSearchAsyncTask(Context context, SearchListener listener) {
         mContext = context;
         mListener = listener;
     }
@@ -132,7 +132,7 @@ public class FoodDotComSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
     @Override
     protected void onPostExecute(List<Map<String, Object>> list) {
         if (mListener != null) {
-            mListener.onFinishLoad(list);
+            mListener.onSearchFinished(list);
         }
     }
 

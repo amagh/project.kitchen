@@ -1,7 +1,10 @@
 package project.hnoct.kitchen.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
@@ -10,11 +13,14 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -36,13 +42,14 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
     /** Member Variables **/
     private Context mContext;                   // Interface for global context
     Cursor mCursor;
-    private ContentResolver mResolver;          // Reference to ContentResolver
     AdapterRecipe mRecipeAdapter;
     private int mPosition;                      // Position of mCursor
     StaggeredGridLayoutManagerWithSmoothScroll mStaggeredLayoutManager;
 
     // Views bound by ButterKnife
     @BindView(R.id.recipe_recycler_view) RecyclerView mRecipeRecyclerView;
+    @BindView(R.id.recipe_error_textview) TextView mErrorTextView;
+    @BindView(R.id.recipe_progressbar) ProgressBar mProgressBar;
 
     public FragmentRecipeList() {
     }
@@ -63,7 +70,6 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
             @Override
             public void onClick(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
 
-
                 // Set position to the position of the clicked item
                 mPosition = viewHolder.getAdapterPosition();
 
@@ -80,9 +86,6 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
 
                     setLayoutColumns();
                 }
-
-
-
             }
         });
 
@@ -125,6 +128,13 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
                 search(searchTerm);
             }
         });
+
+        if (mRecipeAdapter.getItemCount() == 0) {
+            mProgressBar.setVisibility(View.VISIBLE);
+        } else {
+            mProgressBar.setVisibility(View.GONE);
+        }
+
 
         return rootView;
     }
@@ -194,8 +204,6 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mContext = getActivity();
-        mResolver = mContext.getContentResolver();
-        /* Constants */
 
         getLoaderManager().initLoader(RECIPE_LOADER, null, this);
     }
@@ -244,6 +252,20 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
         // Detailed View in Master-Flow layout
         if (ActivityRecipeList.mTwoPane) {
             mRecipeRecyclerView.smoothScrollToPosition(mPosition);
+        }
+    }
+
+    private void registerSyncListener() {
+        IntentFilter filter = new IntentFilter(getString(R.string.intent_filter_sync_finished));
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(mContext);
+        broadcastManager.registerReceiver(new SyncListener(), filter);
+    }
+
+    private class SyncListener extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
         }
     }
 }

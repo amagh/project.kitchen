@@ -41,6 +41,7 @@ public class SeriousEatsAsyncTask extends AsyncTask<Object, Void, Void> {
 
     public SeriousEatsAsyncTask(Context context, AllRecipesAsyncTask.RecipeSyncCallback syncCallback) {
         mContext = context;
+        mSyncCallback = syncCallback;
     }
 
     @Override

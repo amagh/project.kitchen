@@ -140,6 +140,5 @@ public class AllRecipesService extends IntentService {
             Log.d(LOG_TAG, "Error parsing document", e);
             e.printStackTrace();
         }
-
     }
 }

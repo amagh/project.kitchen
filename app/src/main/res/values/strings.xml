@@ -173,6 +173,7 @@
     <!-- Search -->
     <string name="search_hint">Search</string>
     <string name="title_activity_my_recipes">My Recipes</string>
+    <string name="search_online_text">Not finding what you\'re looking for? \nImport more recipes online!</string>
 
     <!-- Transition Strings -->
     <string name="transition_recipe_image">tn_recipe_image</string>
@@ -181,4 +182,7 @@
     <!-- Intent extras -->
     <string name="extra_url">extra_recipe_url</string>
     <string name="extra_time">time_in_millis</string>
+
+    <!-- Intent Filters -->
+    <string name="intent_filter_sync_finished">project.hnoct.kitchen.ON_FINISH_SYNC</string>
 </resources>
