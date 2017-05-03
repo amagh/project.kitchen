@@ -351,6 +351,10 @@ public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {
             return null;
         }
 
+        if (cursor != null) {
+            cursor.close();
+        }
+
         mContext.getContentResolver().bulkInsert(
                 LinkIngredientEntry.CONTENT_URI,
                 linkCVArray

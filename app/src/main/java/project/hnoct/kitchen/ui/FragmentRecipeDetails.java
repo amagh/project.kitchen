@@ -451,6 +451,8 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                 getActivity().supportPostponeEnterTransition();
                 cursor.close();
             }
+
+            if (cursor != null) cursor.close();
         } else {
             mProgressBar.setVisibility(View.INVISIBLE);
         }

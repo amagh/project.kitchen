@@ -67,7 +67,6 @@ public class EpicuriousService extends IntentService {
         String epicuriousUrl = epicuriousUri.toString();
 
         try {
-            Log.d(LOG_TAG, "In EpicuriousService");
             // Retrieve the HTML document for the epicurious recipes website
             Document document = Jsoup.connect(epicuriousUrl).get();
 

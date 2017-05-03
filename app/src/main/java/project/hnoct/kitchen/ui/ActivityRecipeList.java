@@ -81,7 +81,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     private static final String LOG_TAG = ActivityRecipeList.class.getSimpleName();
     private final String DETAILS_FRAGMENT = "DFTAG";
     public static final String TIME_IN_MILLIS = "timeInMillis";
-    private static final boolean DEVELOPER_MODE = false;
+    private static final boolean DEVELOPER_MODE = true;
 
     /** Member Variables **/
     private static boolean mFabMenuOpen;

@@ -292,6 +292,10 @@ class AllRecipesAsyncTask extends AsyncTask<Object, Void, Void> {
                 return null;
             }
 
+            if (cursor != null) {
+                cursor.close();
+            }
+
             ContentValues[] linkValues = new ContentValues[linkCVList.size()];
             linkCVList.toArray(linkValues);
 
