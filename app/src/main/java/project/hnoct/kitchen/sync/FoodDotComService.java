@@ -48,7 +48,7 @@ public class FoodDotComService extends IntentService {
                 }
 
                 // Retrieve the html document from the website
-                Document document = document = Jsoup.connect(FOOD_BASE_URL).get();
+                Document document = Jsoup.connect(FOOD_BASE_URL).get();
 
                 String html = document.toString();
 

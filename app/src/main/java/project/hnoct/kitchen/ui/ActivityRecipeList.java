@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -80,6 +81,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     private static final String LOG_TAG = ActivityRecipeList.class.getSimpleName();
     private final String DETAILS_FRAGMENT = "DFTAG";
     public static final String TIME_IN_MILLIS = "timeInMillis";
+    private static final boolean DEVELOPER_MODE = false;
 
     /** Member Variables **/
     private static boolean mFabMenuOpen;
@@ -237,8 +239,24 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         startActivity(new Intent(this, ActivityCreateRecipe.class));
     }
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (DEVELOPER_MODE) {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+//                    .detectDiskReads()
+//                    .detectDiskWrites()
+//                    .detectNetwork()   // or .detectAll() for all detectable problems
+                    .penaltyLog()
+                    .build());
+            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                    .detectLeakedSqlLiteObjects()
+                    .detectLeakedClosableObjects()
+                    .penaltyLog()
+                    .build());
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);

@@ -1212,6 +1212,9 @@ public class Utilities {
                 long dbReviews = cursor.getLong(RecipeEntry.IDX_RECIPE_REVIEWS);
 
                 if (!recipeValue.containsKey(RecipeEntry.COLUMN_REVIEWS)) {
+                    // Close the cursor
+                    if (cursor != null) cursor.close();
+
                     continue;
                 }
 
@@ -1230,6 +1233,7 @@ public class Utilities {
                     );
                 }
             }
+
             // Close the cursor
             if (cursor != null) cursor.close();
         }
