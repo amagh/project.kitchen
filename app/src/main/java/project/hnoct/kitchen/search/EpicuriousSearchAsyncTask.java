@@ -1,8 +1,13 @@
 package project.hnoct.kitchen.search;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -11,6 +16,9 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,7 +71,7 @@ public class EpicuriousSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
 
         try {
             // Connect to the URI for the search term
-            Document document = Jsoup.connect(searchUri.toString()).get();
+            Document document = Jsoup.connect(searchUri.toString().replace("%20", " ")).get();
 
             // Split the HTML document by line
             String lines[] = document.toString().split("\n");
@@ -117,13 +125,10 @@ public class EpicuriousSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
             JSONObject jsonNull = (jsonResultsArray.getJSONObject(1));
             JSONArray jsonItemArray = jsonNull.getJSONArray(EPI_ITEMS_ARRAY);
 
-            Log.d(LOG_TAG, jsonNull.toString());
-
             // Iterate through the recipes and store their information
             for (int i = 0; i < jsonItemArray.length(); i++) {
                 // Retrieve the recipe from the Array
                 JSONObject jsonRecipeObj = jsonItemArray.getJSONObject(i);
-                Log.d(LOG_TAG, jsonRecipeObj.toString());
 
                 // Retrieve the recipe information
                 String recipeName = jsonRecipeObj.getString(EPI_RECIPE_NAME);
@@ -182,6 +187,8 @@ public class EpicuriousSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                 recipeList.add(map);
             }
 
+//            saveDocument(document);
+
         } catch (IOException |JSONException e) {
             e.printStackTrace();
         }
@@ -199,35 +206,48 @@ public class EpicuriousSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
         void onFinishLoad(List<Map<String, Object>> recipeList);
     }
 
-        /**
-         * Generates a URL for epicurious pointing to the location of a medium resolution image
-         * @param id ID of the recipe's photograph
-         * @param filename File name of the recipe's photograph image
-         * @return String URL linking to the recipe's image
-         */
-        private String generateImgUrl(String id, String filename) {
-            String BASE_IMG_URL = "http://assets.epicurious.com";
-            String PHOTOS_PATH = "photos";
-            String ASPECT_RATIO_PATH = "6:4";
-            String QUALITY_PATH = "w_620%2Ch_413";
+    /**
+     * Generates a URL for epicurious pointing to the location of a medium resolution image
+     * @param id ID of the recipe's photograph
+     * @param filename File name of the recipe's photograph image
+     * @return String URL linking to the recipe's image
+     */
+    private String generateImgUrl(String id, String filename) {
+        String BASE_IMG_URL = "http://assets.epicurious.com";
+        String PHOTOS_PATH = "photos";
+        String ASPECT_RATIO_PATH = "6:4";
+        String QUALITY_PATH = "w_620%2Ch_413";
 
-            // epicurious uses a common pattern for their photographs
-            String imageUrl = BASE_IMG_URL + "/" +
-                    PHOTOS_PATH + "/" +
-                    id + "/" +
-                    ASPECT_RATIO_PATH + "/" +
-                    QUALITY_PATH + "/" +
-                    filename;
-//
-//        Uri imageUri = Uri.parse(BASE_IMG_URL)
-//                .buildUpon()
-//                .appendPath(PHOTOS_PATH)
-//                .appendPath(id)
-//                .appendPath(URLEncoder.encode(ASPECT_RATIO_PATH, "UTF-8"))
-//                .appendPath(QUALITY_PATH)
-//                .appendPath(filename)
-//                .build();
+        // epicurious uses a common pattern for their photographs
+        String imageUrl = BASE_IMG_URL + "/" +
+                PHOTOS_PATH + "/" +
+                id + "/" +
+                ASPECT_RATIO_PATH + "/" +
+                QUALITY_PATH + "/" +
+                filename;
 
-            return imageUrl;
-        }
+        return imageUrl;
+    }
+
+    private boolean saveDocument(Document document) {
+        String documentText = document.toString();
+        File sd = Environment.getExternalStorageDirectory().getAbsoluteFile();
+        File file = new File(sd, "html.txt");
+
+//        if (sd.canWrite()) {
+            try {
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+
+                FileOutputStream fileOutputStream = new FileOutputStream(file);
+                fileOutputStream.write(documentText.getBytes());
+                fileOutputStream.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        return true;
+    }
+
 }

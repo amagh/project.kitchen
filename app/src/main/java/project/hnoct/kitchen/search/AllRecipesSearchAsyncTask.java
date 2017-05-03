@@ -3,6 +3,7 @@ package project.hnoct.kitchen.search;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 
 import org.jsoup.Jsoup;
@@ -10,6 +11,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,18 +69,16 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                     .build();
 
             // Convert the URI to a URL
-            String searchUrl = allRecipesSearchUri.toString();
+            String searchUrl = allRecipesSearchUri.toString().replace("%20", " ");
 
             // Connect to the site and create a Jsoup Document from it
             Document document = Jsoup.connect(searchUrl).get();
-            Log.d(LOG_TAG, document.toString());
 
             // Parse the document for recipe information
             Elements recipeElements = document.select("article"); //.grid-col--fixed-tiles"); //:not(.marketing-card):not(.hub-card)");
 
             // Iterate through the recipe Elements and retrieve the recipe information
             for (Element recipeElement : recipeElements) {
-                Log.d(LOG_TAG, "Recipe Element: " + recipeElement.toString());
 
                 // Retrieve the data type of the Element and check that it is a recipe
                 Element dataTypeElement = recipeElement.select("ar-save-item.favorite").first();
@@ -143,12 +144,14 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                 recipeMap.put(RecipeEntry.COLUMN_FAVORITE, false);
                 recipeMap.put(RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_allrecipes));
 
-                for (String key : recipeMap.keySet()) {
-                    Log.d(LOG_TAG, key + ": " + recipeMap.get(key));
-                }
+//                for (String key : recipeMap.keySet()) {
+//                    Log.d(LOG_TAG, key + ": " + recipeMap.get(key));
+//                }
 
                 recipeList.add(recipeMap);
             }
+
+            saveDocument(document);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -164,5 +167,25 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
 
     public interface SyncListener {
         void onFinishLoad(List<Map<String, Object>> recipeList);
+    }
+
+    private boolean saveDocument(Document document) {
+        String documentText = document.toString();
+        File sd = Environment.getExternalStorageDirectory().getAbsoluteFile();
+        File file = new File(sd, "html.txt");
+
+        try {
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.write(documentText.getBytes());
+            fileOutputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return true;
     }
 }
