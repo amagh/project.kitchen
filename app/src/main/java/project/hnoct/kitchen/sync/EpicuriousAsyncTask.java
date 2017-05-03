@@ -15,6 +15,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
@@ -77,15 +78,26 @@ public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {
                     .text()
             );
 
-            String imageUrl = "http://" + document.select("div.recipe-image")
+            Element imageElement = document.select("div.recipe-image")
                     .select("picture.photo-wrap")
                     .select("source")
-                    .first()
-                    .attr("srcset")
-                    .substring(2);
+                    .first();
+
+            String imageUrl = "http://assets.epicurious.com/photos/5674617eb47c050a284a4e11/6:4/w_322,h_314,c_limit/EP_12162015_placeholders_bright.jpg";
+            if (imageElement != null) {
+                imageUrl = "http://" + document.select("div.recipe-image")
+                        .select("picture.photo-wrap")
+                        .select("source")
+                        .first()
+                        .attr("srcset")
+                        .substring(2);
+            }
 
             // Utilize the photoID from the image URL as the recipe ID
             String recipeSourceId = Uri.parse(imageUrl).getPathSegments().get(1);
+            if (recipeSourceId.equals("5674617eb47c050a284a4e11")) {
+                recipeSourceId = UUID.randomUUID().toString().replace("-", "").substring(0, 24);
+            }
 
             String description = document.select("div.content-container")
                     .select("div.main")
