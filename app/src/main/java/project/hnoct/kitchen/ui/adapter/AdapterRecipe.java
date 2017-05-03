@@ -549,7 +549,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
      * Callback interface for passing information to the UI Activity
      */
     public interface RecipeAdapterOnClickHandler {
-        void onClick(long recipeId, RecipeViewHolder viewHolder);
+        void onClick(String recipeUrl, RecipeViewHolder viewHolder);
     }
 
     public interface DetailVisibilityListener {
@@ -649,7 +649,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         public void onClick(View view) {
             // Get the recipeId of the RecipeViewHolder just clicked
             int position = getAdapterPosition();
-            long recipeId = (long) mList.get(position).get(RecipeEntry.COLUMN_RECIPE_ID);
+            String recipeUrl = (String) mList.get(position).get(RecipeEntry.COLUMN_RECIPE_URL);
 
             // Check whether the detail fragment is being utilized
             if (useDetailView) {
@@ -677,7 +677,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
 
             // Utilize the interface to pass information to the UI thread if detailed view is not
             // being used
-            mClickHandler.onClick(recipeId, this);
+            mClickHandler.onClick(recipeUrl, this);
         }
     }
 }

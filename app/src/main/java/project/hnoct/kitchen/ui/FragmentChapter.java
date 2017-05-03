@@ -102,8 +102,7 @@ public class FragmentChapter extends Fragment implements LoaderManager.LoaderCal
         mRecyclerView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
         mChapterAdapter.setRecipeClickListener(new AdapterChapter.RecipeClickListener() {
             @Override
-            public void onRecipeClicked(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
-                String recipeUrl = Utilities.getRecipeUrlFromRecipeId(mContext, recipeId);
+            public void onRecipeClicked(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
                 ((ActivityChapter) getActivity()).onRecipeSelected(recipeUrl, viewHolder);
             }
 

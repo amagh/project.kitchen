@@ -47,11 +47,11 @@ public class AddRecipeDialog extends DialogFragment {
                 getActivity(),
                 new AdapterRecipe.RecipeAdapterOnClickHandler() {
                     @Override
-                    public void onClick(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
+                    public void onClick(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
                         if (mListener != null) {
                             // Utilize Callback interface to send information about recipe that was
                             // selected
-                            mListener.onRecipeSelected(recipeId);
+                            mListener.onRecipeSelected(recipeUrl);
 
                             // Close the Cursor
                             if (mCursor != null) mCursor.close();
@@ -105,7 +105,7 @@ public class AddRecipeDialog extends DialogFragment {
      * Interface for notifying which recipe has been selected
      */
     public interface SelectionListener {
-        void onRecipeSelected(long recipeId);
+        void onRecipeSelected(String recipeUrl);
     }
 
     /**

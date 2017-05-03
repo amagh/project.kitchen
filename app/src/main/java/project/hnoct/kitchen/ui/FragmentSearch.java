@@ -21,6 +21,7 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.search.AllRecipesSearchAsyncTask;
 import project.hnoct.kitchen.search.EpicuriousSearchAsyncTask;
 import project.hnoct.kitchen.search.FoodDotComSearchAsyncTask;
@@ -84,8 +85,11 @@ public class FragmentSearch extends Fragment {
 
         mAdapter = new AdapterRecipe(mContext, new AdapterRecipe.RecipeAdapterOnClickHandler() {
             @Override
-            public void onClick(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
+            public void onClick(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
                 mPosition = viewHolder.getAdapterPosition();
+
+                ((ActivitySearch)getActivity()).onRecipeSelected(recipeUrl, viewHolder);
+
             }
         });
 
@@ -193,5 +197,9 @@ public class FragmentSearch extends Fragment {
         if (ActivityRecipeList.mTwoPane) {
             mRecyclerView.smoothScrollToPosition(mPosition);
         }
+    }
+
+    interface RecipeCallback {
+        void onRecipeSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder);
     }
 }

@@ -165,27 +165,48 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         }
     }
 
+    /**
+     * Shows the SearchView, allowing the user to search recipes
+     */
     void showSearch() {
+        // Set the visibility of the SearchView
         mSearchView.setVisibility(View.VISIBLE);
+
+        // Request focus
         mSearchView.requestFocus();
+
+        // Change the search icon to a cancel icon
         mSearchIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_close_clear_cancel));
 
+        // Hide the app title
         mTitle.setVisibility(View.GONE);
 
+        // Show the soft keyboard
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.showSoftInput(this.getCurrentFocus(), 0);
     }
 
+    /**
+     * Hides the SearchView and resets the filter
+     */
     void hideSearch() {
+        // Hide the SearchView and show the search icon
         mSearchView.setVisibility(View.GONE);
         mSearchIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_search));
+
+        // Hide the Card allowing the user to search additional recipes online
         mSearchMore.setVisibility(View.GONE);
+
+        // Show the app title
         mTitle.setVisibility(View.VISIBLE);
+
         if (mSearchListener != null) {
+            // Reset the search filter
             mSearchView.setText("");
             mSearchListener.onSearch("");
         }
 
+        // Hide the soft keyboard
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
     }
@@ -266,6 +287,15 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
 
         EpicuriousListAsyncTask epicuriousAsyncTask = new EpicuriousListAsyncTask(this, seedTime);
         epicuriousAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mSearchView.getVisibility() == View.VISIBLE) {
+            hideSearch();
+            return;
+        }
+        super.onBackPressed();
     }
 
     private void selectDrawerItem(MenuItem item) {

@@ -247,9 +247,9 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
             // AdapterRecipe
             recipeAdapter = new AdapterRecipe(mContext, new AdapterRecipe.RecipeAdapterOnClickHandler() {
                 @Override
-                public void onClick(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder) {
+                public void onClick(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
                     // Relay the click event and its data to the registered Observer
-                    mRecipeClickListener.onRecipeClicked(recipeId, viewHolder);
+                    mRecipeClickListener.onRecipeClicked(recipeUrl, viewHolder);
                 }
             });
             recipeAdapter.setPosition(position);
@@ -320,7 +320,7 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
      * selected or if user clicked to add a new recipe to the Chapter
      */
     public interface RecipeClickListener {
-        void onRecipeClicked(long recipeId, AdapterRecipe.RecipeViewHolder viewHolder);
+        void onRecipeClicked(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder);
         void onAddRecipeClicked(long chapterId);
     }
 

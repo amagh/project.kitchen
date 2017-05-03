@@ -19,6 +19,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.dialog.AddRecipeDialog;
 import project.hnoct.kitchen.dialog.ChapterDetailsDialog;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
@@ -171,7 +172,7 @@ public class ActivityChapter extends AppCompatActivity implements ChapterDetails
         dialog.setSelectionListener(new AddRecipeDialog.SelectionListener() {
 
             @Override
-            public void onRecipeSelected(long recipeId) {
+            public void onRecipeSelected(String recipeUrl) {
                 // Initialize parameters for querying the database for recipe order
                 Uri linkRecipeBookUri = LinkRecipeBookEntry.CONTENT_URI;
                 String[] projection = LinkRecipeBookEntry.PROJECTION;
@@ -196,6 +197,8 @@ public class ActivityChapter extends AppCompatActivity implements ChapterDetails
                 } else {
                     recipeOrder = 0;
                 }
+
+                long recipeId = Utilities.getRecipeIdFromUrl(getParent(), recipeUrl);
 
                 // Create the ContentValues to insert into the linked recipe book table
                 ContentValues values = new ContentValues();
