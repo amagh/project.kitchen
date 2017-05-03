@@ -1,10 +1,10 @@
 package project.hnoct.kitchen.sync;
 
-import android.content.ContentResolver;
+import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
-import android.os.AsyncTask;
+import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.jsoup.Jsoup;
@@ -12,36 +12,36 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import project.hnoct.kitchen.R;
-import project.hnoct.kitchen.data.RecipeContract.*;
-import project.hnoct.kitchen.data.Utilities;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract;
+import project.hnoct.kitchen.data.Utilities;
+import project.hnoct.kitchen.ui.ActivityRecipeList;
+
 /**
- * Created by hnoct on 2/15/2017.
+ * Created by hnoct on 5/2/2017.
  */
 
-public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
+public class AllRecipesService extends IntentService {
     /** Constants **/
-    private final String LOG_TAG = AllRecipesListAsyncTask.class.getSimpleName();
+    private final String LOG_TAG = AllRecipesService.class.getSimpleName();
 
     /** Member Variables **/
-    private Context mContext;       // Interface to global context
+    private Context mContext = this;
     private long mTimeInMillis;
-    private String mSearchUrl;
 
-    public AllRecipesListAsyncTask(Context context, long timeInMillis) {
-        // Initialize member variables
-        mContext = context;
-        mTimeInMillis = timeInMillis;
+    public AllRecipesService() {
+        super("AllRecipesService");
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
+    protected void onHandleIntent(@Nullable Intent intent) {
+        mTimeInMillis = intent.getLongExtra(getString(R.string.extra_time), 0);
+
         // Instantiate variable to hold time recipes were added. Will subtract one to the time to
         // each subsequent recipe added as to preserve order
         long timeAdded = Utilities.getCurrentTime();
@@ -50,13 +50,7 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
             List<ContentValues> recipeCVList = new ArrayList<>();
             // Connect and downloading the HTML document
             String ALL_RECIPES_BASE_URL = "http://www.allrecipes.com";
-            Document document;
-
-            if (mSearchUrl == null) {
-                document = Jsoup.connect(ALL_RECIPES_BASE_URL).get();
-            }  else {
-                document = Jsoup.connect(mSearchUrl).get();
-            }
+            Document document = Jsoup.connect(ALL_RECIPES_BASE_URL).get();
 
             // Select the elements from the document to add to the database as part of the recipe
             Elements recipes = document.select("article.grid-col--fixed-tiles:not(.marketing-card):not(.hub-card)");
@@ -121,17 +115,17 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
 
                 // Create ContentValues from values
                 ContentValues recipeValues = new ContentValues();
-                recipeValues.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeSourceId);
-                recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
-                recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, recipeAuthor);
-                recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);
-                recipeValues.put(RecipeEntry.COLUMN_IMG_URL, recipeImageUrl);
-                recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, recipeDescription);
-                recipeValues.put(RecipeEntry.COLUMN_RATING, rating);
-                recipeValues.put(RecipeEntry.COLUMN_REVIEWS, reviews);
-                recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, mTimeInMillis);
-                recipeValues.put(RecipeEntry.COLUMN_FAVORITE, 0);
-                recipeValues.put(RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_allrecipes));
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeSourceId);
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_RECIPE_AUTHOR, recipeAuthor);
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_IMG_URL, recipeImageUrl);
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_SHORT_DESC, recipeDescription);
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_RATING, rating);
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_REVIEWS, reviews);
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_DATE_ADDED, mTimeInMillis);
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_FAVORITE, 0);
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_allrecipes));
 
                 recipeCVList.add(recipeValues);
 
@@ -147,7 +141,5 @@ public class AllRecipesListAsyncTask extends AsyncTask<Void, Void, Void> {
             e.printStackTrace();
         }
 
-        return null;
     }
-
 }

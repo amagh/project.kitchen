@@ -2,6 +2,7 @@ package project.hnoct.kitchen.sync;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.util.Pair;
@@ -59,7 +60,7 @@ public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {
             String author = document.select("div.main-content")
                     .select("div.byline-source")
                     .select("cite.contributors")
-                    .select("a.contributors")
+                    .select("a[itemprop=author]")
                     .text();
 
             // Rating is stored out of 4 so needs to be converted to out of 5
@@ -134,19 +135,21 @@ public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {
             if (Utilities.getRecipeIdFromSourceId(mContext,
                     recipeSourceId,
                     mContext.getString(R.string.attribution_epicurious)) == -1) {
+
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeSourceId);
+                recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, description);
+                recipeValues.put(RecipeEntry.COLUMN_IMG_URL, imageUrl);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, recipeName);
                 recipeValues.put(RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_epicurious));
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_URL, recipeUrl);
                 recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, author);
                 recipeValues.put(RecipeEntry.COLUMN_RATING, rating);
                 recipeValues.put(RecipeEntry.COLUMN_REVIEWS, reviews);
-                recipeValues.put(RecipeEntry.COLUMN_IMG_URL, imageUrl);
-                recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, description);
                 recipeValues.put(RecipeEntry.COLUMN_DIRECTIONS, directions);
                 recipeValues.put(RecipeEntry.COLUMN_DATE_ADDED, Utilities.getCurrentTime());
                 recipeValues.put(RecipeEntry.COLUMN_FAVORITE, 0);
             }
+
 
             recipeValues.put(RecipeEntry.COLUMN_SERVINGS, servings);
 
@@ -204,11 +207,18 @@ public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {
                 }
             }
 
+            boolean newRecipe = false;
             // Estimate the recipeID of the recipe to be added
             long recipeId = Utilities.getRecipeIdFromSourceId(mContext, recipeSourceId, mContext.getString(R.string.attribution_epicurious));
 
             if (recipeId == -1) {
-                recipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
+                recipeId = Utilities.getRecipeIdFromUrl(mContext, recipeUrl);
+
+                if (recipeId == -1) {
+                    recipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
+                    newRecipe = true;
+                }
+
             }
 
             // Initialize the variable to hold the ingredient order
@@ -251,9 +261,7 @@ public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {
                 ingredientOrder++;
             }
 
-            if (Utilities.getRecipeIdFromSourceId(mContext,
-                    recipeSourceId,
-                    mContext.getString(R.string.attribution_epicurious)) == -1) {
+            if (newRecipe) {
                 // Insert the recipe values
                 mContext.getContentResolver().insert(
                         RecipeEntry.CONTENT_URI,
@@ -275,21 +283,62 @@ public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {
             // Bulk insert the ingredient values
             Utilities.insertAndUpdateIngredientValues(mContext, ingredientCVList);
 
-            // Convert the List of link values to an Array
-            ContentValues[] linkArray = new ContentValues[linkCVList.size()];
-            linkCVList.toArray(linkArray);
+//            // Convert the List of link values to an Array
+//            ContentValues[] linkArray = new ContentValues[linkCVList.size()];
+//            linkCVList.toArray(linkArray);
+//
+//            // Bulk insert the link values
+//            mContext.getContentResolver().bulkInsert(
+//                    LinkIngredientEntry.CONTENT_URI,
+//                    linkArray
+//            );
 
-            // Bulk insert the link values
-            mContext.getContentResolver().bulkInsert(
-                    LinkIngredientEntry.CONTENT_URI,
-                    linkArray
-            );
+            checkAndInsertLinkValues(linkCVList);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         return null;
+    }
+
+    public void checkAndInsertLinkValues(List<ContentValues> linkCVList) {
+        List<ContentValues> workingList = new ArrayList<>(linkCVList);
+
+        for (ContentValues value : workingList) {
+            long recipeId = value.getAsLong(RecipeEntry.COLUMN_RECIPE_ID);
+            long ingredientId = value.getAsLong(IngredientEntry.COLUMN_INGREDIENT_ID);
+            int ingredientOrder = value.getAsInteger(LinkIngredientEntry.COLUMN_INGREDIENT_ORDER);
+
+            Uri linkUri = LinkIngredientEntry.buildIngredientUriFromRecipe(recipeId);
+            String selection = IngredientEntry.COLUMN_INGREDIENT_ID + " = ? AND " +
+                    LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + " = ?";
+            String[] selectionArgs = new String[] {Long.toString(ingredientId), Integer.toString(ingredientOrder)};
+
+            Cursor cursor = mContext.getContentResolver().query(
+                    linkUri,
+                    LinkIngredientEntry.LINK_PROJECTION,
+                    selection,
+                    selectionArgs,
+                    null
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                linkCVList.remove(value);
+            }
+
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        ContentValues[] linkArray = new ContentValues[linkCVList.size()];
+        linkCVList.toArray(linkArray);
+
+        mContext.getContentResolver().bulkInsert(
+                LinkIngredientEntry.CONTENT_URI,
+                linkArray
+        );
     }
 
     @Override

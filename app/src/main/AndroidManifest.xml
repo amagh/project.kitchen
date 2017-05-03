@@ -103,6 +103,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
         </activity>
+        <service android:name=".sync.AllRecipesService" />
+        <service android:name=".sync.EpicuriousService" />
+        <service android:name=".sync.FoodDotComService" />
+        <service android:name=".sync.SeriousEatsService" />
     </application>
 
 </manifest>

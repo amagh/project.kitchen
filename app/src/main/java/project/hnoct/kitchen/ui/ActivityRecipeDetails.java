@@ -57,11 +57,11 @@ public class ActivityRecipeDetails extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // Retrieve the URI passed from the ActivityRecipeList
-        Uri recipeUri = getIntent().getData();
+        Uri recipeUrl = getIntent().getData();
 
         // Add the URI as part of a Bundle to attach to the FragmentRecipeDetails
         Bundle args = new Bundle();
-        args.putParcelable(FragmentRecipeDetails.RECIPE_DETAILS_URL, recipeUri);
+        args.putParcelable(FragmentRecipeDetails.RECIPE_DETAILS_URL, recipeUrl);
 
         // Instantiate the fragment and attach the Bundle containing the recipe URI
         mDetailsFragment = new FragmentRecipeDetails();

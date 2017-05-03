@@ -65,16 +65,21 @@ import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.dialog.ImportRecipeDialog;
 import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
+import project.hnoct.kitchen.sync.AllRecipesService;
 import project.hnoct.kitchen.sync.EpicuriousListAsyncTask;
+import project.hnoct.kitchen.sync.EpicuriousService;
 import project.hnoct.kitchen.sync.FoodDotComListAsyncTask;
+import project.hnoct.kitchen.sync.FoodDotComService;
 import project.hnoct.kitchen.sync.RecipeImporter;
 import project.hnoct.kitchen.sync.SeriousEatsListAsyncTask;
+import project.hnoct.kitchen.sync.SeriousEatsService;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
 public class ActivityRecipeList extends AppCompatActivity implements FragmentRecipeList.RecipeCallBack, ImportRecipeDialog.ImportRecipeDialogListener {
     /** Constants **/
     private static final String LOG_TAG = ActivityRecipeList.class.getSimpleName();
     private final String DETAILS_FRAGMENT = "DFTAG";
+    public static final String TIME_IN_MILLIS = "timeInMillis";
 
     /** Member Variables **/
     private static boolean mFabMenuOpen;
@@ -285,8 +290,24 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
 //        SeriousEatsListAsyncTask seriouseatsAsyncTask = new SeriousEatsListAsyncTask(this, seedTime);
 //        seriouseatsAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        EpicuriousListAsyncTask epicuriousAsyncTask = new EpicuriousListAsyncTask(this, seedTime);
-        epicuriousAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//        EpicuriousListAsyncTask epicuriousAsyncTask = new EpicuriousListAsyncTask(this, seedTime);
+//        epicuriousAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        Intent allRecipesIntent = new Intent(this, AllRecipesService.class);
+        allRecipesIntent.putExtra(getString(R.string.extra_time), seedTime);
+        startService(allRecipesIntent);
+
+        Intent epicuriousIntent = new Intent(this, EpicuriousService.class);
+        epicuriousIntent.putExtra(getString(R.string.extra_time), seedTime);
+        startService(epicuriousIntent);
+
+        Intent foodIntent = new Intent(this, FoodDotComService.class);
+        foodIntent.putExtra(getString(R.string.extra_time), seedTime);
+        startService(foodIntent);
+
+        Intent seriousIntent = new Intent(this, SeriousEatsService.class);
+        seriousIntent.putExtra(getString(R.string.extra_time), seedTime);
+        startService(seriousIntent);
     }
 
     @Override
