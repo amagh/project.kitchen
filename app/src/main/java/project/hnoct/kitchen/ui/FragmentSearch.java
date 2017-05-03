@@ -25,6 +25,7 @@ import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.search.AllRecipesSearchAsyncTask;
 import project.hnoct.kitchen.search.EpicuriousSearchAsyncTask;
 import project.hnoct.kitchen.search.FoodDotComSearchAsyncTask;
+import project.hnoct.kitchen.search.SearchListener;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 import project.hnoct.kitchen.view.StaggeredGridLayoutManagerWithSmoothScroll;
 
@@ -64,17 +65,17 @@ public class FragmentSearch extends Fragment {
         }
 
         // Initialize and pass the searchTerm to the search AsyncTasks
-        AllRecipesSearchAsyncTask allrecipesSearchTask = new AllRecipesSearchAsyncTask(mContext, new AllRecipesSearchAsyncTask.SyncListener() {
+        AllRecipesSearchAsyncTask allrecipesSearchTask = new AllRecipesSearchAsyncTask(mContext, new SearchListener() {
             @Override
-            public void onFinishLoad(List<Map<String, Object>> recipeList) {
+            public void onSearchFinished(List<Map<String, Object>> recipeList) {
                 mAdapter.addList(recipeList);
             }
         });
         allrecipesSearchTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mSearchTerm);
 
-        EpicuriousSearchAsyncTask epicuriousSearchTask = new EpicuriousSearchAsyncTask(mContext, new EpicuriousSearchAsyncTask.SyncListener() {
+        EpicuriousSearchAsyncTask epicuriousSearchTask = new EpicuriousSearchAsyncTask(mContext, new SearchListener() {
             @Override
-            public void onFinishLoad(List<Map<String, Object>> recipeList) {
+            public void onSearchFinished(List<Map<String, Object>> recipeList) {
                 mAdapter.addList(recipeList);
             }
         });
@@ -133,9 +134,9 @@ public class FragmentSearch extends Fragment {
         @SuppressWarnings("unused")
         public void processHTML(String html) {
             FoodDotComSearchAsyncTask foodSearchAsyncTask = new FoodDotComSearchAsyncTask(mContext,
-                    new FoodDotComSearchAsyncTask.SyncListener() {
+                    new SearchListener() {
                         @Override
-                        public void onFinishLoad(List<Map<String, Object>> recipeList) {
+                        public void onSearchFinished(List<Map<String, Object>> recipeList) {
                             mAdapter.addList(recipeList);
                         }
                     });

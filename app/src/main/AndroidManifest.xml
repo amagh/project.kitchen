@@ -108,7 +108,7 @@
         <service android:name=".sync.EpicuriousService" />
         <service android:name=".sync.FoodDotComService" />
         <service android:name=".sync.SeriousEatsService" />
-        <service android:name=".sync.RecipeSyncService"
+        <service android:name=".sync.RecipeGcmService"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE"
             android:exported="true" >
             <intent-filter>

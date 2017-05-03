@@ -135,8 +135,4 @@ public class FoodDotComSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
             mListener.onSearchFinished(list);
         }
     }
-
-    public interface SyncListener {
-        void onFinishLoad(List<Map<String, Object>> recipeList);
-    }
 }

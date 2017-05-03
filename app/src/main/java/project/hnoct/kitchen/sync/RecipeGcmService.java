@@ -16,7 +16,7 @@ import project.hnoct.kitchen.data.Utilities;
  * Created by hnoct on 5/3/2017.
  */
 
-public class RecipeSyncService extends GcmTaskService {
+public class RecipeGcmService extends GcmTaskService {
     @Override
     public int onRunTask(TaskParams taskParams) {
         Log.d("TEST", "Syncing recipes!");

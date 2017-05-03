@@ -199,10 +199,6 @@ public class EpicuriousSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
         }
     }
 
-    public interface SyncListener {
-        void onFinishLoad(List<Map<String, Object>> recipeList);
-    }
-
     /**
      * Generates a URL for epicurious pointing to the location of a medium resolution image
      * @param id ID of the recipe's photograph

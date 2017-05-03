@@ -45,6 +45,8 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
     AdapterRecipe mRecipeAdapter;
     private int mPosition;                      // Position of mCursor
     StaggeredGridLayoutManagerWithSmoothScroll mStaggeredLayoutManager;
+    private SyncListener mSyncListener;
+    private LocalBroadcastManager mBroadcastManager;
 
     // Views bound by ButterKnife
     @BindView(R.id.recipe_recycler_view) RecyclerView mRecipeRecyclerView;
@@ -129,11 +131,7 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
             }
         });
 
-        if (mRecipeAdapter.getItemCount() == 0) {
-            mProgressBar.setVisibility(View.VISIBLE);
-        } else {
-            mProgressBar.setVisibility(View.GONE);
-        }
+
 
 
         return rootView;
@@ -192,6 +190,13 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
 
         // Swap in the loaded Cursor into the Adapter
         mRecipeAdapter.swapCursor(mCursor);
+
+        // Hide the ProgressBar if mRecipeAdapter is populated with recipes
+        if (mRecipeAdapter.getItemCount() == 0) {
+            mProgressBar.setVisibility(View.VISIBLE);
+        } else {
+            mProgressBar.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -256,15 +261,43 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
     }
 
     private void registerSyncListener() {
+        if (mSyncListener == null) {
+            mSyncListener = new SyncListener();
+        }
+
+        if (mBroadcastManager == null) {
+            mBroadcastManager = LocalBroadcastManager.getInstance(mContext);
+        }
+
         IntentFilter filter = new IntentFilter(getString(R.string.intent_filter_sync_finished));
-        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(mContext);
-        broadcastManager.registerReceiver(new SyncListener(), filter);
+        mBroadcastManager.registerReceiver(mSyncListener, filter);
+    }
+
+    private void unregisterSyncListener() {
+        mBroadcastManager.unregisterReceiver(mSyncListener);
+    }
+
+    @Override
+    public void onResume() {
+        registerSyncListener();
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        unregisterSyncListener();
+        super.onPause();
     }
 
     private class SyncListener extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            // Hide the ProgressBar if it is visible
+            if (mProgressBar.getVisibility() == View.VISIBLE) {
+                mProgressBar.setVisibility(View.GONE);
+            }
+
 
         }
     }

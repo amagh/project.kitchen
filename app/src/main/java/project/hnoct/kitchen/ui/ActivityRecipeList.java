@@ -62,7 +62,7 @@ import project.hnoct.kitchen.sync.AllRecipesService;
 import project.hnoct.kitchen.sync.EpicuriousService;
 import project.hnoct.kitchen.sync.FoodDotComService;
 import project.hnoct.kitchen.sync.RecipeImporter;
-import project.hnoct.kitchen.sync.RecipeSyncService;
+import project.hnoct.kitchen.sync.RecipeGcmService;
 import project.hnoct.kitchen.sync.SeriousEatsService;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
@@ -321,7 +321,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             GcmNetworkManager networkManager = GcmNetworkManager.getInstance(this);
 
             PeriodicTask task = new PeriodicTask.Builder()
-                    .setService(RecipeSyncService.class)
+                    .setService(RecipeGcmService.class)
                     .setPeriod(SIX_HOURS_IN_SECONDS)
                     .setFlex(FLEX_TWO_HOURS)
                     .setRequiredNetwork(PeriodicTask.NETWORK_STATE_CONNECTED)
