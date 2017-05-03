@@ -778,8 +778,15 @@ public class Utilities {
             cursor.close();
             return recipeId;
         } else {
+
+            if (cursor != null) {
+                cursor.close();
+            }
+
             return -1;
         }
+
+
     }
 
     public static String getRecipeIdFromFoodUrl(String recipeUrl) {
@@ -1274,6 +1281,10 @@ public class Utilities {
             recipeId = cursor.getLong(RecipeEntry.IDX_RECIPE_ID);
 
             // Close the Cursor
+            cursor.close();
+        }
+
+        if (cursor != null) {
             cursor.close();
         }
 

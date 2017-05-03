@@ -5,12 +5,13 @@ import android.app.DialogFragment;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -23,11 +24,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
-import android.transition.ChangeBounds;
-import android.transition.ChangeImageTransform;
-import android.transition.ChangeTransform;
 import android.transition.Fade;
-import android.transition.TransitionSet;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -35,20 +32,16 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.ConsoleMessage;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebChromeClient;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.gcm.GcmNetworkManager;
+import com.google.android.gms.gcm.PeriodicTask;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -65,14 +58,11 @@ import project.hnoct.kitchen.data.RecipeDbHelper;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.dialog.ImportRecipeDialog;
 import project.hnoct.kitchen.prefs.SettingsActivity;
-import project.hnoct.kitchen.sync.AllRecipesListAsyncTask;
 import project.hnoct.kitchen.sync.AllRecipesService;
-import project.hnoct.kitchen.sync.EpicuriousListAsyncTask;
 import project.hnoct.kitchen.sync.EpicuriousService;
-import project.hnoct.kitchen.sync.FoodDotComListAsyncTask;
 import project.hnoct.kitchen.sync.FoodDotComService;
 import project.hnoct.kitchen.sync.RecipeImporter;
-import project.hnoct.kitchen.sync.SeriousEatsListAsyncTask;
+import project.hnoct.kitchen.sync.RecipeSyncService;
 import project.hnoct.kitchen.sync.SeriousEatsService;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
@@ -82,6 +72,8 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     private final String DETAILS_FRAGMENT = "DFTAG";
     public static final String TIME_IN_MILLIS = "timeInMillis";
     private static final boolean DEVELOPER_MODE = true;
+    private int SIX_HOURS_IN_SECONDS = 60 * 60 * 6;
+    private int FLEX_TWO_HOURS = 60 * 60 * 2;
 
     /** Member Variables **/
     private static boolean mFabMenuOpen;
@@ -297,35 +289,69 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             }
         }
 
-        long seedTime = Utilities.getCurrentTime();
+        // Check when the recipes were last synced
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-//        AllRecipesListAsyncTask allRecipesAsyncTask = new AllRecipesListAsyncTask(this, seedTime);
-//        allRecipesAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-//
-//        FoodDotComListAsyncTask foodAsyncTask = new FoodDotComListAsyncTask(this, seedTime);
-//        foodAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-//
-//        SeriousEatsListAsyncTask seriouseatsAsyncTask = new SeriousEatsListAsyncTask(this, seedTime);
-//        seriouseatsAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        long lastSync = prefs.getLong(getString(R.string.pref_last_sync), 0);
+        long currentTime = Utilities.getCurrentTime();
 
-//        EpicuriousListAsyncTask epicuriousAsyncTask = new EpicuriousListAsyncTask(this, seedTime);
-//        epicuriousAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        if (currentTime - lastSync > SIX_HOURS_IN_SECONDS) {
+            // If the database was last synced more than six hours ago (e.g. on first start), then
+            // the recipes are immediately synced
+            Intent allRecipesIntent = new Intent(this, AllRecipesService.class);
+            allRecipesIntent.putExtra(getString(R.string.extra_time), currentTime);
+            startService(allRecipesIntent);
 
-        Intent allRecipesIntent = new Intent(this, AllRecipesService.class);
-        allRecipesIntent.putExtra(getString(R.string.extra_time), seedTime);
-        startService(allRecipesIntent);
+            Intent epicuriousIntent = new Intent(this, EpicuriousService.class);
+            epicuriousIntent.putExtra(getString(R.string.extra_time), currentTime);
+            startService(epicuriousIntent);
 
-        Intent epicuriousIntent = new Intent(this, EpicuriousService.class);
-        epicuriousIntent.putExtra(getString(R.string.extra_time), seedTime);
-        startService(epicuriousIntent);
+            Intent foodIntent = new Intent(this, FoodDotComService.class);
+            foodIntent.putExtra(getString(R.string.extra_time), currentTime);
+            startService(foodIntent);
 
-        Intent foodIntent = new Intent(this, FoodDotComService.class);
-        foodIntent.putExtra(getString(R.string.extra_time), seedTime);
-        startService(foodIntent);
+            Intent seriousIntent = new Intent(this, SeriousEatsService.class);
+            seriousIntent.putExtra(getString(R.string.extra_time), currentTime);
+            startService(seriousIntent);
+        }
 
-        Intent seriousIntent = new Intent(this, SeriousEatsService.class);
-        seriousIntent.putExtra(getString(R.string.extra_time), seedTime);
-        startService(seriousIntent);
+        // Check to see if the device has GooglePlayServices
+        if (checkGooglePlayServices()) {
+            // If so, schedule a periodic task to sync the recipes in the background every six hours
+            GcmNetworkManager networkManager = GcmNetworkManager.getInstance(this);
+
+            PeriodicTask task = new PeriodicTask.Builder()
+                    .setService(RecipeSyncService.class)
+                    .setPeriod(SIX_HOURS_IN_SECONDS)
+                    .setFlex(FLEX_TWO_HOURS)
+                    .setRequiredNetwork(PeriodicTask.NETWORK_STATE_CONNECTED)
+                    .setTag("periodic")
+                    .setPersisted(true)
+                    .build();
+
+             networkManager.schedule(task);
+        }
+    }
+
+    /**
+     * Checks whether the user has GooglePlayServices
+     * @return boolean value for whether the device includes GooglePlayServices
+     */
+    public boolean checkGooglePlayServices() {
+        // Retrieve an instance of the GoogleApiAvailability object
+        GoogleApiAvailability api = GoogleApiAvailability.getInstance();
+
+        // Check whether the device includes GooglePlayServices
+        int resultCode = api.isGooglePlayServicesAvailable(this);
+        if (resultCode == ConnectionResult.SUCCESS) {
+            // If it does, return true
+            return true;
+        } else if (api.isUserResolvableError(resultCode)) {
+            api.showErrorDialogFragment(this, resultCode, 9000);
+            return false;
+        } else {
+            return false;
+        }
     }
 
     @Override
