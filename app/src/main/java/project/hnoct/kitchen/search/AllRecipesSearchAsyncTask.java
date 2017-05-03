@@ -151,7 +151,6 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
                 recipeList.add(recipeMap);
             }
 
-            saveDocument(document);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -167,25 +166,5 @@ public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
 
     public interface SyncListener {
         void onFinishLoad(List<Map<String, Object>> recipeList);
-    }
-
-    private boolean saveDocument(Document document) {
-        String documentText = document.toString();
-        File sd = Environment.getExternalStorageDirectory().getAbsoluteFile();
-        File file = new File(sd, "html.txt");
-
-        try {
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            fileOutputStream.write(documentText.getBytes());
-            fileOutputStream.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return true;
     }
 }

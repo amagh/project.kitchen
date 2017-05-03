@@ -186,9 +186,6 @@ public class EpicuriousSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
 
                 recipeList.add(map);
             }
-
-//            saveDocument(document);
-
         } catch (IOException |JSONException e) {
             e.printStackTrace();
         }
@@ -228,26 +225,4 @@ public class EpicuriousSearchAsyncTask extends AsyncTask<Object, Void, List<Map<
 
         return imageUrl;
     }
-
-    private boolean saveDocument(Document document) {
-        String documentText = document.toString();
-        File sd = Environment.getExternalStorageDirectory().getAbsoluteFile();
-        File file = new File(sd, "html.txt");
-
-//        if (sd.canWrite()) {
-            try {
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-
-                FileOutputStream fileOutputStream = new FileOutputStream(file);
-                fileOutputStream.write(documentText.getBytes());
-                fileOutputStream.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        return true;
-    }
-
 }
