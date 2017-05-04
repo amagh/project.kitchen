@@ -1,11 +1,13 @@
 package project.hnoct.kitchen.sync;
 
 import android.app.IntentService;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
 import android.util.Log;
 
@@ -28,12 +30,13 @@ import project.hnoct.kitchen.data.Utilities;
  * Created by hnoct on 5/3/2017.
  */
 
-public class EpicuriousService extends IntentService {
+public class EpicuriousService extends RecipeSyncService {
     // Constants
     private static final String LOG_TAG = EpicuriousService.class.getSimpleName();
 
     // Member Variables
     long mTimeInMillis;
+    private Intent mBroadcastIntent;
 
     public EpicuriousService() {
         super("EpicuriousService");
@@ -41,6 +44,13 @@ public class EpicuriousService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+        // Initialize the BroadcastIntent
+        mBroadcastIntent = new Intent(getString(R.string.intent_filter_sync_finished));
+
+        // Set the default flag as success -- any errors encountered will change the flag;
+        mBroadcastIntent.setFlags(SYNC_SUCCESS);
+
+        // Get the seed time
         mTimeInMillis = intent.getLongExtra(getString(R.string.extra_time), 0);
 
         // Constants
@@ -255,7 +265,12 @@ public class EpicuriousService extends IntentService {
                 // Increment the generated ID
                 recipeId++;
             }
-        } catch (IOException | JSONException e) {
+        } catch (IOException e) {
+            // If there is an error connecting to the site, add the server down flag
+            mBroadcastIntent.setFlags(SYNC_SERVER_DOWN);
+            e.printStackTrace();
+        } catch (JSONException e) {
+            mBroadcastIntent.setFlags(SYNC_INVALID);
             e.printStackTrace();
         }
 
@@ -272,6 +287,13 @@ public class EpicuriousService extends IntentService {
                 linkArray
         );
 
+        if (mBroadcastIntent.getFlags() == SYNC_SUCCESS) {
+            // If there are no errors in importing recipes, then update the last sync time
+            Utilities.updateLastSynced(this);
+        }
+
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.sendBroadcast(mBroadcastIntent);
     }
 
     /**

@@ -1340,4 +1340,18 @@ public class Utilities {
             return new Pair<>(skipAddIngredient, ingredientId);
         }
     }
+
+    public static void updateLastSynced(Context context) {
+        // Get the time that the sync finished
+        long timeInMillis = getCurrentTime();
+
+        // Set the last sync time to seedTime
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        editor.putLong(context.getString(R.string.pref_last_sync), timeInMillis);
+
+        // Apply the changes
+        editor.apply();
+    }
 }

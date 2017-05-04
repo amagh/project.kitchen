@@ -40,12 +40,6 @@
         </LinearLayout>
     </android.support.v7.widget.CardView>
 
-    <TextView
-        android:id="@+id/recipe_error_textview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
-
     <ProgressBar
         android:id="@+id/recipe_progressbar"
         android:layout_width="wrap_content"
@@ -57,5 +51,29 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/recipe_error_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/card_horizontal_margin"
+        android:layout_marginLeft="@dimen/card_horizontal_margin"
+        android:layout_marginStart="@dimen/card_horizontal_margin"
+        android:layout_marginRight="@dimen/card_horizontal_margin"
+        android:layout_marginEnd="@dimen/card_horizontal_margin"
+        android:visibility="gone"
+        app:cardCornerRadius="@dimen/card_corner_radius"
+        app:contentPadding="@dimen/card_horizontal_margin">
+
+        <TextView
+            android:id="@+id/recipe_error_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/error_empty"
+            android:layout_centerHorizontal="true"/>
+
+    </android.support.v7.widget.CardView>
+
 
 </RelativeLayout>

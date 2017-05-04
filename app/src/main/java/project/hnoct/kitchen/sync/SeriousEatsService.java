@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -23,11 +24,12 @@ import project.hnoct.kitchen.data.Utilities;
  * Created by hnoct on 5/3/2017.
  */
 
-public class SeriousEatsService extends IntentService {
+public class SeriousEatsService extends RecipeSyncService {
     // Constants
 
     // Member Variables
     private long mTimeInMillis;
+    private Intent mBroadcastIntent;
 
     public SeriousEatsService() {
         super("SeriousEatsService");
@@ -35,6 +37,13 @@ public class SeriousEatsService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+        // Initialize the BroadcastIntent
+        mBroadcastIntent = new Intent(getString(R.string.intent_filter_sync_finished));
+
+        // Set the default flag as success -- any errors encountered will change the flag;
+        mBroadcastIntent.setFlags(SYNC_SUCCESS);
+
+        // Get the seed time
         mTimeInMillis = intent.getLongExtra(getString(R.string.extra_time), 0);
 
         // Instantiate variable to hold time recipes were added. Will subtract one to the time to
@@ -120,7 +129,17 @@ public class SeriousEatsService extends IntentService {
             // Bulk insert recipe information
             Utilities.insertAndUpdateRecipeValues(this, recipeCVList);
         } catch (IOException e) {
+            // If there is an error connecting to the site, add the server down flag
+            mBroadcastIntent.setFlags(SYNC_SERVER_DOWN);
             e.printStackTrace();
         }
+
+        if (mBroadcastIntent.getFlags() == SYNC_SUCCESS) {
+            // If there are no errors in importing recipes, then update the last sync time
+            Utilities.updateLastSynced(this);
+        }
+
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.sendBroadcast(mBroadcastIntent);
     }
 }

@@ -19,8 +19,6 @@ import project.hnoct.kitchen.data.Utilities;
 public class RecipeGcmService extends GcmTaskService {
     @Override
     public int onRunTask(TaskParams taskParams) {
-        Log.d("TEST", "Syncing recipes!");
-
         // Retrieve current time to use as the time to seed all recipe additions
         long seedTime = Utilities.getCurrentTime();
 
@@ -41,14 +39,7 @@ public class RecipeGcmService extends GcmTaskService {
         seriousIntent.putExtra(getString(R.string.extra_time), seedTime);
         startService(seriousIntent);
 
-        // Set the last sync time to seedTime
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = prefs.edit();
 
-        editor.putLong(getString(R.string.pref_last_sync), seedTime);
-
-        // Apply the changes
-        editor.apply();
 
         return GcmNetworkManager.RESULT_SUCCESS;
     }

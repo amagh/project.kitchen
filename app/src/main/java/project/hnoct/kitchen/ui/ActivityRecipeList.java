@@ -3,6 +3,7 @@ package project.hnoct.kitchen.ui;
 import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -298,21 +299,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         if (currentTime - lastSync > SIX_HOURS_IN_SECONDS) {
             // If the database was last synced more than six hours ago (e.g. on first start), then
             // the recipes are immediately synced
-            Intent allRecipesIntent = new Intent(this, AllRecipesService.class);
-            allRecipesIntent.putExtra(getString(R.string.extra_time), currentTime);
-            startService(allRecipesIntent);
-
-            Intent epicuriousIntent = new Intent(this, EpicuriousService.class);
-            epicuriousIntent.putExtra(getString(R.string.extra_time), currentTime);
-            startService(epicuriousIntent);
-
-            Intent foodIntent = new Intent(this, FoodDotComService.class);
-            foodIntent.putExtra(getString(R.string.extra_time), currentTime);
-            startService(foodIntent);
-
-            Intent seriousIntent = new Intent(this, SeriousEatsService.class);
-            seriousIntent.putExtra(getString(R.string.extra_time), currentTime);
-            startService(seriousIntent);
+            syncImmediately();
         }
 
         // Check to see if the device has GooglePlayServices
@@ -331,6 +318,31 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
 
              networkManager.schedule(task);
         }
+    }
+
+    /**
+     * Initialize and start all RecipeSyncServices to begin importing recipes from the web
+     */
+    private void syncImmediately() {
+        // Utilize the current time as the seed time for each of the RecipeSyncServices
+        long currentTime = Utilities.getCurrentTime();
+
+        // Initialize and start the Services
+        Intent allRecipesIntent = new Intent(this, AllRecipesService.class);
+        allRecipesIntent.putExtra(getString(R.string.extra_time), currentTime);
+        startService(allRecipesIntent);
+
+        Intent epicuriousIntent = new Intent(this, EpicuriousService.class);
+        epicuriousIntent.putExtra(getString(R.string.extra_time), currentTime);
+        startService(epicuriousIntent);
+
+        Intent foodIntent = new Intent(this, FoodDotComService.class);
+        foodIntent.putExtra(getString(R.string.extra_time), currentTime);
+        startService(foodIntent);
+
+        Intent seriousIntent = new Intent(this, SeriousEatsService.class);
+        seriousIntent.putExtra(getString(R.string.extra_time), currentTime);
+        startService(seriousIntent);
     }
 
     /**
@@ -570,7 +582,6 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             FragmentRecipeList recipeListFragment = (FragmentRecipeList) getSupportFragmentManager().findFragmentById(R.id.fragment);
             recipeListFragment.setLayoutColumns();
         }
-
     }
 
     interface SearchListener {
@@ -581,4 +592,11 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         mSearchListener = listener;
     }
 
+    private class ConnectivityListener extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+        }
+    }
 }

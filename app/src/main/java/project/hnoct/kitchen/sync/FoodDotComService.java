@@ -4,12 +4,15 @@ import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -22,11 +25,12 @@ import project.hnoct.kitchen.data.Utilities;
  * Created by hnoct on 5/3/2017.
  */
 
-public class FoodDotComService extends IntentService {
+public class FoodDotComService extends RecipeSyncService {
     // Constants
 
     // Member Variables
     private long mTimeInMillis;
+    private Intent mBroadcastIntent;
 
     public FoodDotComService() {
         super("FoodDotComService");
@@ -34,6 +38,13 @@ public class FoodDotComService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+        // Initialize the BroadcastIntent
+        mBroadcastIntent = new Intent(getString(R.string.intent_filter_sync_finished));
+
+        // Set the default flag as success -- any errors encountered will change the flag;
+        mBroadcastIntent.setFlags(SYNC_SUCCESS);
+
+        // Get the seed time
         mTimeInMillis = intent.getLongExtra(getString(R.string.extra_time), 0);
 
         // Initialize the List to hold all the ContentValues that need to be inserted into database
@@ -146,7 +157,12 @@ public class FoodDotComService extends IntentService {
                 }
             }
 
-        } catch (Exception e) {
+        } catch (IOException e) {
+            // If there is an error connecting to the site, add the server down flag
+            mBroadcastIntent.setFlags(SYNC_SERVER_DOWN);
+            e.printStackTrace();
+        } catch (JSONException e) {
+            mBroadcastIntent.setFlags(SYNC_INVALID);
             e.printStackTrace();
         } finally {
             if (recipeCVList.size() > 0) {
@@ -154,5 +170,13 @@ public class FoodDotComService extends IntentService {
                 Utilities.insertAndUpdateRecipeValues(this, recipeCVList);
             }
         }
+
+        if (mBroadcastIntent.getFlags() == SYNC_SUCCESS) {
+            // If there are no errors in importing recipes, then update the last sync time
+            Utilities.updateLastSynced(this);
+        }
+
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.sendBroadcast(mBroadcastIntent);
     }
 }

@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.jsoup.Jsoup;
@@ -26,13 +27,13 @@ import project.hnoct.kitchen.ui.ActivityRecipeList;
  * Created by hnoct on 5/2/2017.
  */
 
-public class AllRecipesService extends IntentService {
+public class AllRecipesService extends RecipeSyncService {
     /** Constants **/
     private final String LOG_TAG = AllRecipesService.class.getSimpleName();
 
     /** Member Variables **/
-    private Context mContext = this;
     private long mTimeInMillis;
+    private Intent mBroadcastIntent;
 
     public AllRecipesService() {
         super("AllRecipesService");
@@ -40,11 +41,14 @@ public class AllRecipesService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        mTimeInMillis = intent.getLongExtra(getString(R.string.extra_time), 0);
+        // Initialize the BroadcastIntent
+        mBroadcastIntent = new Intent(getString(R.string.intent_filter_sync_finished));
 
-        // Instantiate variable to hold time recipes were added. Will subtract one to the time to
-        // each subsequent recipe added as to preserve order
-        long timeAdded = Utilities.getCurrentTime();
+        // Set the default flag as success -- any errors encountered will change the flag;
+        mBroadcastIntent.setFlags(SYNC_SUCCESS);
+
+        // Get the seed time
+        mTimeInMillis = intent.getLongExtra(getString(R.string.extra_time), 0);
 
         try {
             List<ContentValues> recipeCVList = new ArrayList<>();
@@ -75,7 +79,7 @@ public class AllRecipesService extends IntentService {
                 recipeUrl = ALL_RECIPES_BASE_URL + recipeUrl;
 
                 // Get the recipe Id by converting the link to a URI and selecting the 2nd segment
-                String recipeSourceId = Utilities.getRecipeSourceIdFromUrl(mContext, recipeUrl);
+                String recipeSourceId = Utilities.getRecipeSourceIdFromUrl(this, recipeUrl);
 
                 // Retrieve the recipe name, thumbnail URL, and description
                 Element recipeElement = recipe.getElementsByClass("grid-col__rec-image").first();
@@ -125,7 +129,7 @@ public class AllRecipesService extends IntentService {
                 recipeValues.put(RecipeContract.RecipeEntry.COLUMN_REVIEWS, reviews);
                 recipeValues.put(RecipeContract.RecipeEntry.COLUMN_DATE_ADDED, mTimeInMillis);
                 recipeValues.put(RecipeContract.RecipeEntry.COLUMN_FAVORITE, 0);
-                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_SOURCE, mContext.getString(R.string.attribution_allrecipes));
+                recipeValues.put(RecipeContract.RecipeEntry.COLUMN_SOURCE, getString(R.string.attribution_allrecipes));
 
                 recipeCVList.add(recipeValues);
 
@@ -133,12 +137,22 @@ public class AllRecipesService extends IntentService {
                 mTimeInMillis -= randomNum;
             }
 
-            Utilities.insertAndUpdateRecipeValues(mContext, recipeCVList);
+            Utilities.insertAndUpdateRecipeValues(this, recipeCVList);
         } catch(IOException e) {
+            // If there is an error connecting to the site, add the server down flag
+            mBroadcastIntent.setFlags(SYNC_SERVER_DOWN);
             e.printStackTrace();
         } catch(NullPointerException e) {
-            Log.d(LOG_TAG, "Error parsing document", e);
+            mBroadcastIntent.setFlags(SYNC_INVALID);
             e.printStackTrace();
         }
+
+        if (mBroadcastIntent.getFlags() == SYNC_SUCCESS) {
+            // If there are no errors in importing recipes, then update the last sync time
+            Utilities.updateLastSynced(this);
+        }
+
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.sendBroadcast(mBroadcastIntent);
     }
 }

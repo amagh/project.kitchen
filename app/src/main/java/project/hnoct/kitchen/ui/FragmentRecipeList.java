@@ -14,8 +14,10 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,15 +30,21 @@ import project.hnoct.kitchen.R;
 
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
+import project.hnoct.kitchen.sync.RecipeSyncService;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 import project.hnoct.kitchen.ui.adapter.RecipeItemAnimator;
 import project.hnoct.kitchen.view.StaggeredGridLayoutManagerWithSmoothScroll;
+
+import static project.hnoct.kitchen.sync.RecipeSyncService.SYNC_INVALID;
+import static project.hnoct.kitchen.sync.RecipeSyncService.SYNC_SERVER_DOWN;
+import static project.hnoct.kitchen.sync.RecipeSyncService.SYNC_SUCCESS;
 
 /**
  * Fragment for the main view displaying all recipes loaded from web
  */
 public class FragmentRecipeList extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     /** Constants **/
+    private final String LOG_TAG = FragmentRecipeList.class.getSimpleName();
     private static final int RECIPE_LOADER = 0;
 
     /** Member Variables **/
@@ -52,6 +60,7 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
     @BindView(R.id.recipe_recycler_view) RecyclerView mRecipeRecyclerView;
     @BindView(R.id.recipe_error_textview) TextView mErrorTextView;
     @BindView(R.id.recipe_progressbar) ProgressBar mProgressBar;
+    @BindView(R.id.recipe_error_card) CardView mErrorCard;
 
     public FragmentRecipeList() {
     }
@@ -131,9 +140,6 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
             }
         });
 
-
-
-
         return rootView;
     }
 
@@ -192,10 +198,10 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
         mRecipeAdapter.swapCursor(mCursor);
 
         // Hide the ProgressBar if mRecipeAdapter is populated with recipes
-        if (mRecipeAdapter.getItemCount() == 0) {
-            mProgressBar.setVisibility(View.VISIBLE);
-        } else {
+        if (mRecipeAdapter.getItemCount() > 0) {
             mProgressBar.setVisibility(View.GONE);
+            mErrorCard.setVisibility(View.GONE);
+        } else {
         }
     }
 
@@ -293,12 +299,30 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            @RecipeSyncService.SyncStatus int flag = intent.getFlags();
+
+            switch (flag) {
+                case SYNC_SUCCESS: Log.d(LOG_TAG, "Sync Successful!");
+                    mErrorCard.setVisibility(View.GONE);
+                    break;
+                case SYNC_SERVER_DOWN: Log.d(LOG_TAG, "Unable to connect!");
+                    if (mRecipeAdapter.getItemCount() == 0) {
+                        mErrorCard.setVisibility(View.VISIBLE);
+                        mErrorTextView.setText(getString(R.string.error_network_down));
+                    }
+                    break;
+                case SYNC_INVALID: Log.d(LOG_TAG, "Error in retrieved document!");
+                    if (mRecipeAdapter.getItemCount() == 0) {
+                        mErrorCard.setVisibility(View.VISIBLE);
+                        mErrorTextView.setText(getString(R.string.error_unknown));
+                    }
+                    break;
+            }
+
             // Hide the ProgressBar if it is visible
             if (mProgressBar.getVisibility() == View.VISIBLE) {
                 mProgressBar.setVisibility(View.GONE);
             }
-
-
         }
     }
 }

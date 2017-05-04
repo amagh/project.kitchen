@@ -185,4 +185,9 @@
 
     <!-- Intent Filters -->
     <string name="intent_filter_sync_finished">project.hnoct.kitchen.ON_FINISH_SYNC</string>
+
+    <!-- Error Handling -->
+    <string name="error_empty">Please wait while recipes are imported.</string>
+    <string name="error_network_down">Error connecting to the site.\nPlease check network connectivity!</string>
+    <string name="error_unknown">Unknown error attempting to import recipes.\nPlease contact the developer!</string>
 </resources>
