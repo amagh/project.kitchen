@@ -199,8 +199,14 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
 
         // Hide the ProgressBar if mRecipeAdapter is populated with recipes
         if (mRecipeAdapter.getItemCount() > 0) {
-            mProgressBar.setVisibility(View.GONE);
-            mErrorCard.setVisibility(View.GONE);
+            if (mProgressBar.getVisibility() == View.VISIBLE) {
+                mProgressBar.setVisibility(View.GONE);
+            }
+
+            if (mErrorCard.getVisibility() == View.VISIBLE) {
+                mErrorCard.setVisibility(View.GONE);
+            }
+
         } else {
         }
     }
@@ -266,31 +272,46 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
         }
     }
 
+    /**
+     * Register a BroadcastListener to listen when a sync has been completed by the
+     * RecipeSyncServices
+     */
     private void registerSyncListener() {
+        // Initialize a SyncListener if it hasn't been initialized yet
         if (mSyncListener == null) {
             mSyncListener = new SyncListener();
         }
 
+        // Initialize a LocalBroadcastManager if it hasn't been initialized yet
         if (mBroadcastManager == null) {
             mBroadcastManager = LocalBroadcastManager.getInstance(mContext);
         }
 
+        // Set the IntentFilter to listen for the local broadcast when a sync has been completed
         IntentFilter filter = new IntentFilter(getString(R.string.intent_filter_sync_finished));
+
+        // Register the SyncListener to the LocalBroadcastManager
         mBroadcastManager.registerReceiver(mSyncListener, filter);
     }
 
+    /**
+     * Unregisters a registered SyncListener
+     */
     private void unregisterSyncListener() {
+        // Unregister the SyncListener
         mBroadcastManager.unregisterReceiver(mSyncListener);
     }
 
     @Override
     public void onResume() {
+        // Register the SyncListener
         registerSyncListener();
         super.onResume();
     }
 
     @Override
     public void onPause() {
+        // Unregister the SyncListener
         unregisterSyncListener();
         super.onPause();
     }
@@ -299,24 +320,39 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            // Retrieve the tag passed by the Intent for the sync status
             @RecipeSyncService.SyncStatus int flag = intent.getFlags();
 
             switch (flag) {
-                case SYNC_SUCCESS: Log.d(LOG_TAG, "Sync Successful!");
+                case SYNC_SUCCESS: {
+                    // Hide mErrorCard
+                    Log.i(LOG_TAG, "Sync Successful!");
                     mErrorCard.setVisibility(View.GONE);
                     break;
-                case SYNC_SERVER_DOWN: Log.d(LOG_TAG, "Unable to connect!");
+                }
+
+                case SYNC_SERVER_DOWN: {
+                    Log.d(LOG_TAG, "Unable to connect!");
                     if (mRecipeAdapter.getItemCount() == 0) {
+                        // If the sync fails and there are no items in mRecipeAdapter, show
+                        // mErrorCard
                         mErrorCard.setVisibility(View.VISIBLE);
                         mErrorTextView.setText(getString(R.string.error_network_down));
                     }
                     break;
-                case SYNC_INVALID: Log.d(LOG_TAG, "Error in retrieved document!");
+                }
+
+
+                case SYNC_INVALID: {
+                    Log.d(LOG_TAG, "Error in retrieved document!");
                     if (mRecipeAdapter.getItemCount() == 0) {
+                        // If the sync retrieves an invalid document and there are no items in
+                        // mRecipeAdapter, show mErrorCard
                         mErrorCard.setVisibility(View.VISIBLE);
                         mErrorTextView.setText(getString(R.string.error_unknown));
                     }
                     break;
+                }
             }
 
             // Hide the ProgressBar if it is visible

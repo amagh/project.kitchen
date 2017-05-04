@@ -138,11 +138,12 @@ public class AllRecipesService extends RecipeSyncService {
             }
 
             Utilities.insertAndUpdateRecipeValues(this, recipeCVList);
-        } catch(IOException e) {
+        } catch (IOException e) {
             // If there is an error connecting to the site, add the server down flag
             mBroadcastIntent.setFlags(SYNC_SERVER_DOWN);
             e.printStackTrace();
-        } catch(NullPointerException e) {
+        } catch (NullPointerException e) {
+            // If there is an error in the document, set the invalid sync flag
             mBroadcastIntent.setFlags(SYNC_INVALID);
             e.printStackTrace();
         }

@@ -269,7 +269,8 @@ public class EpicuriousService extends RecipeSyncService {
             // If there is an error connecting to the site, add the server down flag
             mBroadcastIntent.setFlags(SYNC_SERVER_DOWN);
             e.printStackTrace();
-        } catch (JSONException e) {
+        } catch (JSONException | NullPointerException e) {
+            // If there is an error in the document, set the invalid sync flag
             mBroadcastIntent.setFlags(SYNC_INVALID);
             e.printStackTrace();
         }

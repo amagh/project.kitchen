@@ -132,6 +132,10 @@ public class SeriousEatsService extends RecipeSyncService {
             // If there is an error connecting to the site, add the server down flag
             mBroadcastIntent.setFlags(SYNC_SERVER_DOWN);
             e.printStackTrace();
+        } catch (NullPointerException e) {
+            // If there is an error in the document, set the invalid sync flag
+            mBroadcastIntent.setFlags(SYNC_INVALID);
+            e.printStackTrace();
         }
 
         if (mBroadcastIntent.getFlags() == SYNC_SUCCESS) {

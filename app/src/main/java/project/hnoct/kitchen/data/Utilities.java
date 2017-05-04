@@ -1341,6 +1341,23 @@ public class Utilities {
         }
     }
 
+    /**
+     * Retrieves the time the database was last synced from SharedPreferences
+     * @param context Interface to global Context
+     * @return long time in milliseconds when the database was last synced
+     */
+    public static long getLastSyncTime(Context context) {
+        // Get an instance of SharedPreferences
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        // Return the time the database was last successfully synced
+        return prefs.getLong(context.getString(R.string.pref_last_sync), 0);
+    }
+
+    /**
+     * Sets the last sync variable in SharedPreferences to the curren time
+     * @param context Interface to global Context
+     */
     public static void updateLastSynced(Context context) {
         // Get the time that the sync finished
         long timeInMillis = getCurrentTime();

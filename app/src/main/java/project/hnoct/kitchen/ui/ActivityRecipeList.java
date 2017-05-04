@@ -4,9 +4,14 @@ import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -55,6 +60,7 @@ import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import butterknife.Optional;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeDbHelper;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.dialog.ImportRecipeDialog;
@@ -82,6 +88,9 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     public static boolean mDetailsVisible = false;
     private static int mPosition;
     private SearchListener mSearchListener;
+    private ConnectivityListener mConnectivityListener;
+    private boolean isConnected;
+    private boolean connectivityRegistered = false;
 
     // Bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -290,40 +299,58 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             }
         }
 
-        // Check when the recipes were last synced
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        // Query the database to check if any recipes exist in case the user has wiped data somehow
+        Cursor cursor = getContentResolver().query(
+                RecipeContract.RecipeEntry.CONTENT_URI,
+                RecipeContract.RecipeEntry.RECIPE_PROJECTION,
+                null,
+                null,
+                null
+        );
 
-        long lastSync = prefs.getLong(getString(R.string.pref_last_sync), 0);
+        // Check for network connectivity
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+        // Check when the recipes were last synced
+        long lastSync = Utilities.getLastSyncTime(this);
         long currentTime = Utilities.getCurrentTime();
 
-        if (currentTime - lastSync > SIX_HOURS_IN_SECONDS) {
+        if (currentTime - lastSync > SIX_HOURS_IN_SECONDS * 1000 ||
+                (cursor != null && !cursor.moveToFirst())) {
             // If the database was last synced more than six hours ago (e.g. on first start), then
             // the recipes are immediately synced
             syncImmediately();
+
+            // Check to see if the device has GooglePlayServices
+            if (checkGooglePlayServices()) {
+                // If so, schedule a periodic task to sync the recipes in the background every six hours
+                GcmNetworkManager networkManager = GcmNetworkManager.getInstance(this);
+
+                PeriodicTask task = new PeriodicTask.Builder()
+                        .setService(RecipeGcmService.class)
+                        .setPeriod(SIX_HOURS_IN_SECONDS)
+                        .setFlex(FLEX_TWO_HOURS)
+                        .setRequiredNetwork(PeriodicTask.NETWORK_STATE_CONNECTED)
+                        .setTag("periodic")
+                        .setPersisted(true)
+                        .setUpdateCurrent(true)
+                        .build();
+
+                networkManager.schedule(task);
+            }
         }
 
-        // Check to see if the device has GooglePlayServices
-        if (checkGooglePlayServices()) {
-            // If so, schedule a periodic task to sync the recipes in the background every six hours
-            GcmNetworkManager networkManager = GcmNetworkManager.getInstance(this);
-
-            PeriodicTask task = new PeriodicTask.Builder()
-                    .setService(RecipeGcmService.class)
-                    .setPeriod(SIX_HOURS_IN_SECONDS)
-                    .setFlex(FLEX_TWO_HOURS)
-                    .setRequiredNetwork(PeriodicTask.NETWORK_STATE_CONNECTED)
-                    .setTag("periodic")
-                    .setPersisted(true)
-                    .build();
-
-             networkManager.schedule(task);
+        if (cursor != null) {
+            cursor.close();
         }
     }
 
     /**
      * Initialize and start all RecipeSyncServices to begin importing recipes from the web
      */
-    private void syncImmediately() {
+    void syncImmediately() {
         // Utilize the current time as the seed time for each of the RecipeSyncServices
         long currentTime = Utilities.getCurrentTime();
 
@@ -359,6 +386,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             // If it does, return true
             return true;
         } else if (api.isUserResolvableError(resultCode)) {
+            // If Google Play Services are available to download to the user, show the error Dialog
             api.showErrorDialogFragment(this, resultCode, 9000);
             return false;
         } else {
@@ -584,19 +612,95 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         }
     }
 
+    /**
+     * Interface for informing a registered observer of the search term that the user has input
+     */
     interface SearchListener {
         void onSearch(String searchTerm);
     }
 
+    /**
+     * Setter for the SearchListener
+     * @param listener
+     */
     public void setSearchListener(SearchListener listener) {
         mSearchListener = listener;
     }
 
+    @Override
+    protected void onResume() {
+        // Check when the last sync occurred
+        long lastSync = Utilities.getLastSyncTime(this);
+        long currentTime = Utilities.getCurrentTime();
+
+        long syncInterval = currentTime - lastSync;
+        if (syncInterval > SIX_HOURS_IN_SECONDS * 1000 && !connectivityRegistered && !isConnected) {
+            // If the database was last synced over six hours ago and the user is not connected to a
+            // network, register a ConnectivityListener to listen for changes in network state
+            registerConnectivityListener();
+        }
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        // Check if a ConnectivityListener has been registered
+        if (connectivityRegistered) {
+            // If it has, unregister the listener
+            unregisterConnectivityListener();
+        }
+        super.onPause();
+    }
+
+    /**
+     * Registers a ConnectivityListener to listen for a broadcast due to change in network state
+     */
+    private void registerConnectivityListener() {
+        // Initialize a ConnectivityListener if it hasn't already been initialized
+        if (mConnectivityListener == null) {
+            mConnectivityListener = new ConnectivityListener();
+        }
+
+        // Create an IntentFilter for listening to a Broadcast for a change in network state
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+
+        // Register the receiver
+        registerReceiver(mConnectivityListener, filter);
+
+        // Set the boolean to indicate whether the ConnectivityListener is registered
+        connectivityRegistered = true;
+    }
+
+    /**
+     * Unregisters a registered ConnectivityListener
+     */
+    private void unregisterConnectivityListener() {
+        // Unregister the ConnectivityListener
+        unregisterReceiver(mConnectivityListener);
+
+        // Set the boolean to indicate that no ConnectivityListener has been registered
+        connectivityRegistered = false;
+    }
+
+    /**
+     * A BroadcastListener for observing changes in network state and syncing recipes if the network
+     * is connected
+     */
     private class ConnectivityListener extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            // Check whether the device is connected to an active network
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
+            if (activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+                // Immediately sync all recipe sources
+                syncImmediately();
+
+                // Unregister the ConnectivityListener
+                unregisterConnectivityListener();
+            }
         }
     }
 }
