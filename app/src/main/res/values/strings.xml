@@ -190,4 +190,9 @@
     <string name="error_empty">Please wait while recipes are imported.</string>
     <string name="error_network_down">Error connecting to the site.\nPlease check network connectivity!</string>
     <string name="error_unknown">Unknown error attempting to import recipes.\nPlease contact the developer!</string>
+    <string name="error_last_sync">Failed to sync! Last sync occurred %s ago. Connect to a network to import latest recipes.</string>
+    <string name="day_singular">day</string>
+    <string name="day_multiple">days</string>
+    <string name="hour_singular">hour</string>
+    <string name="hour_multiple">hours</string>
 </resources>

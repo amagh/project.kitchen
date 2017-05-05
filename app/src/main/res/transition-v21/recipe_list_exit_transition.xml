@@ -2,12 +2,17 @@
 <transitionSet
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:transitionOrdering="together"
-    android:duration="@integer/detail_transition_duration">
+    android:duration="500">
+    <!--<slide android:slideEdge="top">-->
+        <!--<targets>-->
+            <!--&lt;!&ndash;<target android:targetId="@id/appbar" />&ndash;&gt;-->
+        <!--</targets>-->
+    <!--</slide>-->
     <fade>
         <targets>
-            <target android:excludeId="@android:id/statusBarBackground"/>
-            <target android:excludeId="@android:id/navigationBarBackground" />
-            <target android:excludeId="@id/list_recipe_image" />
+            <!--<target android:excludeId="@android:id/statusBarBackground"/>-->
+            <!--<target android:excludeId="@android:id/navigationBarBackground" />-->
+            <!--<target android:excludeId="@id/appbar" />-->
             <!--<target android:targetId="@id/list_recipe_gradient" />-->
         </targets>
     </fade>

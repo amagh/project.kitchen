@@ -28,12 +28,16 @@
     </style>
 
     <style name="AppTheme.Details" parent="AppTheme">
+        <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowEnterTransition">@transition/details_window_enter_transition</item>
-        <item name="android:windowExitTransition">@transition/details_window_return_transition</item>
-        <item name="android:windowSharedElementsUseOverlay">false</item>
+        <item name="android:windowReturnTransition">@transition/details_window_return_transition</item>
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
         <item name="android:windowAllowReturnTransitionOverlap">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:statusBarColor">@color/transparent_white</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
 
     <style name="AppTheme.Favorites" parent="AppTheme">

@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
@@ -46,6 +47,8 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
     /** Constants **/
     private final String LOG_TAG = FragmentRecipeList.class.getSimpleName();
     private static final int RECIPE_LOADER = 0;
+    private final long DAY_IN_SECONDS = 86400;
+    private final long HOUR_IN_SECONDS = 3600;
 
     /** Member Variables **/
     private Context mContext;                   // Interface for global context
@@ -333,15 +336,69 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
 
                 case SYNC_SERVER_DOWN: {
                     Log.d(LOG_TAG, "Unable to connect!");
+                    // Check how long since the last sync occurred
+                    long currentTime = Utilities.getCurrentTime();
+                    long lastSync = Utilities.getLastSyncTime(context);
+
+                    // Convert the interval from milliseconds to seconds
+                    long syncInterval = (currentTime - lastSync) / 1000;
+
+                    // Initialize the the parameters that will be used to create the String message
+                    int timePassed;
+                    String timeUnit;
+                    if (syncInterval < DAY_IN_SECONDS) {
+                        // If less than a day has passed, convert the number of seconds to hours
+                        timePassed = (int) (syncInterval / HOUR_IN_SECONDS);
+
+                        // Set the time unit to singular or multiple
+                        if (timePassed == 1) {
+                            timeUnit = getString(R.string.hour_singular);
+                        } else {
+                            timeUnit = getString(R.string.hour_multiple);
+                        }
+
+                    } else {
+                        // Convert the time passed to days
+                        timePassed = (int) (syncInterval / DAY_IN_SECONDS);
+
+                        // Set the time unit to singular or multiple
+                        if (timePassed == 1) {
+                            timeUnit = getString(R.string.day_singular);
+                        } else {
+                            timeUnit = getString(R.string.day_multiple);
+                        }
+                    }
+
                     if (mRecipeAdapter.getItemCount() == 0) {
                         // If the sync fails and there are no items in mRecipeAdapter, show
                         // mErrorCard
                         mErrorCard.setVisibility(View.VISIBLE);
                         mErrorTextView.setText(getString(R.string.error_network_down));
                     }
+
+                    // Create the String message to display to the user to notify them of how long
+                    // since the last sync
+                    String timeString = getString(R.string.error_last_sync, timePassed + " " + timeUnit);
+
+                    // Create a Snackbar to hold the message
+                    final Snackbar snackBar = Snackbar.make(((ActivityRecipeList)getActivity()).mDrawerLayout,
+                            timeString,
+                            Snackbar.LENGTH_INDEFINITE
+                    );
+
+                    // Set the Snackbar to be dismissed on click
+                    snackBar.getView().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            snackBar.dismiss();
+                        }
+                    });
+
+                    // Show the Snackbar
+                    snackBar.show();
+
                     break;
                 }
-
 
                 case SYNC_INVALID: {
                     Log.d(LOG_TAG, "Error in retrieved document!");

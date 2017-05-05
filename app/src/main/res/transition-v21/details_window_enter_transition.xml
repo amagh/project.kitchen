@@ -2,24 +2,20 @@
 <transitionSet
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:transitionOrdering="together"
-    android:duration="@integer/detail_transition_duration">
+    android:duration="500">
     <slide android:slideEdge="top">
         <targets>
-            <target android:targetId="@id/toolbar"/>
+            <target android:targetId="@id/toolbar" />
         </targets>
     </slide>
     <slide android:slideEdge="bottom">
         <targets>
-            <target android:targetId="@id/details_recipe_content1" />
-            <target android:targetId="@id/details_recipe_content2" />
+            <target android:excludeId="@android:id/statusBarBackground" />
+            <target android:excludeId="@android:id/navigationBarBackground" />
+            <target android:excludeId="@id/appbar" />
+            <target android:excludeId="@id/toolbar"/>
+            <!--<target android:targetId="@id/details_nested_scrollview" />-->
+            <!--<target android:targetId="@id/details_recipe_content2" />-->
         </targets>
     </slide>
-    <!--<fade>-->
-        <!--<targets>-->
-            <!--<target android:excludeId="@android:id/statusBarBackground" />-->
-            <!--<target android:excludeId="@android:id/navigationBarBackground" />-->
-            <!--<target android:excludeId="@id/details_recipe_image" />-->
-            <!--<target android:excludeId="@id/details_recipe_content2" />-->
-        <!--</targets>-->
-    <!--</fade>-->
 </transitionSet>

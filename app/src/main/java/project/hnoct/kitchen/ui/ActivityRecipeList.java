@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
@@ -36,6 +37,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -53,6 +55,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -81,6 +85,8 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     private static final boolean DEVELOPER_MODE = true;
     private int SIX_HOURS_IN_SECONDS = 60 * 60 * 6;
     private int FLEX_TWO_HOURS = 60 * 60 * 2;
+    private final long DAY_IN_SECONDS = 86400;
+    private final long HOUR_IN_SECONDS = 3600;
 
     /** Member Variables **/
     private static boolean mFabMenuOpen;
@@ -91,6 +97,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     private ConnectivityListener mConnectivityListener;
     private boolean isConnected;
     private boolean connectivityRegistered = false;
+    private Snackbar mSnackBar;
 
     // Bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -319,32 +326,100 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
 
         if (currentTime - lastSync > SIX_HOURS_IN_SECONDS * 1000 ||
                 (cursor != null && !cursor.moveToFirst())) {
-            // If the database was last synced more than six hours ago (e.g. on first start), then
-            // the recipes are immediately synced
-            syncImmediately();
 
-            // Check to see if the device has GooglePlayServices
-            if (checkGooglePlayServices()) {
-                // If so, schedule a periodic task to sync the recipes in the background every six hours
-                GcmNetworkManager networkManager = GcmNetworkManager.getInstance(this);
+            if (isConnected) {
+                // If the database was last synced more than six hours ago (e.g. on first start), then
+                // the recipes are immediately synced
+                syncImmediately();
 
-                PeriodicTask task = new PeriodicTask.Builder()
-                        .setService(RecipeGcmService.class)
-                        .setPeriod(SIX_HOURS_IN_SECONDS)
-                        .setFlex(FLEX_TWO_HOURS)
-                        .setRequiredNetwork(PeriodicTask.NETWORK_STATE_CONNECTED)
-                        .setTag("periodic")
-                        .setPersisted(true)
-                        .setUpdateCurrent(true)
-                        .build();
+                // Check to see if the device has GooglePlayServices
+                if (checkGooglePlayServices()) {
+                    // If so, schedule a periodic task to sync the recipes in the background every six hours
+                    GcmNetworkManager networkManager = GcmNetworkManager.getInstance(this);
 
-                networkManager.schedule(task);
+                    PeriodicTask task = new PeriodicTask.Builder()
+                            .setService(RecipeGcmService.class)
+                            .setPeriod(SIX_HOURS_IN_SECONDS)
+                            .setFlex(FLEX_TWO_HOURS)
+                            .setRequiredNetwork(PeriodicTask.NETWORK_STATE_CONNECTED)
+                            .setTag("periodic")
+                            .setPersisted(true)
+                            .setUpdateCurrent(true)
+                            .build();
+
+                    networkManager.schedule(task);
+                }
+            } else {
+                // Convert the interval from milliseconds to seconds
+                long syncInterval = (currentTime - lastSync) / 1000;
+
+                if (!connectivityRegistered) {
+                    // Register a ConnectivityListener
+                    registerConnectivityListener();
+                }
+
+                // Show a Snackbar displaying the error to the user
+                showErrorSnackbar(syncInterval);
             }
+
         }
 
         if (cursor != null) {
             cursor.close();
         }
+    }
+
+    /**
+     * Show a Snackbar informing the user of a lack of network connectivity
+     * @param syncInterval Time in seconds since the last successful sync
+     */
+    void showErrorSnackbar(long syncInterval) {
+        // Initialize the the parameters that will be used to create the String message
+        int timePassed;
+        String timeUnit;
+        if (syncInterval < DAY_IN_SECONDS) {
+            // If less than a day has passed, convert the number of seconds to hours
+            timePassed = (int) (syncInterval / HOUR_IN_SECONDS);
+
+            // Set the time unit to singular or multiple
+            if (timePassed == 1) {
+                timeUnit = getString(R.string.hour_singular);
+            } else {
+                timeUnit = getString(R.string.hour_multiple);
+            }
+
+        } else {
+            // Convert the time passed to days
+            timePassed = (int) (syncInterval / DAY_IN_SECONDS);
+
+            // Set the time unit to singular or multiple
+            if (timePassed == 1) {
+                timeUnit = getString(R.string.day_singular);
+            } else {
+                timeUnit = getString(R.string.day_multiple);
+            }
+        }
+
+        // Create the String message to display to the user to notify them of how long
+        // since the last sync
+        String timeString = getString(R.string.error_last_sync, timePassed + " " + timeUnit);
+
+        // Create a Snackbar to hold the message
+        mSnackBar = Snackbar.make(mDrawerLayout,
+                timeString,
+                Snackbar.LENGTH_INDEFINITE
+        );
+
+        // Set the Snackbar to be dismissed on click
+        mSnackBar.getView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mSnackBar.dismiss();
+            }
+        });
+
+        // Show the Snackbar
+        mSnackBar.show();
     }
 
     /**
@@ -530,9 +605,19 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     public void onItemSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
         if (!mTwoPane) {
             // If in single-view mode, then start the ActivityRecipeDetails
+            View statusBar = findViewById(android.R.id.statusBarBackground);
+            View navigationBar = findViewById(android.R.id.navigationBarBackground);
+
+            List<Pair<View, String>> pairs = new ArrayList<>();
+            pairs.add(Pair.create(statusBar, Window.STATUS_BAR_BACKGROUND_TRANSITION_NAME));
+            if (navigationBar != null) {
+                pairs.add(Pair.create(navigationBar, Window.NAVIGATION_BAR_BACKGROUND_TRANSITION_NAME));
+            }
+
+            pairs.add(Pair.create((View) viewHolder.recipeImage, getString(R.string.transition_recipe_image)));
             ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     this,
-                    new Pair(viewHolder.recipeImage, getString(R.string.transition_recipe_image))
+                    pairs.toArray(new Pair[pairs.size()])
             );
             Intent intent = new Intent(this, ActivityRecipeDetails.class);
             intent.setData(Uri.parse(recipeUrl));
@@ -695,6 +780,9 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
             if (activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+                // Dismiss the Snackbar
+                mSnackBar.dismiss();
+
                 // Immediately sync all recipe sources
                 syncImmediately();
 

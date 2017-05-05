@@ -1,17 +1,24 @@
 package project.hnoct.kitchen.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.net.ConnectivityManagerCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -65,14 +72,18 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     private AdapterDirection mDirectionAdapter;
     private CursorLoaderListener listener;
     private long time;
+    private ConnectivityListener mConnectivityListener;
+    private Snackbar mSnackbar;
 
     private boolean mSyncing = false;
     private boolean loaded = false;
+    private boolean isConnected = true;
+    private boolean connectivityRegistered = false;
 
     // Views bound by ButterKnife
     @BindView(R.id.details_ingredient_recycler_view) RecyclerView mIngredientsRecyclerView;
     @BindView(R.id.details_direction_recycler_view) RecyclerView mDirectionsRecyclerView;
-    @BindView(R.id.details_recipe_image) ImageView mRecipeImageView;
+//    @BindView(R.id.details_recipe_image) ImageView mRecipeImageView;
     @BindView(R.id.details_recipe_title_text) TextView mRecipeTitleText;
     @BindView(R.id.details_recipe_author_text) TextView mRecipeAuthorText;
     @BindView(R.id.details_recipe_attribution_text) TextView mRecipeAttributionText;
@@ -132,13 +143,26 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
             public boolean canScrollVertically() {
                 return false;
             }
+
+            @Override
+            public boolean canScrollHorizontally() {
+                return false;
+            }
         };
         LinearLayoutManager llm2 = new LinearLayoutManager(getActivity()) {
             @Override
             public boolean canScrollVertically() {
                 return false;
             }
+
+            @Override
+            public boolean canScrollHorizontally() {
+                return false;
+            }
         };
+
+        mIngredientsRecyclerView.setNestedScrollingEnabled(false);
+        mDirectionsRecyclerView.setNestedScrollingEnabled(false);
 
         mIngredientsRecyclerView.setLayoutManager(llm);
         mDirectionsRecyclerView.setLayoutManager(llm2);
@@ -148,85 +172,83 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mIngredientsRecyclerView.setAdapter(mIngredientAdapter);
         mDirectionsRecyclerView.setAdapter(mDirectionAdapter);
 
-        loadImageView();
+//        loadImageView();
 
         return rootView;
     }
 
-    private void loadImageView() {
-        Cursor cursor = mContentResolver.query(
-                RecipeEntry.CONTENT_URI,
-                RecipeEntry.RECIPE_PROJECTION,
-                RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-                new String[] {Long.toString(mRecipeId)},
-                null
-        );
-
-        if (cursor != null && cursor.moveToFirst()) {
-            String recipeImageUrl = cursor.getString(RecipeEntry.IDX_IMG_URL);
-            String source = cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
-            if (!recipeImageUrl.isEmpty()) {
-                loaded = true;
-            }
-
-            if (source.equals(mContext.getString(R.string.attribution_custom))) {
-                Glide.with(mContext)
-                        .load(recipeImageUrl)
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true)
-                        .listener(new RequestListener<String, GlideDrawable>() {
-                            @Override
-                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                                return false;
-                            }
-
-                            @Override
-                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                // When image has finished loading, load image into target
-                                target.onResourceReady(resource, null);
-
-                                if (getActivity() instanceof ActivityRecipeDetails && loaded) {
-                                    scheduleStartPostponedTransition(mRecipeImageView);
-                                }
-
-                                Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
-                                return false;
-
-                            }
-                        })
-                        .into(mRecipeImageView);
-            } else {
-                Glide.with(mContext)
-                        .load(recipeImageUrl)
-                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                        .listener(new RequestListener<String, GlideDrawable>() {
-                            @Override
-                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                                return false;
-                            }
-
-                            @Override
-                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                // When image has finished loading, load image into target
-                                target.onResourceReady(resource, null);
-
-                                if (getActivity() instanceof ActivityRecipeDetails && loaded) {
-                                    scheduleStartPostponedTransition(mRecipeImageView);
-                                }
-
-                                Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
-                                return false;
-
-                            }
-                        })
-                        .into(mRecipeImageView);
-            }
-
-            cursor.close();
-        }
-
-
-    }
+//    private void loadImageView() {
+//        Cursor cursor = mContentResolver.query(
+//                RecipeEntry.CONTENT_URI,
+//                RecipeEntry.RECIPE_PROJECTION,
+//                RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+//                new String[] {Long.toString(mRecipeId)},
+//                null
+//        );
+//
+//        if (cursor != null && cursor.moveToFirst()) {
+//            String recipeImageUrl = cursor.getString(RecipeEntry.IDX_IMG_URL);
+//            String source = cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
+//            if (!recipeImageUrl.isEmpty()) {
+//                loaded = true;
+//            }
+//
+//            if (source.equals(mContext.getString(R.string.attribution_custom))) {
+//                Glide.with(mContext)
+//                        .load(recipeImageUrl)
+//                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                        .skipMemoryCache(true)
+//                        .listener(new RequestListener<String, GlideDrawable>() {
+//                            @Override
+//                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+//                                return false;
+//                            }
+//
+//                            @Override
+//                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+//                                // When image has finished loading, load image into target
+//                                target.onResourceReady(resource, null);
+//
+//                                if (getActivity() instanceof ActivityRecipeDetails && loaded) {
+//                                    scheduleStartPostponedTransition(mRecipeImageView);
+//                                }
+//
+//                                Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
+//                                return false;
+//
+//                            }
+//                        })
+//                        .into(mRecipeImageView);
+//            } else {
+//                Glide.with(mContext)
+//                        .load(recipeImageUrl)
+//                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+//                        .listener(new RequestListener<String, GlideDrawable>() {
+//                            @Override
+//                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+//                                return false;
+//                            }
+//
+//                            @Override
+//                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+//                                // When image has finished loading, load image into target
+//                                target.onResourceReady(resource, null);
+//
+//                                if (getActivity() instanceof ActivityRecipeDetails && loaded) {
+//                                    scheduleStartPostponedTransition(mRecipeImageView);
+//                                }
+//
+//                                Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
+//                                return false;
+//
+//                            }
+//                        })
+//                        .into(mRecipeImageView);
+//            }
+//
+//            cursor.close();
+//        }
+//    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -263,9 +285,17 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
 
         // Move Cursor to first row or end
         if (!mCursor.moveToFirst()) {
-            if (!mSyncing) {
+            // Hide the views
+            setInvisible();
+
+            // Check if connected to a network
+            ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+            if (!mSyncing && isConnected) {
+                // Set mSyncing to true so that the AsyncTask is only started once
                 mSyncing = true;
-                setInvisible();
 
                 // If recipe is missing information, then load details from web
                 RecipeImporter.importRecipeFromUrl(mContext, new RecipeImporter.UtilitySyncer() {
@@ -276,6 +306,26 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                         mSyncing = false;
                     }
                 }, mRecipeUrl);
+            } else if (!mSyncing && !connectivityRegistered) {
+                // Register a ConnectivityListener
+                registerConnectivityListener();
+
+                // Show a Snackbar informing the user of network status
+//                mSnackbar = Snackbar.make((
+//                        (ActivityRecipeDetails)getActivity()).mNutritionDrawer,
+//                        "Not connected to a network. Unable to download recipe details.",
+//                        Snackbar.LENGTH_INDEFINITE
+//                );
+
+                // Set the Snackbar to be dismissed on click
+                mSnackbar.getView().setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mSnackbar.dismiss();
+                    }
+                });
+
+                mSnackbar.show();
             }
             return;
         }
@@ -296,7 +346,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
 
         // Populate the views with the data
         if (!loaded) {
-            loadImageView();
+//            loadImageView();
         }
 //        Glide.with(mContext)
 //                .load(recipeImageUrl)
@@ -354,6 +404,14 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         if (listener != null) {
             listener.onCursorLoaded(cursor, recipeServings);
         }
+    }
+
+    @Override
+    public void onPause() {
+        if (connectivityRegistered) {
+            unregisterConnectivityListener();
+        }
+        super.onPause();
     }
 
     void scheduleStartPostponedTransition(final View sharedElement) {
@@ -448,7 +506,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
             if (cursor != null && cursor.moveToFirst() && !cursor.getString(LinkIngredientEntry.IDX_IMG_URL).isEmpty()) {
                 // Delay transition animation if an image can be loaded
                 mProgressBar.setVisibility(View.INVISIBLE);
-                getActivity().supportPostponeEnterTransition();
+//                getActivity().supportPostponeEnterTransition();
                 cursor.close();
             }
 
@@ -568,5 +626,64 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
 
     public interface CursorLoaderListener {
         void onCursorLoaded(Cursor cursor, int recipeServings);
+    }
+
+    /**
+     * Registers a ConnectivityListener to listen for a broadcast due to change in network state
+     */
+    private void registerConnectivityListener() {
+        // Initialize a ConnectivityListener if it hasn't already been initialized
+        if (mConnectivityListener == null) {
+            mConnectivityListener = new ConnectivityListener();
+        }
+
+        // Create an IntentFilter for listening to a Broadcast for a change in network state
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+
+        // Register the receiver
+        mContext.registerReceiver(mConnectivityListener, filter);
+
+        // Set the boolean to indicate whether the ConnectivityListener is registered
+        connectivityRegistered = true;
+    }
+
+    /**
+     * Unregisters a registered ConnectivityListener
+     */
+    private void unregisterConnectivityListener() {
+        // Unregister the ConnectivityListener
+        mContext.unregisterReceiver(mConnectivityListener);
+
+        // Set the boolean to indicate that no ConnectivityListener has been registered
+        connectivityRegistered = false;
+    }
+
+    private class ConnectivityListener extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Check if connected to a network
+            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+            Log.d("Test", "test");
+            if (!mSyncing && isConnected) {
+                // Set mSyncing to true so that the AsyncTask is only started once
+                mSyncing = true;
+
+                // Hide the Snackbar
+                mSnackbar.dismiss();
+
+                // If recipe is missing information, then load details from web
+                RecipeImporter.importRecipeFromUrl(mContext, new RecipeImporter.UtilitySyncer() {
+                    @Override
+                    public void onFinishLoad() {
+                        if (getActivity() != null)
+                            getLoaderManager().restartLoader(DETAILS_LOADER, null, FragmentRecipeDetails.this);
+                        mSyncing = false;
+                    }
+                }, mRecipeUrl);
+            }
+        }
     }
 }

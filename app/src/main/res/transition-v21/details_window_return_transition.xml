@@ -7,6 +7,8 @@
         <targets>
             <target android:excludeId="@android:id/statusBarBackground" />
             <target android:excludeId="@android:id/navigationBarBackground" />
+            <!--<target android:targetId="@id/details_recipe_content1" />-->
+            <!--<target android:targetId="@id/details_recipe_content2" />-->
         </targets>
     </fade>
     <slide android:slideEdge="top">
@@ -17,7 +19,7 @@
     <slide android:slideEdge="bottom">
         <targets>
             <target android:targetId="@id/details_recipe_content1" />
-            <!--<target android:targetId="@id/details_recipe_content2" />-->
+            <target android:targetId="@id/details_recipe_content2" />
         </targets>
     </slide>
 </transitionSet>

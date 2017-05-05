@@ -186,7 +186,7 @@ public class RecipeContract {
         public static final String[] measurements = new String[] {
                 "mL", "loaf", "can", "package", "container", "tablespoon", "teaspoon", "clove", "cup", "pint",
                 "quart", "gallon", "ounce", "fluid ounce", "jar", "dashes", "dash", "pinch", "slice",
-                "pound", "drop", "lb", "bunch"
+                "pound", "drop", "lb", "bunch", "tsp", "tbsp", "g"
         };
 
         /** See RecipeEntry for comments on following methods **/

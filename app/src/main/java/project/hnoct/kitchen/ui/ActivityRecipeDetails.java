@@ -2,8 +2,10 @@ package project.hnoct.kitchen.ui;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.ViewDragHelper;
@@ -11,9 +13,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import java.lang.reflect.Field;
 import java.util.LinkedList;
@@ -22,7 +36,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
-import project.hnoct.kitchen.data.RecipeContract;
+import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.ui.adapter.AdapterNutrition;
 
@@ -36,6 +50,7 @@ public class ActivityRecipeDetails extends AppCompatActivity {
     MenuItem mMenuFavorite;
     private FragmentRecipeDetails mDetailsFragment;
     private AdapterNutrition mNutritionAdapter;
+    private boolean imageLoaded;
 
     // Views bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -43,13 +58,15 @@ public class ActivityRecipeDetails extends AppCompatActivity {
     @BindView(R.id.nutrition_drawer_calorie_disclosure_text) TextView mNutritionCalorieDiscloureText;
     @BindView(R.id.nutrition_drawer_recycler_view) RecyclerView mNutrientRecyclerView;
     @BindView(R.id.nutrition_drawerlayout) DrawerLayout mNutritionDrawer;
-//    @BindView(R.id.details_nutrient_drawer) RecyclerView mNutrientDrawer;
+    @BindView(R.id.details_recipe_image) ImageView mRecipeImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe_details);
         ButterKnife.bind(this);
+
+        supportPostponeEnterTransition();
 
         // Set Toolbar parameters
         setSupportActionBar(mToolbar);
@@ -58,6 +75,9 @@ public class ActivityRecipeDetails extends AppCompatActivity {
 
         // Retrieve the URI passed from the ActivityRecipeList
         Uri recipeUrl = getIntent().getData();
+
+        // Retrieve the recipe ID
+        mRecipeId = Utilities.getRecipeIdFromUrl(this, recipeUrl.toString());
 
         // Add the URI as part of a Bundle to attach to the FragmentRecipeDetails
         Bundle args = new Bundle();
@@ -109,11 +129,13 @@ public class ActivityRecipeDetails extends AppCompatActivity {
         if (getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE) {
             extendDrawerTouchMargin();
         }
+
+        loadImageView();
     }
 
     /**
      * Doubles the touch field for dragging out the DrawerLayout when in landscape for easier
-     * access for phones with on-screen keys
+     * access for phones with on-screen buttons
      */
     private void extendDrawerTouchMargin() {
         try {
@@ -160,6 +182,73 @@ public class ActivityRecipeDetails extends AppCompatActivity {
     }
 
 
+    private void loadImageView() {
+        Cursor cursor = getContentResolver().query(
+                RecipeEntry.CONTENT_URI,
+                RecipeEntry.RECIPE_PROJECTION,
+                RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                new String[] {Long.toString(mRecipeId)},
+                null
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            String recipeImageUrl = cursor.getString(RecipeEntry.IDX_IMG_URL);
+            String source = cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
+            if (!recipeImageUrl.isEmpty()) {
+                imageLoaded = true;
+            }
+
+            boolean skipMemCache = false;
+            DiskCacheStrategy strategy = DiskCacheStrategy.SOURCE;
+            if (source.equals(getString(R.string.attribution_custom))) {
+                skipMemCache = true;
+                strategy = DiskCacheStrategy.NONE;
+            }
+
+            Glide.with(this)
+                    .load(recipeImageUrl)
+                    .diskCacheStrategy(strategy)
+                    .skipMemoryCache(skipMemCache)
+                    .listener(new RequestListener<String, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            // When image has finished loading, load image into target
+                            target.onResourceReady(resource, null);
+
+                            if (imageLoaded) {
+                                scheduleStartPostponedTransition(mRecipeImageView);
+                            }
+
+                            return false;
+
+                        }
+                    })
+                    .into(mRecipeImageView);
+
+
+
+            cursor.close();
+        }
+    }
+
+    void scheduleStartPostponedTransition(final View sharedElement) {
+        sharedElement.getViewTreeObserver().addOnPreDrawListener(
+                new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        sharedElement.getViewTreeObserver().removeOnPreDrawListener(this);
+                        supportStartPostponedEnterTransition();
+                        return true;
+                    }
+                });
+    }
+
+
 
     /**
      * Retrieves the information regarding the recipe's nutrition from the Cursor so that it can
@@ -172,19 +261,19 @@ public class ActivityRecipeDetails extends AppCompatActivity {
         List<Pair<Integer, Double>> nutritionList = new LinkedList<>();
 
         // Retrieve nutrition information from database utilizing Cursor from CursorLoader
-        double calories = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_CALORIES);
-        double fatGrams = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_FAT);
-        double carbGrams = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_CARBS);
-        double proteinGrams = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_PROTEIN);
-        double cholesterolMg = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_CHOLESTEROL);
-        double sodiumMg = cursor.getDouble(RecipeContract.LinkIngredientEntry.IDX_RECIPE_SODIUM);
+        double calories = cursor.getDouble(LinkIngredientEntry.IDX_RECIPE_CALORIES);
+        double fatGrams = cursor.getDouble(LinkIngredientEntry.IDX_RECIPE_FAT);
+        double carbGrams = cursor.getDouble(LinkIngredientEntry.IDX_RECIPE_CARBS);
+        double proteinGrams = cursor.getDouble(LinkIngredientEntry.IDX_RECIPE_PROTEIN);
+        double cholesterolMg = cursor.getDouble(LinkIngredientEntry.IDX_RECIPE_CHOLESTEROL);
+        double sodiumMg = cursor.getDouble(LinkIngredientEntry.IDX_RECIPE_SODIUM);
 
-        @RecipeContract.RecipeEntry.NutrientType int calorieType = RecipeContract.RecipeEntry.NUTRIENT_CALORIE;
-        @RecipeContract.RecipeEntry.NutrientType int fatType = RecipeContract.RecipeEntry.NUTRIENT_FAT;
-        @RecipeContract.RecipeEntry.NutrientType int carbType = RecipeContract.RecipeEntry.NUTRIENT_CARB;
-        @RecipeContract.RecipeEntry.NutrientType int proteinType = RecipeContract.RecipeEntry.NUTRIENT_PROTEIN;
-        @RecipeContract.RecipeEntry.NutrientType int cholesterolType = RecipeContract.RecipeEntry.NUTRIENT_CHOLESTEROL;
-        @RecipeContract.RecipeEntry.NutrientType int sodiumType = RecipeContract.RecipeEntry.NUTRIENT_SODIUM;
+        @RecipeEntry.NutrientType int calorieType = RecipeEntry.NUTRIENT_CALORIE;
+        @RecipeEntry.NutrientType int fatType = RecipeEntry.NUTRIENT_FAT;
+        @RecipeEntry.NutrientType int carbType = RecipeEntry.NUTRIENT_CARB;
+        @RecipeEntry.NutrientType int proteinType = RecipeEntry.NUTRIENT_PROTEIN;
+        @RecipeEntry.NutrientType int cholesterolType = RecipeEntry.NUTRIENT_CHOLESTEROL;
+        @RecipeEntry.NutrientType int sodiumType = RecipeEntry.NUTRIENT_SODIUM;
 
         nutritionList.add(new Pair<>(calorieType, calories));
         nutritionList.add(new Pair<>(fatType, fatGrams));

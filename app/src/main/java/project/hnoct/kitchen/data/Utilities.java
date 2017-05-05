@@ -95,6 +95,24 @@ public class Utilities {
         String[] measurements = IngredientEntry.measurements;
 
         for (String measurement : measurements) {
+            if (measurement.equals("g")) {
+                Pattern pattern = Pattern.compile("\\d+g");
+                Matcher match = pattern.matcher(ingredientAndQuantity);
+
+                String quantity = null;
+                if (match.find()) {
+                    quantity = match.group(0);
+                }
+
+                if (quantity == null) {
+                    continue;
+                }
+
+                String ingredient = ingredientAndQuantity.replaceAll(quantity, "").trim();
+
+                return new Pair<>(ingredient, quantity);
+            }
+
             // Check to see if any measurement is used in the input String
             if (ingredientAndQuantity.contains(measurement)) {
                 // If found, split the String in two so that the quantity and ingredient are separated
@@ -124,7 +142,7 @@ public class Utilities {
                 String ingredientQuantity = ingredientAndQuantity.substring(0, lastCharIdx).trim();
                 String ingredient = ingredientAndQuantity.substring(lastCharIdx).trim();
 
-                if (ingredientQuantity.length() > 50) {
+                if (ingredientQuantity.length() > 20) {
                     // If the ingredient quantity is an abnormal length, it is usually because the
                     // measurement is a clarification within the ingredient and not the actual
                     // quantity
