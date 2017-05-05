@@ -607,14 +607,12 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             // If in single-view mode, then start the ActivityRecipeDetails
             View statusBar = findViewById(android.R.id.statusBarBackground);
             View navigationBar = findViewById(android.R.id.navigationBarBackground);
-            View appbar = findViewById(R.id.appbar);
 
             List<Pair<View, String>> pairs = new ArrayList<>();
             pairs.add(Pair.create(statusBar, Window.STATUS_BAR_BACKGROUND_TRANSITION_NAME));
             if (navigationBar != null) {
                 pairs.add(Pair.create(navigationBar, Window.NAVIGATION_BAR_BACKGROUND_TRANSITION_NAME));
             }
-//            pairs.add(Pair.create(appbar, "test"));
             pairs.add(Pair.create((View) viewHolder.recipeImage, getString(R.string.transition_recipe_image)));
             ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     this,
