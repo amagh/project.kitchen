@@ -81,7 +81,7 @@ public class ActivitySearch extends AppCompatActivity implements FragmentSearch.
     }
 
     @Override
-    public void onRecipeSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+    public void onRecipeSelected(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
         if (!ActivityRecipeList.mTwoPane) {
             // If in single-view mode, then start the ActivityRecipeDetails
             ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
@@ -90,6 +90,7 @@ public class ActivitySearch extends AppCompatActivity implements FragmentSearch.
             );
             Intent intent = new Intent(this, ActivityRecipeDetails.class);
             intent.setData(Uri.parse(recipeUrl));
+            intent.putExtra(getString(R.string.extra_image), imageUrl);
             ActivityCompat.startActivity(this, intent, options.toBundle());
         } else {
 //            ActivityRecipeList.mDetailsVisible = true;

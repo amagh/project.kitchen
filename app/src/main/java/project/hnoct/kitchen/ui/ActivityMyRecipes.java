@@ -33,7 +33,7 @@ public class ActivityMyRecipes extends AppCompatActivity implements FragmentMyRe
     }
 
     @Override
-    public void onItemSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+    public void onItemSelected(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
         // If in single-view mode, then start the ActivityRecipeDetails
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                 this,
@@ -41,6 +41,7 @@ public class ActivityMyRecipes extends AppCompatActivity implements FragmentMyRe
         );
         Intent intent = new Intent(this, ActivityRecipeDetails.class);
         intent.setData(Uri.parse(recipeUrl));
+        intent.putExtra(getString(R.string.extra_image), imageUrl);
         ActivityCompat.startActivity(this, intent, options.toBundle());
     }
 }

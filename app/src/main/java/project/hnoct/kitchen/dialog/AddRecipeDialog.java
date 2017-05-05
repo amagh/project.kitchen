@@ -47,7 +47,7 @@ public class AddRecipeDialog extends DialogFragment {
                 getActivity(),
                 new AdapterRecipe.RecipeAdapterOnClickHandler() {
                     @Override
-                    public void onClick(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+                    public void onClick(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
                         if (mListener != null) {
                             // Utilize Callback interface to send information about recipe that was
                             // selected

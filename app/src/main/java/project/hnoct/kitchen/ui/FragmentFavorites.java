@@ -64,7 +64,7 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
 
         mRecipeAdapter = new AdapterRecipe(mContext, new AdapterRecipe.RecipeAdapterOnClickHandler() {
             @Override
-            public void onClick(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+            public void onClick(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
                 boolean resetLayout = !ActivityRecipeList.mDetailsVisible;
 
                 // Set position to the position of the clicked item
@@ -78,6 +78,7 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
 
                 ((RecipeCallBack) getActivity()).onItemSelected(
                         recipeUrl,
+                        imageUrl,
                         viewHolder
                 );
 //                if (resetLayout) setLayoutColumns();
@@ -223,7 +224,7 @@ public class FragmentFavorites extends Fragment implements LoaderManager.LoaderC
 
     // CallBack for starting the ActivityRecipeDetails (preparation for master-view flow)
     interface RecipeCallBack {
-        void onItemSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder);
+        void onItemSelected(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder);
     }
 
     /**

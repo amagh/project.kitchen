@@ -82,7 +82,7 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
         // Instantiate the Adapter for the RecyclerView
         mRecipeAdapter = new AdapterRecipe(getActivity(), new AdapterRecipe.RecipeAdapterOnClickHandler() {
             @Override
-            public void onClick(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+            public void onClick(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
 
                 // Set position to the position of the clicked item
                 mPosition = viewHolder.getAdapterPosition();
@@ -95,6 +95,7 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
                     // Initiate Callback to Activity which will launch Details Activity
                     ((RecipeCallBack) getActivity()).onItemSelected(
                             recipeUrl,
+                            imageUrl,
                             viewHolder
                     );
 
@@ -229,7 +230,7 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
     }
 
     interface RecipeCallBack {
-        void onItemSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder);
+        void onItemSelected(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder);
     }
 
 

@@ -46,11 +46,10 @@ public class ActivityRecipeDetails extends AppCompatActivity {
     /** Constants **/
 
     /** Member Variables **/
-    long mRecipeId;
-    MenuItem mMenuFavorite;
     private FragmentRecipeDetails mDetailsFragment;
     private AdapterNutrition mNutritionAdapter;
-    private boolean imageLoaded;
+    private boolean imageLoaded = false;
+    private String mImageUrl;
 
     // Views bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -76,8 +75,8 @@ public class ActivityRecipeDetails extends AppCompatActivity {
         // Retrieve the URI passed from the ActivityRecipeList
         Uri recipeUrl = getIntent().getData();
 
-        // Retrieve the recipe ID
-        mRecipeId = Utilities.getRecipeIdFromUrl(this, recipeUrl.toString());
+        // Retrieve the image URL passed as an extra
+        mImageUrl = getIntent().getStringExtra(getString(R.string.extra_image));
 
         // Add the URI as part of a Bundle to attach to the FragmentRecipeDetails
         Bundle args = new Bundle();
@@ -87,7 +86,9 @@ public class ActivityRecipeDetails extends AppCompatActivity {
         mDetailsFragment = new FragmentRecipeDetails();
         mDetailsFragment.setArguments(args);;
 
+        // Initialize a Context that can be passed to the CursorLoaderListener
         final Context context = this;
+
         // Set CursorLoaderListener to be informed when Cursor is finished loading so the
         // nutrition drawer can be populated
         mDetailsFragment.setCursorLoaderListener(new FragmentRecipeDetails.CursorLoaderListener() {
@@ -103,6 +104,11 @@ public class ActivityRecipeDetails extends AppCompatActivity {
 
                 // Set the nutrition list for the AdapterNutrition for the slide out drawer
                 mNutritionAdapter.setNutritionList(getNutritionList(cursor));
+
+                // If image was not loaded previously, load the image from the imported recipe
+                if (!imageLoaded) {
+                    loadImageView();
+                }
             }
         });
 
@@ -182,73 +188,78 @@ public class ActivityRecipeDetails extends AppCompatActivity {
     }
 
 
+    /**
+     * Loads an image into the ImageView and starts the transition animation
+     */
     private void loadImageView() {
-        Cursor cursor = getContentResolver().query(
-                RecipeEntry.CONTENT_URI,
-                RecipeEntry.RECIPE_PROJECTION,
-                RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-                new String[] {Long.toString(mRecipeId)},
-                null
-        );
+        // Set the default parameters for loading the image with Glide
+        boolean skipMemCache = false;
+        DiskCacheStrategy strategy = DiskCacheStrategy.SOURCE;
 
-        if (cursor != null && cursor.moveToFirst()) {
-            String recipeImageUrl = cursor.getString(RecipeEntry.IDX_IMG_URL);
-            String source = cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
-            if (!recipeImageUrl.isEmpty()) {
-                imageLoaded = true;
-            }
+        // Check that an image URL was passed with the Intent
+        if (mImageUrl != null) {
+            // Determine the scheme of the URL
+            String scheme = Uri.parse(mImageUrl).getScheme();
 
-            boolean skipMemCache = false;
-            DiskCacheStrategy strategy = DiskCacheStrategy.SOURCE;
-            if (source.equals(getString(R.string.attribution_custom))) {
+            if (scheme.contains("file")) {
+                // If the image is a local image, then Glide needs to skip loading from cache
+                // otherwise it will load the wrong image on occasion.
                 skipMemCache = true;
                 strategy = DiskCacheStrategy.NONE;
             }
-
-            Glide.with(this)
-                    .load(recipeImageUrl)
-                    .diskCacheStrategy(strategy)
-                    .skipMemoryCache(skipMemCache)
-                    .listener(new RequestListener<String, GlideDrawable>() {
-                        @Override
-                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            // When image has finished loading, load image into target
-                            target.onResourceReady(resource, null);
-
-                            if (imageLoaded) {
-                                scheduleStartPostponedTransition(mRecipeImageView);
-                            }
-
-                            return false;
-
-                        }
-                    })
-                    .into(mRecipeImageView);
-
-
-
-            cursor.close();
+        } else {
+            // If no image URL was passed, immediately start the transition animation
+            scheduleStartPostponedTransition(mRecipeImageView);
         }
+
+        // Use Glide to load the image into the ImageView
+        Glide.with(this)
+                .load(mImageUrl)
+                .diskCacheStrategy(strategy)
+                .skipMemoryCache(skipMemCache)
+                .listener(new RequestListener<String, GlideDrawable>() {
+                    @Override
+                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                        // When image has finished loading, load image into target
+                        target.onResourceReady(resource, null);
+
+                        // Once the resource has been loaded, then start the transition animation
+                        scheduleStartPostponedTransition(mRecipeImageView);
+
+                        // Set imageLoaded to true to prevent the Activity from reloading the image
+                        // once the Cursor has finished
+
+                        imageLoaded = true;
+                        return false;
+
+                    }
+                })
+                .into(mRecipeImageView);
     }
 
+    /**
+     * Initiates the transition animation after the ImageView's dimension have been measured
+     * @param sharedElement
+     */
     void scheduleStartPostponedTransition(final View sharedElement) {
         sharedElement.getViewTreeObserver().addOnPreDrawListener(
                 new ViewTreeObserver.OnPreDrawListener() {
                     @Override
                     public boolean onPreDraw() {
+                        // Remove the listener to free up resources
                         sharedElement.getViewTreeObserver().removeOnPreDrawListener(this);
+
+                        // Start the transition animation
                         supportStartPostponedEnterTransition();
                         return true;
                     }
                 });
     }
-
-
 
     /**
      * Retrieves the information regarding the recipe's nutrition from the Cursor so that it can

@@ -247,7 +247,7 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
             // AdapterRecipe
             recipeAdapter = new AdapterRecipe(mContext, new AdapterRecipe.RecipeAdapterOnClickHandler() {
                 @Override
-                public void onClick(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+                public void onClick(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
                     // Relay the click event and its data to the registered Observer
                     mRecipeClickListener.onRecipeClicked(recipeUrl, viewHolder);
                 }

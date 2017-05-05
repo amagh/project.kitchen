@@ -86,10 +86,10 @@ public class FragmentSearch extends Fragment {
 
         mAdapter = new AdapterRecipe(mContext, new AdapterRecipe.RecipeAdapterOnClickHandler() {
             @Override
-            public void onClick(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+            public void onClick(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
                 mPosition = viewHolder.getAdapterPosition();
 
-                ((ActivitySearch)getActivity()).onRecipeSelected(recipeUrl, viewHolder);
+                ((ActivitySearch)getActivity()).onRecipeSelected(recipeUrl, imageUrl, viewHolder);
 
             }
         });
@@ -201,6 +201,6 @@ public class FragmentSearch extends Fragment {
     }
 
     interface RecipeCallback {
-        void onRecipeSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder);
+        void onRecipeSelected(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder);
     }
 }

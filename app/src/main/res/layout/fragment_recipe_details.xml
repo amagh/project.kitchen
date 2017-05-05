@@ -30,7 +30,6 @@
                     android:id="@+id/details_recipe_title_text"
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"
-                    android:layout_marginTop="@dimen/default_text_vertical_padding"
                     style="@style/titleText"
                     tools:text="Kentucky Fried Chicken" />
 

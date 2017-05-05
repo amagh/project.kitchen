@@ -602,18 +602,19 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     }
 
     @Override
-    public void onItemSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+    public void onItemSelected(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
         if (!mTwoPane) {
             // If in single-view mode, then start the ActivityRecipeDetails
             View statusBar = findViewById(android.R.id.statusBarBackground);
             View navigationBar = findViewById(android.R.id.navigationBarBackground);
+            View appbar = findViewById(R.id.appbar);
 
             List<Pair<View, String>> pairs = new ArrayList<>();
             pairs.add(Pair.create(statusBar, Window.STATUS_BAR_BACKGROUND_TRANSITION_NAME));
             if (navigationBar != null) {
                 pairs.add(Pair.create(navigationBar, Window.NAVIGATION_BAR_BACKGROUND_TRANSITION_NAME));
             }
-
+//            pairs.add(Pair.create(appbar, "test"));
             pairs.add(Pair.create((View) viewHolder.recipeImage, getString(R.string.transition_recipe_image)));
             ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     this,
@@ -621,6 +622,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             );
             Intent intent = new Intent(this, ActivityRecipeDetails.class);
             intent.setData(Uri.parse(recipeUrl));
+            intent.putExtra(getString(R.string.extra_image), imageUrl);
             ActivityCompat.startActivity(this, intent, options.toBundle());
         } else {
             mDetailsVisible = true;
