@@ -142,8 +142,6 @@
                 app:layout_gravity="center_horizontal"
                 app:srcCompat="@drawable/ic_menu_add_custom" />
 
-
-
         </android.support.v7.widget.GridLayout>
 
     </android.support.design.widget.CoordinatorLayout>
@@ -154,6 +152,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/opaque_white"
+        app:itemBackground="@drawable/menu_background_color"
+        app:itemTextColor="@color/menu_text_color"
         app:menu="@menu/menu_main">
 
     </android.support.design.widget.NavigationView>

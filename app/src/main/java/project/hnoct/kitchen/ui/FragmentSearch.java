@@ -98,8 +98,6 @@ public class FragmentSearch extends Fragment {
 
         setLayoutColumns();
 
-
-
         return rootView;
     }
 

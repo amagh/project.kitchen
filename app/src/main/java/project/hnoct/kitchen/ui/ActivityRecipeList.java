@@ -81,7 +81,6 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     /** Constants **/
     private static final String LOG_TAG = ActivityRecipeList.class.getSimpleName();
     private final String DETAILS_FRAGMENT = "DFTAG";
-    public static final String TIME_IN_MILLIS = "timeInMillis";
     private static final boolean DEVELOPER_MODE = true;
     private int SIX_HOURS_IN_SECONDS = 60 * 60 * 6;
     private int FLEX_TWO_HOURS = 60 * 60 * 2;
@@ -480,6 +479,9 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
 
     private void selectDrawerItem(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_browse: {
+                break;
+            }
             case R.id.action_favorites: {
                 startActivity(new Intent(this, ActivityFavorites.class));
                 hideNavigationDrawer();
@@ -724,6 +726,8 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             // network, register a ConnectivityListener to listen for changes in network state
             registerConnectivityListener();
         }
+
+        mNavigationView.getMenu().getItem(0).setChecked(true);
         super.onResume();
     }
 
@@ -780,6 +784,10 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
             if (activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+                // Set the isConnect variable to true so the Activity doesn't register another
+                // ConnectivityListener
+                isConnected = true;
+
                 // Dismiss the Snackbar
                 mSnackBar.dismiss();
 

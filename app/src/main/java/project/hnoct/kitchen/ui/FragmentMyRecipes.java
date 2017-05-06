@@ -143,7 +143,6 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
      * @param letter Letter the user is scrolling to
      */
     private void scrollToIndex(String letter) {
-        Log.d(LOG_TAG, mRecipeIndex.get(letter) + "");
         mStaggeredLayoutManager.scrollToPositionWithOffset(mRecipeIndex.get(letter), 0);
     }
 
