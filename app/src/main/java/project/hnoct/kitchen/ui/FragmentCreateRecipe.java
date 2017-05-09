@@ -30,6 +30,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -228,6 +229,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
             // If no saved data exists, generate a new recipeId
             mRecipeSourceId = Long.toString(Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE));
             mRecipeId = Long.parseLong(mRecipeSourceId);
+            mRecipeSourceId = "*" + mRecipeSourceId;
 
         } else {
             // Insert saved data into EditText
@@ -342,7 +344,11 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                         .skipMemoryCache(true)                          // Prevent Glide from caching image
                         .into(mRecipeImage);
 
+                inputStream.close();
+
             } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

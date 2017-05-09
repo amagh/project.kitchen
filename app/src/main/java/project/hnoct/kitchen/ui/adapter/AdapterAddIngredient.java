@@ -312,6 +312,10 @@ public class AdapterAddIngredient extends RecyclerView.Adapter<AdapterAddIngredi
                 }
             }
 
+            if (cursor != null) {
+                cursor.close();
+            }
+
             ArrayAdapter<String> adapter = new ArrayAdapter<>(mContext, android.R.layout.simple_dropdown_item_1line, resultsArray);
             addIngredientNameEditText.setAdapter(adapter);
 

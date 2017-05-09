@@ -911,6 +911,16 @@ public class Utilities {
 
         Uri imageUri = null;
 
+        if (bitmap.getWidth() > 4096 || bitmap.getHeight() > 4096) {
+            double tooLarge = bitmap.getWidth() > bitmap.getHeight() ?
+                    bitmap.getWidth() : bitmap.getHeight();
+
+            int scaleFactor = (int) Math.ceil(tooLarge / 2048);
+            bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() / scaleFactor, bitmap.getHeight() / scaleFactor, false);
+
+            Log.d(LOG_TAG, "Scaling factor: " + scaleFactor);
+        }
+
         try {
             fileOutputStream = new FileOutputStream(imagePath);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
