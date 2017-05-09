@@ -893,38 +893,49 @@ public class Utilities {
      * @return URI for the image location on file
      */
     public static Uri saveImageToFile(Context context, String recipeId, Bitmap bitmap) {
+        // A copy of the photo will be saved in the app's private directory
         File directory = context.getDir(
                 context.getString(R.string.food_image_dir),
                 Context.MODE_PRIVATE
         );
 
+        // If the directory doesn't already exist, create it
         if (!directory.exists()) {
             directory.mkdir();
         }
 
+        // Generate the filepath to save the file
         File imagePath = new File(directory, recipeId + ".jpg");
         if (imagePath.exists()) {
             System.out.println(imagePath.delete());
         }
 
+        // Initialize the FileOutputStream that will save the photo
         FileOutputStream fileOutputStream;
 
+        // URI of the photo's location after it has been saved
         Uri imageUri = null;
 
+        // Resize the image if it is too large
         if (bitmap.getWidth() > 4096 || bitmap.getHeight() > 4096) {
+            // Check which dimension is larger
             double tooLarge = bitmap.getWidth() > bitmap.getHeight() ?
                     bitmap.getWidth() : bitmap.getHeight();
 
+            // Scale it so the largest size is no larger than 2048px
             int scaleFactor = (int) Math.ceil(tooLarge / 2048);
             bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() / scaleFactor, bitmap.getHeight() / scaleFactor, false);
-
-            Log.d(LOG_TAG, "Scaling factor: " + scaleFactor);
         }
 
+        // Save the new photo to file
         try {
             fileOutputStream = new FileOutputStream(imagePath);
+
+            // Compress the image to save space
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
             fileOutputStream.close();
+
+            // Retrieve the URI of the saved image to pass to the Activity
             imageUri = Uri.fromFile(imagePath);
         } catch (IOException e) {
             e.printStackTrace();
@@ -1398,5 +1409,34 @@ public class Utilities {
 
         // Apply the changes
         editor.apply();
+    }
+
+    public static String getRecipeSourceIdFromUri(Context context, Uri recipeUri) {
+        // Retrieve the recipe ID from the URI
+        long recipeId = RecipeEntry.getRecipeIdFromUri(recipeUri);
+
+        // Query the databse to find the entry with the recipe ID
+        Cursor cursor = context.getContentResolver().query(
+                RecipeEntry.CONTENT_URI,
+                RecipeEntry.RECIPE_PROJECTION,
+                RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                new String[] {Long.toString(recipeId)},
+                null
+        );
+
+        // Initialize the recipeSourceId to be returned if it exists
+        String recipeSourceId = null;
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                // Retrieve the recipeSourceId
+                recipeSourceId = cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE_ID);
+            }
+
+            // Close the Cursor
+            cursor.close();
+        }
+
+        return recipeSourceId;
     }
 }

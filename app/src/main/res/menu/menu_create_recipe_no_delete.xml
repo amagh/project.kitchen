@@ -9,11 +9,6 @@
         app:showAsAction="never"/>
 
     <item
-        android:id="@+id/action_delete_recipe"
-        android:title="@string/action_delete_recipe"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_save"
         android:orderInCategory="0"
         android:title="@string/action_save"

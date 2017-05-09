@@ -344,6 +344,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                         .skipMemoryCache(true)                          // Prevent Glide from caching image
                         .into(mRecipeImage);
 
+                // Close the input stream
                 inputStream.close();
 
             } catch (FileNotFoundException e) {
@@ -776,6 +777,15 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
     @Override
     public void onSaveClicked() {
         saveToDatabase();
+
+        // Start a new ActivityRecipeDetails pointing to the newly edited recipe
+        Intent intent = new Intent(getActivity(), ActivityRecipeDetails.class);
+        intent.setData(RecipeEntry.buildRecipeUriFromId(mRecipeId));
+
+        startActivity(intent);
+
+        // Prevent this Activity from showing in the backstack
+        getActivity().finish();
     }
 
     @Override

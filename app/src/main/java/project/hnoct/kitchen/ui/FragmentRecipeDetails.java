@@ -569,6 +569,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                 Intent intent = new Intent(mContext, ActivityCreateRecipe.class);
                 intent.setData(RecipeEntry.buildRecipeUriFromId(mRecipeId));
                 startActivity(intent);
+                getActivity().finish();
                 return true;
             }
 

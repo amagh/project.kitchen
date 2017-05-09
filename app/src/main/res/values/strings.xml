@@ -6,6 +6,7 @@
     <string name="action_edit">Edit Recipe</string>
     <string name="action_edit_mode">Recipe Order and Removal</string>
     <string name="action_clear_recipe">Clear Recipe</string>
+    <string name="action_delete_recipe">Delete recipe</string>
     <string name="action_add_to_recipebook">Add to Recipe Book</string>
     <string name="browse_title">Browse Recipes</string>
     <string name="favorite_title">Favorites</string>
