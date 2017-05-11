@@ -34,7 +34,7 @@
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingLeft="@dimen/activity_horizontal_margin"
                 android:hint="@string/hint_chapter_details_title"
-                android:inputType="textAutoCorrect|textCapWords|textMultiLine"
+                android:inputType="textAutoCorrect|textCapWords"
                 android:maxLines="2"
                 style="@style/titleText"
                 tools:text="Chapter One"/>

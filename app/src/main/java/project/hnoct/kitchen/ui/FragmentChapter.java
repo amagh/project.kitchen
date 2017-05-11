@@ -136,7 +136,7 @@ public class FragmentChapter extends Fragment implements LoaderManager.LoaderCal
                 final AlertDialog dialog = new AlertDialog.Builder(mContext).create();
 
                 // Set the message to alert the user
-                dialog.setMessage("Are you sure you want to remove this chapter and all its contents?");
+                dialog.setMessage(getString(R.string.dialog_confirm_delete_chapter));
                 dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(android.R.string.yes), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {

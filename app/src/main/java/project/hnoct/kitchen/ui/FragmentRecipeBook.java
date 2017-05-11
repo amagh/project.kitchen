@@ -1,6 +1,7 @@
 package project.hnoct.kitchen.ui;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -11,12 +12,14 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -41,6 +44,8 @@ public class FragmentRecipeBook extends Fragment implements LoaderManager.Loader
     private AdapterRecipeBook mRecipeBookAdapter;
     private CursorManager mCursorManager;
     private int mPosition;
+    private long deleteBookId;
+    private int deletePosition;
 
     @BindView(R.id.recipe_book_recyclerview) RecyclerView mRecyclerView;
 
@@ -243,22 +248,52 @@ public class FragmentRecipeBook extends Fragment implements LoaderManager.Loader
 
         @Override
         public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-            // Get the position of the item to be removed
-            int position = viewHolder.getAdapterPosition();
+            deletePosition = viewHolder.getAdapterPosition();
 
             // Retrieve the recipe book ID to be removed from database
-            long bookId = (long) mRecipeBookAdapter.getList()
-                    .get(position)
+            deleteBookId = (long) mRecipeBookAdapter.getList()
+                    .get(deletePosition)
                     .get(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID);
 
-            // Remove the recipe book from the internal list of mRecipeBookAdapter and notify the
-            // Adapter of the change
-            mRecipeBookAdapter.getList().remove(position);
-            mRecipeBookAdapter.notifyItemRemoved(position);
+            // Create and show a dialog asking the user to confirm the delete action
+            final AlertDialog dialog = new AlertDialog.Builder(mContext).create();
 
-            // Remove the recipe book from the database using an AsyncTask
-            ModifyDatabase asyncTask = new ModifyDatabase();
-            asyncTask.execute(bookId);
+            // Set the message
+            dialog.setMessage(getString(R.string.dialog_confirm_delete_recipe_book));
+
+            // Set the positive and negative button options
+            dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.button_confirm), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // Remove the recipe book from the internal list of mRecipeBookAdapter and notify the
+                    // Adapter of the change
+                    mRecipeBookAdapter.getList().remove(deletePosition);
+                    mRecipeBookAdapter.notifyItemRemoved(deletePosition);
+
+                    // Remove the recipe book from the database using an AsyncTask
+                    ModifyDatabase asyncTask = new ModifyDatabase();
+                    asyncTask.execute(deleteBookId);
+
+                    // Dismiss the Dialog
+                    dialog.dismiss();
+
+
+                }
+            });
+
+            dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.button_deny), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // Reset the list for mRecipeBookAdapter to reset the swiped ViewHolder
+                    mRecipeBookAdapter.notifyDataSetChanged();
+
+                    // Dismiss the dialog
+                    dialog.dismiss();
+                }
+            });
+
+            // Show the Dialog
+            dialog.show();
         }
 
         @Override
@@ -276,6 +311,12 @@ public class FragmentRecipeBook extends Fragment implements LoaderManager.Loader
                 // Delete the entry from the database
                 mContext.getContentResolver().delete(
                         RecipeBookEntry.CONTENT_URI,
+                        RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = ?",
+                        new String[] {Long.toString(bookId)}
+                );
+
+                mContext.getContentResolver().delete(
+                        ChapterEntry.CONTENT_URI,
                         RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = ?",
                         new String[] {Long.toString(bookId)}
                 );

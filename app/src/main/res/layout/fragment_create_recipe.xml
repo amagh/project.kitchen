@@ -13,6 +13,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_menu_add_custom"/>
+
             <com.inthecheesefactory.thecheeselibrary.widget.AdjustableImageView
                 android:id="@+id/create_recipe_image"
                 android:layout_width="match_parent"
@@ -46,7 +52,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/default_text_vertical_padding"
-                android:inputType="textAutoCorrect|textCapWords|textMultiLine"
+                android:inputType="textAutoCorrect|textCapWords"
                 android:imeOptions="actionNext"
                 android:maxLines="2"
                 android:hint="@string/create_recipe_name_hint"

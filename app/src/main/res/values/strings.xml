@@ -20,6 +20,8 @@
     <string name="recipe_key" translatable="false">recipe</string>
     <string name="quantity_key" translatable="false">quantity</string>
     <string name="favorite_key" translatable="false">favorite</string>
+    <string name="author_key" translatable="false">author</string>
+    <string name="recipes_deleted_key" translatable="false">recipes_deleted</string>
 
     <!-- Fractions -->
     <string name="one_quarter_fraction">\u00BC</string>
@@ -115,6 +117,9 @@
     <string name="hint_chapter_details_title">Chapter title</string>
     <string name="hint_chapter_details_description">Chapter description</string>
 
+    <!--Activity Create Recipe Dialog-->
+    <string name="hint_create_recipe_author">Author name</string>
+
     <!-- Utility -->
     <string name="http_scheme">http</string>
     <string name="allrecipes_authority">allrecipes.com</string>
@@ -198,4 +203,10 @@
     <string name="day_multiple">days</string>
     <string name="hour_singular">hour</string>
     <string name="hour_multiple">hours</string>
+
+    <!-- Toast messages -->
+    <string name="toast_no_recipe_books">Please create a recipe book first to save this recipe to your recipe book!</string>
+    <string name="dialog_confirm_delete_chapter">Are you sure you want to remove this chapter and all its contents?</string>
+    <string name="dialog_confirm_delete_recipe_book">Are you sure you want to remove this recipe book and all its contents?</string>
+    <string name="dialog_confirm_delete_recipe">Are you sure you want to remove this recipe and all its contents?</string>
 </resources>

@@ -9,6 +9,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -97,6 +98,12 @@ public class AdapterAddDirection extends RecyclerView.Adapter<AdapterAddDirectio
 
         // Notify Adapter of the change in data
         notifyItemInserted(mDirectionList.size() - 1);
+
+        // Open the soft keyboard if it is the first direction being added
+        if (mDirectionList.size() == 1) {
+            InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+        }
     }
 
     /**

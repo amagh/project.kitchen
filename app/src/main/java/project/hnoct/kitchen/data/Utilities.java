@@ -515,7 +515,9 @@ public class Utilities {
 
                 // Add all recipeIds to the List // TODO: Replace this explanation
                 if (cursor != null && cursor.moveToFirst()) {
-                    id = cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_RECIPE_ID)) + 1;
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                    int recipesDeleted = prefs.getInt(context.getString(R.string.recipes_deleted_key), 0);
+                    id = cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_RECIPE_ID)) + recipesDeleted + 1;
                 }
 
                 // Close the cursor

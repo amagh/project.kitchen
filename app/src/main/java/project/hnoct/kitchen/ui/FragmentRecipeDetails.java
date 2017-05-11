@@ -19,6 +19,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.net.ConnectivityManagerCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -34,6 +35,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -574,50 +576,76 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
             }
 
             case R.id.detail_menu_add_to_recipebook: {
-                AddToRecipeBookDialog dialog = new AddToRecipeBookDialog();
-                dialog.show(getActivity().getFragmentManager(), "dialog");
-                dialog.setChapterSelectedListener(new AddToRecipeBookDialog.ChapterSelectedListener() {
-                    @Override
-                    public void onChapterSelected(long bookId, long chapterId) {
-                        // Initialize parameters for querying the database for recipe order
-                        Uri linkRecipeBookUri = LinkRecipeBookEntry.CONTENT_URI;
-                        String[] projection = LinkRecipeBookEntry.PROJECTION;
-                        String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
-                        String[] selectionArgs = new String[] {Long.toString(chapterId)};
-                        String sortOrder = LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + " DESC";
+                // Check whether there is already a recipebook and chapters created
+                Cursor cursor = mContentResolver.query(
+                        ChapterEntry.CONTENT_URI,
+                        null,
+                        null,
+                        null,
+                        null
+                );
 
-                        // Query the database to determine the new recipe's order in the chapter
-                        Cursor cursor = mContentResolver.query(
-                                linkRecipeBookUri,
-                                projection,
-                                selection,
-                                selectionArgs,
-                                sortOrder
-                        );
-
-                        int recipeOrder;
-                        if (cursor !=  null && cursor.moveToFirst()) {
-                            recipeOrder = cursor.getInt(LinkRecipeBookEntry.IDX_RECIPE_ORDER) + 1;
-                            // Close the Cursor
-                            cursor.close();
-                        } else {
-                            recipeOrder = 0;
-                        }
-
-                        // Generate the ContentValues to insert the entry in the database
-                        ContentValues values = new ContentValues();
-                        values.put(RecipeEntry.COLUMN_RECIPE_ID, mRecipeId);
-                        values.put(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID, bookId);
-                        values.put(ChapterEntry.COLUMN_CHAPTER_ID, chapterId);
-                        values.put(LinkRecipeBookEntry.COLUMN_RECIPE_ORDER, recipeOrder);
-
-                        // Insert into database
-                        mContentResolver.insert(
-                                LinkRecipeBookEntry.CONTENT_URI,
-                                values
-                        );
+                boolean bookExists = false;
+                if (cursor != null) {
+                    if (cursor.moveToFirst()) {
+                        bookExists = true;
                     }
-                });
+
+                    cursor.close();
+                }
+
+                if (bookExists) {
+                    AddToRecipeBookDialog dialog = new AddToRecipeBookDialog();
+                    dialog.show(getActivity().getFragmentManager(), "dialog");
+                    dialog.setChapterSelectedListener(new AddToRecipeBookDialog.ChapterSelectedListener() {
+                        @Override
+                        public void onChapterSelected(long bookId, long chapterId) {
+                            // Initialize parameters for querying the database for recipe order
+                            Uri linkRecipeBookUri = LinkRecipeBookEntry.CONTENT_URI;
+                            String[] projection = LinkRecipeBookEntry.PROJECTION;
+                            String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ?";
+                            String[] selectionArgs = new String[] {Long.toString(chapterId)};
+                            String sortOrder = LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + " DESC";
+
+                            // Query the database to determine the new recipe's order in the chapter
+                            Cursor cursor = mContentResolver.query(
+                                    linkRecipeBookUri,
+                                    projection,
+                                    selection,
+                                    selectionArgs,
+                                    sortOrder
+                            );
+
+                            int recipeOrder;
+                            if (cursor !=  null && cursor.moveToFirst()) {
+                                recipeOrder = cursor.getInt(LinkRecipeBookEntry.IDX_RECIPE_ORDER) + 1;
+                                // Close the Cursor
+                                cursor.close();
+                            } else {
+                                recipeOrder = 0;
+                            }
+
+                            // Generate the ContentValues to insert the entry in the database
+                            ContentValues values = new ContentValues();
+                            values.put(RecipeEntry.COLUMN_RECIPE_ID, mRecipeId);
+                            values.put(RecipeBookEntry.COLUMN_RECIPE_BOOK_ID, bookId);
+                            values.put(ChapterEntry.COLUMN_CHAPTER_ID, chapterId);
+                            values.put(LinkRecipeBookEntry.COLUMN_RECIPE_ORDER, recipeOrder);
+
+                            // Insert into database
+                            mContentResolver.insert(
+                                    LinkRecipeBookEntry.CONTENT_URI,
+                                    values
+                            );
+                        }
+                    });
+                } else {
+                    Toast.makeText(mContext,
+                            getString(R.string.toast_no_recipe_books),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+
                 return true;
             }
         }

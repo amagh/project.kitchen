@@ -20,6 +20,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -42,9 +43,11 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnEditorAction;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.dialog.SetAuthorDialog;
 import project.hnoct.kitchen.ui.adapter.AdapterAddDirection;
 import project.hnoct.kitchen.ui.adapter.AdapterAddIngredient;
 import project.hnoct.kitchen.view.NonScrollingRecyclerView;
@@ -57,7 +60,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
     private static final String LOG_TAG = ActivityCreateRecipe.class.getSimpleName();
     static final String RECIPE_URI = "recipe_uri";
     private final int SELECT_PHOTO = 25687;
-
+    private String DIALOG_SET_AUTHOR = "author_dialog";
 
     /** Member Variables **/
     private Context mContext;
@@ -66,7 +69,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
     private Uri mRecipeImageUri;
     private String mRecipeDescription;
     private String mRecipeName;
-    private String mRecipeAuthor = "testUser";
+    private String mRecipeAuthor;
     private String mSource;
     private ItemTouchHelper mIngredientIth;
     private ItemTouchHelper mDirectionIth;
@@ -111,8 +114,10 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
      */
     @OnClick(R.id.create_recipe_clear_image)
     void clearImage() {
-        // Delete the image from File
-        Utilities.deleteImageFromFile(mContext, mRecipeImageUri);
+        if (mRecipeImageUri != null) {
+            // Delete the image from File
+            Utilities.deleteImageFromFile(mContext, mRecipeImageUri);
+        }
 
         // Set the image URI to null
         mRecipeImageUri = null;
@@ -132,6 +137,16 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
     @OnClick(R.id.create_recipe_add_direction)
     void addDirection() {
         mDirectionAdapter.addDirection();
+    }
+
+    @OnEditorAction(R.id.create_recipe_name_edit_text)
+    protected boolean onNextPressed(int actionId) {
+        if (actionId == EditorInfo.IME_ACTION_NEXT) {
+            mRecipeDescriptionEditText.requestFocus();
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -227,9 +242,9 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
 
         if (mRecipeSourceId == null) {
             // If no saved data exists, generate a new recipeId
-            mRecipeSourceId = Long.toString(Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE));
-            mRecipeId = Long.parseLong(mRecipeSourceId);
-            mRecipeSourceId = "*" + mRecipeSourceId;
+            mRecipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
+            mRecipeSourceId = "*" + mRecipeId;
+            mRecipeAuthor = getUserAuthor();
 
         } else {
             // Insert saved data into EditText
@@ -317,6 +332,27 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
         super.onPause();
     }
 
+    /**
+     * Retrieve the user's set author name from SharedPreferences
+     */
+    private String getUserAuthor() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String recipeAuthor = prefs.getString(getString(R.string.author_key), "TestUser");
+        return recipeAuthor;
+    }
+
+    /**
+     * Sets the author name in the SharedPreferences
+     * @param author
+     */
+    private void setUserAuthor(String author) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        editor.putString(getString(R.string.author_key), author);
+        editor.apply();
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -370,6 +406,11 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
         } else {
             mRecipeImageUri = null;
         }
+
+        if (mRecipeAuthor == null) {
+            mRecipeAuthor = getUserAuthor();
+        }
+
         String ingredientString = prefs.getString(mContext.getString(R.string.edit_recipe_ingredients_key), null);
         String directionList = prefs.getString(mContext.getString(R.string.edit_recipe_directions_key), null);
 
@@ -389,6 +430,8 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                 // Add the Pair into mIngredientList
                 mIngredientList.add(new Pair<>(first, second));
             }
+        } else {
+            mIngredientList = new LinkedList<>();
         }
 
         // Convert the stored List-in-String form of directions back into a List<String>
@@ -400,12 +443,8 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
 
             // Add information back into mDirectionList
             mDirectionList.addAll(Arrays.asList(directionArray));
-        }
-
-    if (mRecipeName != null || mRecipeDescription != null || mRecipeImageUri != null ||
-            mIngredientList != null || mDirectionList != null) {
-            // If at least one piece of data was retrieved, then get the recipeId
-            mRecipeSourceId = prefs.getString(mContext.getString(R.string.edit_recipe_id_key), "0");
+        } else {
+            mDirectionList = new LinkedList<>();
         }
     }
 
@@ -517,7 +556,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
     /**
      * Wipes data in SharedPreferences after it has been loaded into memory
      */
-    private void deleteAutosavedData() {
+    void deleteAutosavedData() {
         // Instantiate SharedPreferences and its Editor
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         SharedPreferences.Editor editor = prefs.edit();
@@ -554,7 +593,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
     /**
      * Saves the user content to the database
      */
-    private void saveToDatabase() {
+    private boolean saveToDatabase() {
         // Variables
         boolean newRecipe = true;   // Check to see whether values need to be inserted or updated
 
@@ -565,8 +604,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
         mDirectionList = mDirectionAdapter.getCorrectedDirectionList();
 
         // Check to make sure all database requirements are satisfied prior to attempting to save
-        if (mRecipeAuthor == null || mRecipeAuthor.trim().equals("") ||
-                mRecipeDescription == null || mRecipeDescription.trim().equals("") ||
+        if (mRecipeDescription == null || mRecipeDescription.trim().equals("") ||
                 mRecipeImageUri == null ||
                 mRecipeName == null || mRecipeName.equals("") ||
                 mIngredientList == null || mIngredientList.isEmpty() ||
@@ -612,14 +650,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                         .show();
             }
 
-            // TODO: Inform user what information is still missing
-//            Toast.makeText(
-//                    mContext,
-//                    "Please add required information before attempting to save!",
-//                    Toast.LENGTH_LONG)
-//                    .show();
-
-            return;
+            return false;
         }
 
         // Query the database to check if recipe already exists in database
@@ -636,14 +667,30 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
             newRecipe = false;
         }
 
+        if (mRecipeAuthor.equals("TestUser")) {
+            SetAuthorDialog dialog = new SetAuthorDialog();
+            dialog.setPositiveClickListener(new SetAuthorDialog.PositiveClickListener() {
+                @Override
+                public void onPositiveClick(String author) {
+                    setUserAuthor(author);
+                    mRecipeAuthor = author;
+                    onSaveClicked();
+                }
+            });
+            dialog.show(getActivity().getFragmentManager(), DIALOG_SET_AUTHOR);
+            return false;
+        }
+
         // Close the Cursor
-        cursor.close();
+        if (cursor != null) {
+            cursor.close();
+        }
 
         // Create ContentValues for Recipe that need to be inserted/updated
         ContentValues recipeValues = new ContentValues();
         recipeValues.put(RecipeEntry.COLUMN_RECIPE_SOURCE_ID, mRecipeSourceId);
         recipeValues.put(RecipeEntry.COLUMN_RECIPE_NAME, mRecipeName);
-        recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, "TestUser");     // TODO: Add ability to set recipe-author
+        recipeValues.put(RecipeEntry.COLUMN_RECIPE_AUTHOR, mRecipeAuthor);     // TODO: Add ability to set recipe-author
         recipeValues.put(RecipeEntry.COLUMN_IMG_URL, mRecipeImageUri.toString());
         recipeValues.put(RecipeEntry.COLUMN_SHORT_DESC, mRecipeDescription);
         recipeValues.put(RecipeEntry.COLUMN_SOURCE, mSource);
@@ -772,20 +819,45 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
 
         deleteAutosavedData();
         mSaved = true;
+        return true;
     }
 
     @Override
     public void onSaveClicked() {
-        saveToDatabase();
+        boolean saved = saveToDatabase();
 
-        // Start a new ActivityRecipeDetails pointing to the newly edited recipe
-        Intent intent = new Intent(getActivity(), ActivityRecipeDetails.class);
-        intent.setData(RecipeEntry.buildRecipeUriFromId(mRecipeId));
+        if (saved) {
+            // Start a new ActivityRecipeDetails pointing to the newly edited recipe
+            Intent intent = new Intent(getActivity(), ActivityRecipeDetails.class);
 
-        startActivity(intent);
+            // Query the databse for the URL for the recipe just saved
+            Cursor cursor = mContext.getContentResolver().query(
+                    RecipeEntry.CONTENT_URI,
+                    RecipeEntry.RECIPE_PROJECTION,
+                    RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                    new String[] {Long.toString(mRecipeId)},
+                    null
+            );
 
-        // Prevent this Activity from showing in the backstack
-        getActivity().finish();
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    // Retrieve the recipe URL and image URL
+                    String recipeUrl = cursor.getString(RecipeEntry.IDX_RECIPE_URL);
+                    String imageUrl = cursor.getString(RecipeEntry.IDX_IMG_URL);
+
+                    // Send the data with the Intent
+                    intent.setData(Uri.parse(recipeUrl));
+                    intent.putExtra(getString(R.string.extra_image), imageUrl);
+
+                    // Open ActivityRecipeDetails
+                    startActivity(intent);
+
+                    // Prevent this Activity from showing in the backstack
+                    getActivity().finish();
+                }
+            }
+
+        }
     }
 
     @Override

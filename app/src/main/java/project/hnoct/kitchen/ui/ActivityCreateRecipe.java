@@ -1,7 +1,11 @@
 package project.hnoct.kitchen.ui;
 
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -12,6 +16,9 @@ import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.Utilities;
 
 public class ActivityCreateRecipe extends AppCompatActivity {
+    // Constants
+
+    // Member Variables
     private boolean canDelete = false;
     private long mRecipeId;
 
@@ -45,10 +52,15 @@ public class ActivityCreateRecipe extends AppCompatActivity {
         }
 
         if (recipeUri != null) {
+            // Retrieve the recipeSourceId
             String recipeSourceId = Utilities.getRecipeSourceIdFromUri(this, recipeUri);
+
+            // Retrieve the recipeId so that if the user deletes the recipe, it can be easily
+            // referenced
             mRecipeId = RecipeContract.RecipeEntry.getRecipeIdFromUri(recipeUri);
 
             if (recipeSourceId.substring(0,1).equals("*")) {
+                // If the recipe is a custom recipe, load the menu that includes the option to delete
                 canDelete = true;
             }
         }
@@ -56,7 +68,7 @@ public class ActivityCreateRecipe extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (getIntent().getData() != null) {
+        if (canDelete) {
             getMenuInflater().inflate(R.menu.menu_create_recipe, menu);
         } else {
             getMenuInflater().inflate(R.menu.menu_create_recipe_no_delete, menu);
@@ -72,33 +84,55 @@ public class ActivityCreateRecipe extends AppCompatActivity {
                 // Initiate the Callback to the FragmentCreateRecipe to inform it that user has clicked
                 // the save option
                 FragmentCreateRecipe fragment =
-                        (FragmentCreateRecipe) getSupportFragmentManager().findFragmentById(R.id.create_recipe_container);
+                        (FragmentCreateRecipe) getSupportFragmentManager()
+                                .findFragmentById(R.id.create_recipe_container);
                 fragment.onSaveClicked();
                 break;
             }
             case R.id.action_clear_recipe: {
                 FragmentCreateRecipe fragment =
-                        (FragmentCreateRecipe) getSupportFragmentManager().findFragmentById(R.id.create_recipe_container);
+                        (FragmentCreateRecipe) getSupportFragmentManager()
+                                .findFragmentById(R.id.create_recipe_container);
                 fragment.onClearClicked();
                 break;
             }
             case R.id.action_delete_recipe: {
-                // Delete the recipe entry
-                getContentResolver().delete(
-                        RecipeContract.RecipeEntry.CONTENT_URI,
-                        RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-                        new String[] {Long.toString(mRecipeId)}
-                );
+                // Show a dialog asking the user to confirm deletion of the recipe
+                final AlertDialog dialog = new AlertDialog.Builder(this).create();
 
-                // Delete the IngredientLink Entries
-                getContentResolver().delete(
-                        RecipeContract.LinkIngredientEntry.CONTENT_URI,
-                        RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-                        new String[] {Long.toString(mRecipeId)}
-                );
+                // Set Dialog message
+                dialog.setMessage(getString(R.string.dialog_confirm_delete_recipe));
 
-                // Close the Activity
-                finish();
+                // Set the positive and negative buttons
+                dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.button_confirm), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // Close the dialog
+                        dialog.dismiss();
+
+                        // Delete the recipe entry'
+                        deleteRecipe();
+
+                        // Delete any auto-saved data
+                        FragmentCreateRecipe fragment =
+                                (FragmentCreateRecipe) getSupportFragmentManager()
+                                        .findFragmentById(R.id.create_recipe_container);
+                        fragment.onClearClicked();
+
+                        // Close the Activity
+                        finish();
+                    }
+                });
+
+                dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.button_deny), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // Close the dialog and do nothing
+                        dialog.dismiss();
+                    }
+                });
+
+                dialog.show();
             }
         }
         return super.onOptionsItemSelected(item);
@@ -109,5 +143,29 @@ public class ActivityCreateRecipe extends AppCompatActivity {
         void onSaveClicked();
 
         void onClearClicked();
+    }
+
+    private void deleteRecipe() {
+        // Delete the recipe's entry
+        getContentResolver().delete(
+                RecipeContract.RecipeEntry.CONTENT_URI,
+                RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                new String[] {Long.toString(mRecipeId)}
+        );
+
+        // Delete the IngredientLink Entries
+        getContentResolver().delete(
+                RecipeContract.LinkIngredientEntry.CONTENT_URI,
+                RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " = ?",
+                new String[] {Long.toString(mRecipeId)}
+        );
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        int recipesDeleted = prefs.getInt(getString(R.string.recipes_deleted_key), 0);
+        editor.putInt(getString(R.string.recipes_deleted_key), recipesDeleted + 1);
+
+        editor.apply();
     }
 }

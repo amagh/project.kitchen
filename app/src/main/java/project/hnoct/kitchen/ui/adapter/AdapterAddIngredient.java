@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
@@ -209,19 +210,12 @@ public class AdapterAddIngredient extends RecyclerView.Adapter<AdapterAddIngredi
         mAddList.add(true);
 
         // Notify adapter of the change
-//        notifyItemChanged(mIngredientList.size() - 1);
         notifyItemInserted(mIngredientList.size() - 1);
 
-        // Set the focus to the quantity EditText of the newly added item
-        AddIngredientViewHolder viewHolder =
-                (AddIngredientViewHolder) mRecyclerView.findViewHolderForAdapterPosition(mIngredientList.size() - 1);
-
-        test();
-    }
-
-    private void test() {
-        for (int i = 0; i < mIngredientList.size(); i++) {
-            Log.d(LOG_TAG, "This fucking thing: " + mRecyclerView.findViewHolderForAdapterPosition(i));
+        // Open the soft-keyboard if it is the first ingredient to be added
+        if (mIngredientList.size() == 1) {
+            InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
         }
     }
 
