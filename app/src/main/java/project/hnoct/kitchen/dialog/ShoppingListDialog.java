@@ -2,18 +2,29 @@ package project.hnoct.kitchen.dialog;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.ContentProviderOperation;
+import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.OperationApplicationException;
 import android.database.Cursor;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract;
+import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.ui.adapter.AdapterIngredient;
 
 /**
@@ -58,6 +69,8 @@ public class ShoppingListDialog extends DialogFragment {
         builder.setPositiveButton(getString(R.string.button_confirm), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                SetDatabaseShoppingList asyncTask = new SetDatabaseShoppingList();
+                asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 dismiss();
             }
         });
@@ -78,5 +91,80 @@ public class ShoppingListDialog extends DialogFragment {
      */
     public void setIngredientCursor(Cursor cursor) {
         mCursor = cursor;
+    }
+
+    /**
+     * AsyncTask that updates the database with the new shopping list values
+     */
+    private class SetDatabaseShoppingList extends AsyncTask<Void, Void, Void> {
+        // Member Variables
+        boolean[] shoppingListValues;                               // Holds boolean value for whether ingredient should be in shopping list
+        ArrayList<ContentProviderOperation> editOperationsList;     // List of edit operations to perform on the database
+
+        public SetDatabaseShoppingList() {
+            // Initialize member variables
+            shoppingListValues = mAdapter.getShoppingListValues();
+            editOperationsList = new ArrayList<>(shoppingListValues.length);
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            // Move the Cursor to the first position
+            mCursor.moveToFirst();
+
+            // Generate the ContentProviderOperations to be performed on the database
+            createEditOperation();
+
+            try {
+                // Batch apply the ContentProviderOperations
+                getActivity().getContentResolver().applyBatch(
+                        RecipeContract.CONTENT_AUTHORITY,
+                        editOperationsList
+                );
+            } catch (RemoteException | OperationApplicationException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        /**
+         * Recursive function that will populate editOperationsList with ContentProviderOperations
+         * that edit the database with the new shopping list value of each ingredient
+         */
+        void createEditOperation() {
+            // Retrieve the values to be updated in the database
+            long ingredientId = mCursor.getLong(LinkIngredientEntry.IDX_INGREDIENT_ID);
+            int recipeId = mCursor.getInt(LinkIngredientEntry.IDX_RECIPE_ID);
+            int inShoppingList = shoppingListValues[0] ? 1 : 0;
+
+            // Parameters for the ContentProviderOperation
+            Uri linkUri = LinkIngredientEntry.CONTENT_URI;
+            String selection = IngredientEntry.COLUMN_INGREDIENT_ID + " = ? AND " +
+                    RecipeEntry.COLUMN_RECIPE_ID + " = ?";
+            String[] selectionArgs = new String[] {Long.toString(ingredientId),
+                    Integer.toString(recipeId)};
+
+            // Generate the ContentProviderOperation with the parameters and values
+            ContentProviderOperation operation = ContentProviderOperation.newUpdate(linkUri)
+                    .withSelection(selection, selectionArgs)
+                    .withValue(LinkIngredientEntry.COLUMN_SHOPPING, inShoppingList)
+                    .build();
+
+            // Add the ContentProviderOperation to the ArrayList
+            editOperationsList.add(operation);
+
+            // Create a copy of shoppingListValues that removes the first value in the Array
+            boolean[] tempArray = new boolean[shoppingListValues.length - 1];
+            System.arraycopy(shoppingListValues, 1, tempArray, 0, tempArray.length);
+
+            // Set shoppingListValues to the newly created boolean[]
+            shoppingListValues = tempArray;
+
+            if (mCursor.moveToNext()) {
+                // Call itself to generate the next ContentProviderOperation
+                createEditOperation();
+            }
+        }
     }
 }
