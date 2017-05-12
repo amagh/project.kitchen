@@ -13,6 +13,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
@@ -45,10 +46,12 @@ import com.bumptech.glide.request.target.Target;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.dialog.AddToRecipeBookDialog;
+import project.hnoct.kitchen.dialog.ShoppingListDialog;
 import project.hnoct.kitchen.sync.RecipeImporter;
 import project.hnoct.kitchen.ui.adapter.AdapterDirection;
 import project.hnoct.kitchen.ui.adapter.AdapterIngredient;
@@ -62,6 +65,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     private static final int DETAILS_LOADER = 1;
     private static final String RECIPE_DETAILS_URI = "recipe_and_ingredients_uri";
     public static final String RECIPE_DETAILS_URL = "recipe_url";
+    private static final String DIALOG_SHOPPING_LIST = "shopping_list_dialog";
 
     /** Member Variables **/
     private Uri mRecipeUri;
@@ -97,9 +101,19 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     @BindView(R.id.details_line_separator_top) View mLineSeparatorTop;
     @BindView(R.id.details_line_separator_bottom) View mLineSeparatorBottom;
     @BindView(R.id.details_recipe_progressbar) ProgressBar mProgressBar;
-
+    @BindView(R.id.details_shopping_list_button) ImageView mShoppingListButton;
 
     public FragmentRecipeDetails() {
+    }
+
+    @OnClick(R.id.details_shopping_list_button)
+    void onClick(View view) {
+        // Show a dialog that allows the user to add ingredients to a shopping list
+        ShoppingListDialog dialog = new ShoppingListDialog();
+
+        // Pass the Cursor with ingredient information
+        dialog.setIngredientCursor(mCursor);
+        dialog.show(getActivity().getFragmentManager(), DIALOG_SHOPPING_LIST);
     }
 
     @Override
@@ -440,6 +454,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mIngredientsRecyclerView.setVisibility(View.VISIBLE);
         mDirectionsRecyclerView.setVisibility(View.VISIBLE);
 //        mRecipeImageView.setVisibility(View.VISIBLE);
+        mShoppingListButton.setVisibility(View.VISIBLE);
         mRecipeTitleText.setVisibility(View.VISIBLE);
         mRecipeAuthorText.setVisibility(View.VISIBLE);
         mRecipeAttributionText.setVisibility(View.VISIBLE);
@@ -455,6 +470,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mIngredientsRecyclerView.startAnimation(fadeInAnim);
         mDirectionsRecyclerView.startAnimation(fadeInAnim);
 //        mRecipeImageView.startAnimation(fadeInAnim);
+        mShoppingListButton.startAnimation(fadeInAnim);
         mRecipeTitleText.startAnimation(fadeInAnim);
         mRecipeAuthorText.startAnimation(fadeInAnim);
         mRecipeAttributionText.startAnimation(fadeInAnim);
@@ -472,6 +488,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mIngredientsRecyclerView.setVisibility(View.INVISIBLE);
         mDirectionsRecyclerView.setVisibility(View.INVISIBLE);
 //        mRecipeImageView.setVisibility(View.INVISIBLE);
+        mShoppingListButton.setVisibility(View.INVISIBLE);
         mRecipeTitleText.setVisibility(View.INVISIBLE);
         mRecipeAuthorText.setVisibility(View.INVISIBLE);
         mRecipeAttributionText.setVisibility(View.INVISIBLE);

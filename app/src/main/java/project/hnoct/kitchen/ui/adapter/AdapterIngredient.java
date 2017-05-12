@@ -5,10 +5,12 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Typeface;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -19,7 +21,9 @@ import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
+import butterknife.Optional;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.Utilities;
@@ -35,7 +39,8 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
     private Context mContext;                   // Interface for global context
     private Cursor mCursor;
     private ContentResolver mContentResolver;   // Reference to ContentResolver
-    private List<String> mIngredientList;       // TODO: For storing ingredients that need to be added to shopping list
+    private boolean[] mShoppingListArray;       // TODO: For storing ingredients that need to be added to shopping list
+    private boolean isShoppingList = false;
 
     public AdapterIngredient(Context context) {
         mContext = context;
@@ -44,7 +49,14 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
 
     @Override
     public IngredientViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.list_item_ingredient, parent, false);
+        View view;
+
+        if (isShoppingList) {
+            view = LayoutInflater.from(mContext).inflate(R.layout.list_item_shopping_list, parent, false);
+        } else {
+            view = LayoutInflater.from(mContext).inflate(R.layout.list_item_ingredient, parent, false);
+        }
+
         view.setFocusable(true);
 
         return new IngredientViewHolder(view);
@@ -60,6 +72,22 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         quantity = Utilities.convertToUnicodeFraction(mContext, quantity);
         String ingredient = mCursor.getString(RecipeContract.LinkIngredientEntry.IDX_INGREDIENT_NAME);
 
+        // Check whether Adapter is in shopping-list-mode
+        if (isShoppingList) {
+            // If in shopping-list-mode remove preparation steps from the ingredient String
+            ingredient = Utilities.removePreparation(ingredient);
+
+            // Check whether the CheckBox should be checked
+            boolean isChecked = mShoppingListArray[position];
+
+            // Set CheckBox status
+            if (isChecked) {
+                holder.mCheckBox.setChecked(true);
+            } else {
+                holder.mCheckBox.setChecked(false);
+            }
+        }
+
         // Check to see if ingredient is a header (headers are notated with a ":")
         Pattern pattern = Pattern.compile(".*:");
         Matcher match = pattern.matcher(ingredient);
@@ -71,11 +99,11 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             holder.ingredientNameText.setTypeface(holder.ingredientNameText.getTypeface(), Typeface.BOLD);
         } else {
             holder.ingredientNameText.setText(ingredient);
+            holder.ingredientNameText.setTypeface(holder.ingredientNameText.getTypeface(), Typeface.NORMAL);
         }
 
         // Set the view parameters
         holder.quantityText.setText(Utilities.abbreviateMeasurements(quantity));
-        holder.addIngredientButton.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -84,6 +112,25 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             return mCursor.getCount();
         }
         return 0;
+    }
+
+    /**
+     * Sets the Adapter to use shopping-list-mode with a different layout and parameters
+     */
+    public void useAsShoppingList() {
+        // Set the member boolean
+        isShoppingList = true;
+
+        // Check if Cursor has already been passed to the Adapter
+        if (mCursor != null) {
+            // Initialize a new Array that will hold the boolean values for whether the ingredient
+            // has been checked
+            mShoppingListArray = new boolean[mCursor.getCount()];
+            for (int i = 0; i < mShoppingListArray.length; i++) {
+                // Check all ingredients to start
+                mShoppingListArray[i] = true;
+            }
+        }
     }
 
     /**
@@ -96,6 +143,13 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             // Set the member Cursor to the new Cursor supplied
             mCursor = newCursor;
 
+            if (isShoppingList) {
+                mShoppingListArray = new boolean[mCursor.getCount()];
+                for (int i = 0; i < mShoppingListArray.length; i++) {
+                    mShoppingListArray[i] = false;
+                }
+            }
+
             // Notify the Adapter that the data has changed
             notifyDataSetChanged();
         }
@@ -105,18 +159,32 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
     public class IngredientViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.list_ingredient_quantity) TextView quantityText;
         @BindView(R.id.list_ingredient_name) TextView ingredientNameText;
-        @BindView(R.id.list_ingredient_add_button) ImageView addIngredientButton;
+        @Nullable @BindView(R.id.list_shopping_checkbox) CheckBox mCheckBox;
+//
+//        @OnClick(R.id.list_ingredient_add_button) void addIngredientToList() {
+//            String ingredientName = (String) ingredientNameText.getText();
+//            if (mIngredientList == null) {
+//                mIngredientList = new LinkedList<>();
+//            }
+//
+//            if (mIngredientList.contains(ingredientName)) {
+//                mIngredientList.remove(ingredientName);
+//            } else if (!mIngredientList.contains(ingredientName)) {
+//                mIngredientList.add(ingredientName);
+//            }
+//        }
 
-        @OnClick(R.id.list_ingredient_add_button) void addIngredientToList() {
-            String ingredientName = (String) ingredientNameText.getText();
-            if (mIngredientList == null) {
-                mIngredientList = new LinkedList<>();
-            }
+        @Optional
+        @OnCheckedChanged(R.id.list_shopping_checkbox)
+        void onCheckChanged(boolean isChecked) {
+            // Retrieve the position of the ViewHolder
+            int position = getAdapterPosition();
 
-            if (mIngredientList.contains(ingredientName)) {
-                mIngredientList.remove(ingredientName);
-            } else if (!mIngredientList.contains(ingredientName)) {
-                mIngredientList.add(ingredientName);
+            // Set whether the ingredient has been checked or unchecked
+            if (isChecked) {
+                mShoppingListArray[position] = true;
+            } else {
+                mShoppingListArray[position] = false;
             }
         }
 

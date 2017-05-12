@@ -26,7 +26,7 @@
     <dimen name="card_compact_vertical_separation">4dp</dimen>
 
     <!-- Ingredient list item -->
-    <dimen name="list_ingredient_keyline">64dp</dimen>
+    <dimen name="list_ingredient_keyline">72dp</dimen>
     <dimen name="list_ingredient_min_height">24dp</dimen>
 
     <!-- Direction list item -->
@@ -61,5 +61,6 @@
     <dimen name="list_add_direction_keyline">80dp</dimen>
     <dimen name="list_add_direction_button_top_margin">12dp</dimen>
 
-
+    <!-- Shopping List Dialog -->
+    <dimen name="dialog_recyclerview_height">400dp</dimen>
 </resources>

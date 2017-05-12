@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -142,7 +143,7 @@ public class Utilities {
                 String ingredientQuantity = ingredientAndQuantity.substring(0, lastCharIdx).trim();
                 String ingredient = ingredientAndQuantity.substring(lastCharIdx).trim();
 
-                if (ingredientQuantity.length() > 20) {
+                if (ingredientQuantity.length() > 25) {
                     // If the ingredient quantity is an abnormal length, it is usually because the
                     // measurement is a clarification within the ingredient and not the actual
                     // quantity
@@ -160,13 +161,20 @@ public class Utilities {
         }
         // If the input String does not contain any known measurements, then use Regex to
         // obtain the quantity of the ingredient
-        Pattern pattern = Pattern.compile("([0-9]* *-* *[1-9]+\\/*[1-9]*) (.*)");
+        Pattern pattern = Pattern.compile("(\\D*) *([0-9]* *-* *[1-9]+\\/*[1-9]*) (.*)");
         Matcher matcher = pattern.matcher(ingredientAndQuantity);
 
         if (matcher.find()) {
             // If quantity is found, create new Strings from the groups matched
-            String ingredientQuantity = matcher.group(1).trim();
-            String ingredient = matcher.group(2).trim();
+            if (matcher.group(1).length() > 5) {
+                // Prevent the algorithm from cutting off too much
+                // e.g. vegetable oil, for frying (about 1 cup)
+                // Return an empty String as the quantity
+                return new Pair<>(ingredientAndQuantity, "");
+            }
+
+            String ingredientQuantity = matcher.group(2).trim();
+            String ingredient = matcher.group(3).trim();
             return new Pair<>(ingredient, ingredientQuantity);
         } else {
             // If no quantity is found, then ingredient is informal measurement
@@ -1440,5 +1448,50 @@ public class Utilities {
         }
 
         return recipeSourceId;
+    }
+
+    /**
+     * Removes preparation verbiage from the ingredient text for cleaner shopping list
+     * @param ingredient Ingredient that includes preparation steps (e.g. onions, finely minced)
+     * @return Ingredient without preparation (e.g. onions)
+     */
+    public static String removePreparation(String ingredient) {
+        // Split the ingredient by comma
+        String[] ingredientArray = ingredient.split(",");
+
+        // Create an ArrayList with the split ingredient Strings to be modified as needed
+        List<String> ingredientStringList = new ArrayList<>(Arrays.asList(ingredientArray));
+
+        // Check whether the ingredient has more than one section to be removed
+        if (ingredientArray.length > 1) {
+            for (int i = ingredientArray.length - 1; i > 0 ; i--) {
+                // Iterate through ingredientArray and remove any Strings that include preparation
+                boolean removed = false;    // Checks for whether the ingredient has already been removed
+                for (String preparation : IngredientEntry.preparations) {
+                    // Iterate through the preparation array to search for matches to preparation verbiage
+                    if (!removed && ingredientArray[i].contains(preparation)) {
+                        // If String includes preparation, remove from ingredientStringList
+                        ingredientStringList.remove(i);
+
+                        // Set boolean to true to ensure the algorithm doesn't attempt to remove the
+                        // same ingredient multiple times
+                        removed = true;
+                    }
+                }
+            }
+        }
+
+        // Initialize the String that will be returned with the first section of the split
+        // ingredient String
+        String strippedIngredientString = ingredientStringList.get(0);
+
+        // Iterate through and re-build the String, adding a comma between each String
+        if (ingredientArray.length > 1) {
+            for (int i = 1; i < ingredientStringList.size(); i++) {
+                strippedIngredientString = strippedIngredientString + "," + ingredientStringList.get(i);
+            }
+        }
+
+        return strippedIngredientString;
     }
 }

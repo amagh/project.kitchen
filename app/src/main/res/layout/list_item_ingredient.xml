@@ -23,10 +23,4 @@
         app:layout_columnWeight="1"
         tools:text="vanilla extract" />
 
-    <ImageView
-        android:id="@+id/list_ingredient_add_button"
-        android:src="@drawable/sym_action_add"
-        android:tint="@color/review_star_grey"
-        app:layout_gravity="center_vertical|fill"/>
-
 </android.support.v7.widget.GridLayout>

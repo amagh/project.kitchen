@@ -184,9 +184,16 @@ public class RecipeContract {
         public static final String COLUMN_FOOD_INGREDIENT_ID = "food_id";               // REAL
 
         public static final String[] measurements = new String[] {
-                "mL", "loaf", "can", "package", "container", "tablespoon", "teaspoon", "clove", "cup", "pint",
-                "quart", "gallon", "ounce", "fluid ounce", "jar", "dashes", "dash", "pinch", "slice",
-                "pound", "drop", "lb", "bunch", "tsp", "tbsp", "g"
+                "mL", "loaf", "can", "package", "container", "tablespoon", "teaspoon", "clove",
+                "cup", "pint", "quart", "gallon", "ounce", "fluid ounce", "jar", "dashes", "dash",
+                "pinch", "slice", "pound", "drop", "lb", "bunch", "tsp", "tbsp", "g"
+        };
+
+        public static final String[] preparations = new String[] {
+                "chopped", "diced", "minced", "separated", "peeled", "deveined", "juiced", "cut",
+                "with", "without", "divided", "shelled", "trimmed", "sliced", "whipped", "grated",
+                "split", "softened", "crushed", "melted", "°", "quartered", "cored", "beaten",
+                "temperature", "shaved", "thawed"
         };
 
         /** See RecipeEntry for comments on following methods **/
@@ -233,6 +240,7 @@ public class RecipeContract {
         // foreign keys)
         public static final String COLUMN_QUANTITY = "quantity";                    // TEXT NOT NULL
         public static final String COLUMN_INGREDIENT_ORDER = "ingredient_order";    // INTEGER NOT NULL
+        public static final String COLUMN_SHOPPING = "shopping_list";               // INTEGER NOT NULL
 
         // Column projection and index
         public static final String[] LINK_PROJECTION = new String[] {
