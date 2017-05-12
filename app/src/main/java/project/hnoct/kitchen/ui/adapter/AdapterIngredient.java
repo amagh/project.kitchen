@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.graphics.Typeface;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -101,13 +102,17 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             if (isShoppingList) {
                 // Headers do not need to display a checkbox
                 holder.mCheckBox.setVisibility(View.GONE);
+                holder.quantityText.setVisibility(View.GONE);
+                holder.ingredientNameText.setGravity(Gravity.CENTER_HORIZONTAL);
             }
         } else {
             holder.ingredientNameText.setText(ingredient);
-            holder.ingredientNameText.setTypeface(holder.ingredientNameText.getTypeface(), Typeface.NORMAL);
+            holder.ingredientNameText.setTypeface(Typeface.SANS_SERIF);
 
             if (isShoppingList) {
                 holder.mCheckBox.setVisibility(View.VISIBLE);
+                holder.quantityText.setVisibility(View.VISIBLE);
+                holder.ingredientNameText.setGravity(Gravity.NO_GRAVITY);
             }
         }
 
@@ -142,6 +147,10 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         }
     }
 
+    public boolean[] getShoppingListValues() {
+        return mShoppingListArray;
+    }
+
     /**
      * Swaps the Cursor in the adapter with a new Cursor
      * @param newCursor Cursor that is to be swapped in
@@ -169,19 +178,6 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         @BindView(R.id.list_ingredient_quantity) TextView quantityText;
         @BindView(R.id.list_ingredient_name) TextView ingredientNameText;
         @Nullable @BindView(R.id.list_shopping_checkbox) CheckBox mCheckBox;
-//
-//        @OnClick(R.id.list_ingredient_add_button) void addIngredientToList() {
-//            String ingredientName = (String) ingredientNameText.getText();
-//            if (mIngredientList == null) {
-//                mIngredientList = new LinkedList<>();
-//            }
-//
-//            if (mIngredientList.contains(ingredientName)) {
-//                mIngredientList.remove(ingredientName);
-//            } else if (!mIngredientList.contains(ingredientName)) {
-//                mIngredientList.add(ingredientName);
-//            }
-//        }
 
         @Optional
         @OnCheckedChanged(R.id.list_shopping_checkbox)
