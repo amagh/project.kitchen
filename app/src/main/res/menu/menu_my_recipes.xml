@@ -37,6 +37,13 @@
         android:checkable="true" />
 
     <item
+        android:id="@+id/action_shopping_list"
+        android:orderInCategory="5"
+        android:title="@string/shopping_list_title"
+        android:checked="false"
+        android:checkable="true" />
+
+    <item
         android:id="@+id/action_copy_db"
         android:orderInCategory="5"
         android:title="@string/transfer_db_title"

@@ -19,7 +19,7 @@
         android:id="@+id/action_favorites"
         android:orderInCategory="2"
         android:title="@string/favorite_title"
-        android:checked="true"
+        android:checked="false"
         android:checkable="true" />
 
     <item
@@ -40,7 +40,7 @@
         android:id="@+id/action_shopping_list"
         android:orderInCategory="5"
         android:title="@string/shopping_list_title"
-        android:checked="false"
+        android:checked="true"
         android:checkable="true" />
 
     <item

@@ -105,17 +105,29 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
         </activity>
+
         <service android:name=".sync.AllRecipesService" />
         <service android:name=".sync.EpicuriousService" />
         <service android:name=".sync.FoodDotComService" />
         <service android:name=".sync.SeriousEatsService" />
-        <service android:name=".sync.RecipeGcmService"
-            android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE"
-            android:exported="true" >
+        <service
+            android:name=".sync.RecipeGcmService"
+            android:exported="true"
+            android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">
             <intent-filter>
                 <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY" />
             </intent-filter>
         </service>
+
+        <activity
+            android:name=".ui.ActivityShoppingList"
+            android:label="@string/title_activity_shopping_list"
+            android:parentActivityName=".ui.ActivityRecipeList"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
+        </activity>
     </application>
 
 </manifest>

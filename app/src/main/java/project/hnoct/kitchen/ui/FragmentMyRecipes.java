@@ -22,7 +22,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract;
-import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 import project.hnoct.kitchen.ui.adapter.RecipeItemAnimator;
 import project.hnoct.kitchen.view.SlidingAlphabeticalIndex;
@@ -34,7 +33,7 @@ import project.hnoct.kitchen.view.StaggeredGridLayoutManagerWithSmoothScroll;
 public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     /** Constants **/
     private static final String LOG_TAG = FragmentMyRecipes.class.getSimpleName();
-    private static final int FAVORITES_LOADER = 2;
+    private static final int MY_RECIPES_LOADER = 4;
     private static final String ALPHABET = "0ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     /** Member Variables **/
@@ -228,7 +227,7 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
         super.onActivityCreated(savedInstanceState);
 
         // Initialize the CursorLoader
-        getLoaderManager().initLoader(FAVORITES_LOADER, null, this);
+        getLoaderManager().initLoader(MY_RECIPES_LOADER, null, this);
     }
 
     /**

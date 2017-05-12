@@ -507,6 +507,13 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
                 mDetailsVisible = false;
                 break;
             }
+            case R.id.action_shopping_list: {
+                hideNavigationDrawer();
+                Intent intent = new Intent(this, ActivityShoppingList.class);
+                startActivity(intent);
+                mDetailsVisible = false;
+                break;
+            }
             case R.id.action_copy_db: {
                 File sd = Environment.getExternalStorageDirectory();
                 File database = getApplicationContext().getDatabasePath(RecipeDbHelper.DATABASE_NAME + ".db");

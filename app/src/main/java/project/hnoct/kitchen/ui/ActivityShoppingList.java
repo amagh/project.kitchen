@@ -4,19 +4,18 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.util.Pair;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import java.io.File;
@@ -29,30 +28,21 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeDbHelper;
 import project.hnoct.kitchen.prefs.SettingsActivity;
-import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
-public class ActivityMyRecipes extends AppCompatActivity implements FragmentMyRecipes.RecipeCallback {
+public class ActivityShoppingList extends AppCompatActivity {
 
+    @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.navigation_drawer) NavigationView mNavigationView;
     @BindView(R.id.main_drawer_layout) DrawerLayout mDrawerLayout;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)  {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_my_recipes);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
+        setContentView(R.layout.activity_shopping_list);
         ButterKnife.bind(this);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -62,26 +52,15 @@ public class ActivityMyRecipes extends AppCompatActivity implements FragmentMyRe
                 return true;
             }
         });
-    }
 
-    @Override
-    public void onItemSelected(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
-        // If in single-view mode, then start the ActivityRecipeDetails
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                this,
-                new Pair(viewHolder.recipeImage, getString(R.string.transition_recipe_image))
-        );
-        Intent intent = new Intent(this, ActivityRecipeDetails.class);
-        intent.setData(Uri.parse(recipeUrl));
-        intent.putExtra(getString(R.string.extra_image), imageUrl);
-        ActivityCompat.startActivity(this, intent, options.toBundle());
-    }
+        if (savedInstanceState == null) {
+            FragmentShoppingList fragment = new FragmentShoppingList();
 
-    /**
-     * Hides the Navigation Drawer
-     */
-    private void hideNavigationDrawer() {
-        mDrawerLayout.closeDrawer(Gravity.LEFT);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .commit();
+        }
+
     }
 
     private void selectDrawerItem(MenuItem item) {
@@ -110,14 +89,13 @@ public class ActivityMyRecipes extends AppCompatActivity implements FragmentMyRe
                 break;
             }
             case R.id.action_my_recipes: {
+                startActivity(new Intent(this, ActivityMyRecipes.class));
+                hideNavigationDrawer();
+                ActivityRecipeList.mDetailsVisible = false;
+                finish();
                 break;
             }
             case R.id.action_my_recipe_books: {
-                hideNavigationDrawer();
-                Intent intent = new Intent(this, ActivityRecipeBook.class);
-                startActivity(intent);
-                ActivityRecipeList.mDetailsVisible = false;
-                finish();
                 break;
             }
             case R.id.action_shopping_list: {
@@ -165,5 +143,12 @@ public class ActivityMyRecipes extends AppCompatActivity implements FragmentMyRe
                 break;
             }
         }
+    }
+
+    /**
+     * Hides the Navigation Drawer
+     */
+    private void hideNavigationDrawer() {
+        mDrawerLayout.closeDrawer(Gravity.LEFT);
     }
 }

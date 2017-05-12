@@ -12,6 +12,7 @@
     <string name="favorite_title">Favorites</string>
     <string name="my_recipes_title">My Recipes</string>
     <string name="recipe_book_title">My Recipe Books</string>
+    <string name="shopping_list_title">Shopping List</string>
     <string name="transfer_db_title">Copy DB to SD</string>
     <string name="title_activity_recipe_details">RecipeDetailsActivity</string>
 
@@ -209,4 +210,5 @@
     <string name="dialog_confirm_delete_chapter">Are you sure you want to remove this chapter and all its contents?</string>
     <string name="dialog_confirm_delete_recipe_book">Are you sure you want to remove this recipe book and all its contents?</string>
     <string name="dialog_confirm_delete_recipe">Are you sure you want to remove this recipe and all its contents?</string>
+    <string name="title_activity_shopping_list">ActivityShoppingList</string>
 </resources>
