@@ -97,9 +97,18 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             ingredient = ingredient.substring(0, ingredient.length() -1);
             holder.ingredientNameText.setText(ingredient);
             holder.ingredientNameText.setTypeface(holder.ingredientNameText.getTypeface(), Typeface.BOLD);
+
+            if (isShoppingList) {
+                // Headers do not need to display a checkbox
+                holder.mCheckBox.setVisibility(View.GONE);
+            }
         } else {
             holder.ingredientNameText.setText(ingredient);
             holder.ingredientNameText.setTypeface(holder.ingredientNameText.getTypeface(), Typeface.NORMAL);
+
+            if (isShoppingList) {
+                holder.mCheckBox.setVisibility(View.VISIBLE);
+            }
         }
 
         // Set the view parameters

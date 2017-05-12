@@ -14,11 +14,11 @@ import project.hnoct.kitchen.data.RecipeContract.*;
 public class RecipeDbHelper extends SQLiteOpenHelper {
     // Constants
     private static final String LOG_TAG = RecipeDbHelper.class.getSimpleName();
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "recipe.db";
 
     // SQL Statements for upgrades
-    String SQL_ADD_SHOPPING_COLUMN = "ALTER TABLE " + LinkIngredientEntry.TABLE_NAME +
+    private final String SQL_ADD_SHOPPING_COLUMN = "ALTER TABLE " + LinkIngredientEntry.TABLE_NAME + " " +
             "ADD COLUMN " + LinkIngredientEntry.COLUMN_SHOPPING + " INTEGER;";
 
     public RecipeDbHelper(Context context) {
@@ -64,6 +64,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 IngredientEntry.COLUMN_INGREDIENT_ID + " REAL NOT NULL, " +
                 LinkIngredientEntry.COLUMN_QUANTITY + " TEXT NOT NULL, " +
                 LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + " INTEGER NOT NULL, " +
+                LinkIngredientEntry.COLUMN_SHOPPING + " INTEGER, " +
                 // Utilize the combination of unique index and ingredient as the primary key
 //                "PRIMARY KEY (" + RecipeEntry.COLUMN_RECIPE_ID + "," +
 //                RecipeEntry.COLUMN_SOURCE + ") " +
