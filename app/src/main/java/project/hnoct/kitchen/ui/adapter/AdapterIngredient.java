@@ -42,6 +42,7 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
     private ContentResolver mContentResolver;   // Reference to ContentResolver
     private boolean[] mShoppingListArray;       // TODO: For storing ingredients that need to be added to shopping list
     private boolean isShoppingList = false;
+    private boolean toggleChecked = true;
 
     public AdapterIngredient(Context context) {
         mContext = context;
@@ -126,6 +127,26 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             return mCursor.getCount();
         }
         return 0;
+    }
+
+    /**
+     * Toggles the check status of all items in the Adapter
+     */
+    public void toggleChecked() {
+        // Check what the toggle is currently set to and reverse it
+        if (toggleChecked) {
+            toggleChecked = false;
+        } else {
+            toggleChecked = true;
+        }
+
+        // Iterate through each item and change its check status
+        for (int i = 0; i < mShoppingListArray.length; i++) {
+            mShoppingListArray[i] = toggleChecked;
+        }
+
+        // Notify the Adapter of the change
+        notifyDataSetChanged();
     }
 
     /**

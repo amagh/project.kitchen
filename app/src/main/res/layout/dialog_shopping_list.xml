@@ -11,13 +11,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Add Ingredients to Shopping List"
-            style="@style/titleTextCompact"
-            />
+            android:layout_height="wrap_content">
+
+            <CheckBox
+                android:id="@+id/dialog_shopping_list_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:checked="true"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Add to Shopping List"
+                style="@style/titleTextCompact"
+                />
+
+        </FrameLayout>
+
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/dialog_shopping_list_recyclerview"

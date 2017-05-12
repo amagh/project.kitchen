@@ -16,12 +16,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CheckBox;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnCheckedChanged;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeContract.*;
@@ -40,6 +42,12 @@ public class ShoppingListDialog extends DialogFragment {
 
     // ButterKnife bound views
     @BindView(R.id.dialog_shopping_list_recyclerview) RecyclerView mRecyclerView;
+    @BindView(R.id.dialog_shopping_list_checkbox) CheckBox mCheckBox;
+
+    @OnCheckedChanged(R.id.dialog_shopping_list_checkbox)
+    void onCheckChanged(boolean isChecked) {
+        mAdapter.toggleChecked();
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
