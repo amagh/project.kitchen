@@ -215,29 +215,47 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         showRecipeTitles = true;
 
         if (mCursor != null) {
-            // Move the Cursor to the first position
-            mCursor.moveToFirst();
+
 
             // Initialize the Lists for holding recipe title information
             mRecipeTitlePositionList = new ArrayList<>();
             mRecipeTitlesList = new ArrayList<>();
             int position = 0;
 
-            // Iterate through mCursor and check how many different recipes are included
-            do {
-                // Retrieve the recipe's title
-                String recipeName = mCursor.getString(LinkIngredientEntry.IDX_RECIPE_NAME);
+            // Move the Cursor to the first position
+            if (mCursor.moveToFirst()) {
+                // Iterate through mCursor and check how many different recipes are included
+                do {
+                    // Retrieve the recipe's title
+                    String recipeName = mCursor.getString(LinkIngredientEntry.IDX_RECIPE_NAME);
 
-                if (!mRecipeTitlesList.contains(recipeName)) {
-                    // If the List does not already contain the recipe title, add it and set the
-                    // position in which it will show
-                    mRecipeTitlePositionList.add(position + mRecipeTitlesList.size());
-                    mRecipeTitlesList.add(recipeName);
-                }
+                    if (!mRecipeTitlesList.contains(recipeName)) {
+                        // If the List does not already contain the recipe title, add it and set the
+                        // position in which it will show
+                        mRecipeTitlePositionList.add(position + mRecipeTitlesList.size());
+                        mRecipeTitlesList.add(recipeName);
+                    }
 
-                // Increment the position to maintain parity with the Adapter's position
-                position++;
-            } while (mCursor.moveToNext());
+                    // Increment the position to maintain parity with the Adapter's position
+                    position++;
+                } while (mCursor.moveToNext());
+            }
+
+            // Make sure mCheckedArray reflects values from database
+            getCheckedValuesFromDatabase();
+        }
+    }
+
+    /**
+     * Sets mCheckedArray to use the values from database instead of the default "true" value
+     */
+    private void getCheckedValuesFromDatabase() {
+        for (int i = 0; i < mCheckedArray.length; i++) {
+            // Check all ingredients to start
+            mCursor.moveToPosition(i);
+
+            // Retrieve the checked value from database
+            mCheckedArray[i] = mCursor.getInt(LinkIngredientEntry.IDX_LINK_CHECKED) == 1;
         }
     }
 
@@ -253,9 +271,13 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             // Initialize a new Array that will hold the boolean values for whether the ingredient
             // has been checked
             mCheckedArray = new boolean[mCursor.getCount()];
-            for (int i = 0; i < mCheckedArray.length; i++) {
-                // Check all ingredients to start
-                mCheckedArray[i] = true;
+            if (showRecipeTitles) {
+                getCheckedValuesFromDatabase();
+
+            } else {
+                for (int i = 0; i < mCheckedArray.length; i++) {
+                    mCheckedArray[i] = true;
+                }
             }
         }
     }
@@ -283,9 +305,12 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             // Set the member Cursor to the new Cursor supplied
             mCursor = newCursor;
 
-            if (isShoppingList) {
-                if (mCursor != null) {
-                    mCheckedArray = new boolean[mCursor.getCount()];
+            if (isShoppingList && mCursor != null) {
+                mCheckedArray = new boolean[mCursor.getCount()];
+                if (showRecipeTitles) {
+                    getCheckedValuesFromDatabase();
+
+                } else {
                     for (int i = 0; i < mCheckedArray.length; i++) {
                         mCheckedArray[i] = true;
                     }
