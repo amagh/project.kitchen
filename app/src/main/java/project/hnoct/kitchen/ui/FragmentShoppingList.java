@@ -20,7 +20,6 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.ui.adapter.AdapterIngredient;
-import project.hnoct.kitchen.view.StaggeredGridLayoutManagerWithSmoothScroll;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -45,7 +44,7 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_activity_shopping_list, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_shopping_list, container, false);
         ButterKnife.bind(this, rootView);
 
         // Initialize member variables
@@ -91,6 +90,12 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
 
             // Swap mCursor into mAdapter
             mAdapter.swapCursor(mCursor);
+
+            if (mAdapter.getToggleStatus()) {
+                mAdapter.toggleChecked();
+            }
+
+            mAdapter.addRecipeTitles();
         }
     }
 

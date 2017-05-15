@@ -12,10 +12,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,10 +22,9 @@ import java.util.regex.Pattern;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnCheckedChanged;
-import butterknife.OnClick;
 import butterknife.Optional;
 import project.hnoct.kitchen.R;
-import project.hnoct.kitchen.data.RecipeContract;
+import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.data.Utilities;
 
 /**
@@ -35,6 +33,9 @@ import project.hnoct.kitchen.data.Utilities;
 
 public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.IngredientViewHolder> {
     /** Constants **/
+    private final int INGREDIENT_VIEW = 0;
+    private final int SHOPPING_LIST_VIEW = 1;
+    private final int RECIPE_TITLE_VIEW = 2;
 
     /** Member Variables **/
     private Context mContext;                   // Interface for global context
@@ -43,6 +44,10 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
     private boolean[] mShoppingListArray;       // TODO: For storing ingredients that need to be added to shopping list
     private boolean isShoppingList = false;
     private boolean toggleChecked = true;
+    private boolean showRecipeTitles = false;
+
+    private List<Integer> mRecipeTitlePositionList;
+    private List<String> mRecipeTitlesList;
 
     public AdapterIngredient(Context context) {
         mContext = context;
@@ -52,11 +57,20 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
     @Override
     public IngredientViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
-
-        if (isShoppingList) {
-            view = LayoutInflater.from(mContext).inflate(R.layout.list_item_shopping_list, parent, false);
-        } else {
-            view = LayoutInflater.from(mContext).inflate(R.layout.list_item_ingredient, parent, false);
+        switch (viewType) {
+            case INGREDIENT_VIEW: {
+                view = LayoutInflater.from(mContext).inflate(R.layout.list_item_ingredient, parent, false);
+                break;
+            }
+            case SHOPPING_LIST_VIEW: {
+                view = LayoutInflater.from(mContext).inflate(R.layout.list_item_shopping_list, parent, false);
+                break;
+            }
+            case RECIPE_TITLE_VIEW: {
+                view = LayoutInflater.from(mContext).inflate(R.layout.list_item_ingredient_recipe_title, parent, false);
+                break;
+            }
+            default: throw new UnsupportedOperationException("Unknown viewtype");
         }
 
         view.setFocusable(true);
@@ -66,13 +80,39 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
 
     @Override
     public void onBindViewHolder(IngredientViewHolder holder, int position) {
+        // Check whether the Adapter is in shopping-list-mode
+        if (isShoppingList) {
+            // Initialize a position modifier to compensate for the recipe title positions
+            int positionModifier = 0;
+
+            if (showRecipeTitles) {
+                // Iterate through mRecipeTitlePosition and check if the position matches
+                for (int i = 0; i < mRecipeTitlePositionList.size(); i++) {
+                    if (position == mRecipeTitlePositionList.get(i)) {
+                        // If it matches, then populate the view with the recipe title
+                        String recipeTitle = mRecipeTitlesList.get(i);
+                        holder.ingredientNameText.setText(recipeTitle);
+
+                        return;
+                    } else if (position > mRecipeTitlePositionList.get(i)) {
+                        // If it is greater than the position, then increment the position modifier
+                        positionModifier++;
+                    }
+                }
+
+                // Compensate for any added recipe titles
+                position = position - positionModifier;
+            }
+        }
+
         // Move Cursor to correct position
         mCursor.moveToPosition(position);
 
+
         // Retrieve ingredient information
-        String quantity = mCursor.getString(RecipeContract.LinkIngredientEntry.IDX_LINK_QUANTITY);
+        String quantity = mCursor.getString(LinkIngredientEntry.IDX_LINK_QUANTITY);
         quantity = Utilities.convertToUnicodeFraction(mContext, quantity);
-        String ingredient = mCursor.getString(RecipeContract.LinkIngredientEntry.IDX_INGREDIENT_NAME);
+        String ingredient = mCursor.getString(LinkIngredientEntry.IDX_INGREDIENT_NAME);
 
         // Check whether Adapter is in shopping-list-mode
         if (isShoppingList) {
@@ -124,6 +164,12 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
     @Override
     public int getItemCount() {
         if (mCursor != null) {
+            if (isShoppingList && mRecipeTitlesList != null) {
+                // If the shopping list contains recipe titles, then add the size of the list to the
+                // Cursor's count
+                return mCursor.getCount() + mRecipeTitlesList.size();
+            }
+
             return mCursor.getCount();
         }
         return 0;
@@ -147,6 +193,48 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
 
         // Notify the Adapter of the change
         notifyDataSetChanged();
+    }
+
+    /**
+     * Passes the value of toggleChecked
+     * @return Boolean value for whether the toggle is set to true or false
+     */
+    public boolean getToggleStatus() {
+        return toggleChecked;
+    }
+
+    /**
+     * Sets up the Adapter to add in Recipe Titles in the case of ActivityShoppingList
+     */
+    public void addRecipeTitles() {
+        // Set boolean to true
+        showRecipeTitles = true;
+
+        if (mCursor != null) {
+            // Move the Cursor to the first position
+            mCursor.moveToFirst();
+
+            // Initialize the Lists for holding recipe title information
+            mRecipeTitlePositionList = new ArrayList<>();
+            mRecipeTitlesList = new ArrayList<>();
+            int position = 0;
+
+            // Iterate through mCursor and check how many different recipes are included
+            do {
+                // Retrieve the recipe's title
+                String recipeName = mCursor.getString(LinkIngredientEntry.IDX_RECIPE_NAME);
+
+                if (!mRecipeTitlesList.contains(recipeName)) {
+                    // If the List does not already contain the recipe title, add it and set the
+                    // position in which it will show
+                    mRecipeTitlePositionList.add(position + mRecipeTitlesList.size());
+                    mRecipeTitlesList.add(recipeName);
+                }
+
+                // Increment the position to maintain parity with the Adapter's position
+                position++;
+            } while (mCursor.moveToNext());
+        }
     }
 
     /**
@@ -183,9 +271,11 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             mCursor = newCursor;
 
             if (isShoppingList) {
-                mShoppingListArray = new boolean[mCursor.getCount()];
-                for (int i = 0; i < mShoppingListArray.length; i++) {
-                    mShoppingListArray[i] = false;
+                if (mCursor != null) {
+                    mShoppingListArray = new boolean[mCursor.getCount()];
+                    for (int i = 0; i < mShoppingListArray.length; i++) {
+                        mShoppingListArray[i] = true;
+                    }
                 }
             }
 
@@ -195,8 +285,25 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         return mCursor;
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        if (!isShoppingList) {
+            return INGREDIENT_VIEW;
+        } else {
+            if (showRecipeTitles) {
+                for (int recipeTitlePosition : mRecipeTitlePositionList) {
+                    if (position == recipeTitlePosition) {
+                        return RECIPE_TITLE_VIEW;
+                    }
+                }
+            }
+
+            return SHOPPING_LIST_VIEW;
+        }
+    }
+
     public class IngredientViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.list_ingredient_quantity) TextView quantityText;
+        @Nullable @BindView(R.id.list_ingredient_quantity) TextView quantityText;
         @BindView(R.id.list_ingredient_name) TextView ingredientNameText;
         @Nullable @BindView(R.id.list_shopping_checkbox) CheckBox mCheckBox;
 

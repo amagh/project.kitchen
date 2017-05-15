@@ -30,7 +30,7 @@ import project.hnoct.kitchen.data.RecipeDbHelper;
 import project.hnoct.kitchen.prefs.SettingsActivity;
 
 public class ActivityShoppingList extends AppCompatActivity {
-
+    // ButterKnife Bounds Views
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.navigation_drawer) NavigationView mNavigationView;
     @BindView(R.id.main_drawer_layout) DrawerLayout mDrawerLayout;
