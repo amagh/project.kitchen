@@ -1,8 +1,13 @@
 package project.hnoct.kitchen.ui;
 
+import android.content.ContentProviderOperation;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -15,9 +20,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
+import project.hnoct.kitchen.data.RecipeContract;
 import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.ui.adapter.AdapterIngredient;
 
@@ -96,6 +104,90 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
             }
 
             mAdapter.addRecipeTitles();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        // Save checked items to database
+        saveCheckedItems();
+
+        super.onPause();
+    }
+
+    /**
+     * Save all checked items to the database so their values can be retrieved later
+     */
+    private void saveCheckedItems() {
+        // Initialize the Array that will hold the corresponding recipe and ingredient IDs
+        boolean[] checkedArray = mAdapter.getListCheckedArray();
+        int[] recipeIdArray = new int[checkedArray.length];
+        int[] ingredientIdArray = new int[checkedArray.length];
+
+        // Create an Array of matching recipe and ingredient IDs
+        for (int i = 0; i < recipeIdArray.length; i++) {
+            mCursor.moveToPosition(i);
+            recipeIdArray[i] = mCursor.getInt(LinkIngredientEntry.IDX_RECIPE_ID);
+            ingredientIdArray[i] = mCursor.getInt(LinkIngredientEntry.IDX_INGREDIENT_ID);
+        }
+
+        // Run the AsyncTask that will update the database with the new checked status of the items
+        ModifyDatabaseChecked checkedAsyncTask = new ModifyDatabaseChecked(recipeIdArray, ingredientIdArray, checkedArray);
+        checkedAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * AsyncTask for storing the checkedArray value of an ingredient
+     */
+    private class ModifyDatabaseChecked extends AsyncTask<Void, Void, Void> {
+        // Member Variables
+        int[] recipeIdArray;
+        int[] ingredientIdArray;
+        boolean[] checkedArray;
+
+        public ModifyDatabaseChecked(int[] recipeIdArray, int[] ingredientIdArray, boolean[] checkedArray) {
+            // Set up the parameters for modifying the database
+            this.recipeIdArray = recipeIdArray;
+            this.ingredientIdArray = ingredientIdArray;
+            this.checkedArray = checkedArray;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+
+            // Set up the update operation parameters
+            String selection = RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " +
+                    IngredientEntry.COLUMN_INGREDIENT_ID + " = ?";
+
+            // Build a ContentProviderOperation for each item in the Array
+            for (int i = 0; i < recipeIdArray.length; i++) {
+                // Initialize the selection arguments
+                String[] selectionArgs = new String[]{Integer.toString(recipeIdArray[i]),
+                        Integer.toString(ingredientIdArray[i])};
+
+                // Builder the update operation
+                ContentProviderOperation operation =
+                        ContentProviderOperation.newUpdate(LinkIngredientEntry.CONTENT_URI)
+                                .withSelection(selection, selectionArgs)
+                                .withValue(LinkIngredientEntry.COLUMN_SHOPPING_CHECKED, checkedArray[i] ? 1 : 0)
+                                .build();
+
+                // Add the operation to the List of operations to be performed on the database
+                operations.add(operation);
+            }
+
+            // Batch apply all update operations
+            try {
+                mContext.getContentResolver().applyBatch(
+                        RecipeContract.CONTENT_AUTHORITY,
+                        operations
+                );
+            } catch (OperationApplicationException | RemoteException e) {
+                e.printStackTrace();
+            }
+
+            return null;
         }
     }
 

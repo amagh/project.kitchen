@@ -134,7 +134,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
             if(getArguments().getParcelable(RECIPE_DETAILS_URL) != null) {
                 mRecipeUrl = getArguments().getParcelable(RECIPE_DETAILS_URL).toString();
 
-                // Get the recipeId and generate recipeUri for database
+                // Get the recipeIdArray and generate recipeUri for database
                 mRecipeId = Utilities.getRecipeIdFromUrl(mContext, mRecipeUrl);
 
                 if (mRecipeId == -1) {

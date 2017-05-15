@@ -2,9 +2,11 @@ package project.hnoct.kitchen.ui.adapter;
 
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -43,7 +45,7 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
     private Context mContext;                   // Interface for global context
     private Cursor mCursor;
     private ContentResolver mContentResolver;   // Reference to ContentResolver
-    private boolean[] mShoppingListArray;       // TODO: For storing ingredients that need to be added to shopping list
+    private boolean[] mCheckedArray;       // TODO: For storing ingredients that need to be added to shopping list
     private boolean isShoppingList = false;
     private boolean toggleChecked = true;
     private boolean showRecipeTitles = false;
@@ -103,6 +105,9 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
 
             // Compensate for any added recipe titles
             position = position - positionModifier;
+
+            // Store the modifier as the tag on the itemView so that it can be properly re-set
+            // in the ViewHolder's #onCheckChanged method
             holder.itemView.setTag(positionModifier);
         }
 
@@ -120,18 +125,13 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             // If in shopping-list-mode remove preparation steps from the ingredient String
             ingredient = Utilities.removePreparation(ingredient);
 
-            Log.d(LOG_TAG, "Ingredient: " + ingredient);
-            Log.d(LOG_TAG, "Position: " + (position) + " | Modifier: " + positionModifier);
-
             // Check whether the CheckBox should be checked
-            boolean isChecked = mShoppingListArray[position];
+            boolean isChecked = mCheckedArray[position];
 
             // Set CheckBox status
-            if (isChecked) {
-                holder.mCheckBox.setChecked(true);
-            } else {
-                holder.mCheckBox.setChecked(false);
-            }
+            holder.mCheckBox.setChecked(isChecked);
+
+//            Log.d(LOG_TAG, "Position: " + position + " | Checked: " + isChecked);
         }
 
         // Check to see if ingredient is a header (headers are notated with a ":")
@@ -191,8 +191,8 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         }
 
         // Iterate through each item and change its check status
-        for (int i = 0; i < mShoppingListArray.length; i++) {
-            mShoppingListArray[i] = toggleChecked;
+        for (int i = 0; i < mCheckedArray.length; i++) {
+            mCheckedArray[i] = toggleChecked;
         }
 
         // Notify the Adapter of the change
@@ -252,16 +252,25 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         if (mCursor != null) {
             // Initialize a new Array that will hold the boolean values for whether the ingredient
             // has been checked
-            mShoppingListArray = new boolean[mCursor.getCount()];
-            for (int i = 0; i < mShoppingListArray.length; i++) {
+            mCheckedArray = new boolean[mCursor.getCount()];
+            for (int i = 0; i < mCheckedArray.length; i++) {
                 // Check all ingredients to start
-                mShoppingListArray[i] = true;
+                mCheckedArray[i] = true;
             }
         }
     }
 
-    public boolean[] getShoppingListValues() {
-        return mShoppingListArray;
+    /**
+     * Retrieves the Array holding the boolean Checked values for each item on the shopping list;
+     * @return
+     */
+    public boolean[] getListCheckedArray() {
+        // Return mCheckedArray if the Adapter is being used as a shopping list
+        if (isShoppingList) {
+            return mCheckedArray;
+        } else {
+            throw new UnsupportedOperationException("This is not a shopping list!");
+        }
     }
 
     /**
@@ -276,9 +285,9 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
 
             if (isShoppingList) {
                 if (mCursor != null) {
-                    mShoppingListArray = new boolean[mCursor.getCount()];
-                    for (int i = 0; i < mShoppingListArray.length; i++) {
-                        mShoppingListArray[i] = true;
+                    mCheckedArray = new boolean[mCursor.getCount()];
+                    for (int i = 0; i < mCheckedArray.length; i++) {
+                        mCheckedArray[i] = true;
                     }
                 }
             }
@@ -316,19 +325,18 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         void onCheckChanged(boolean isChecked) {
             // Retrieve the position of the ViewHolder
             int position = getAdapterPosition();
-            int positionModifier = 0;
 
             if (showRecipeTitles) {
-                positionModifier = (int) itemView.getTag();
-            }
-            // Set whether the ingredient has been checked or unchecked
-            if (isChecked) {
-                mShoppingListArray[position - positionModifier] = true;
-            } else {
-                mShoppingListArray[position - positionModifier] = false;
+                // Retrieve the position modifier stored as the tag of the itemView
+                position = position - (int) itemView.getTag();
             }
 
-            Log.d(LOG_TAG, position - positionModifier + " is " + isChecked);
+            boolean previousChecked = mCheckedArray[position];
+
+            if (previousChecked != isChecked) {
+                // Set whether the ingredient has been checked or unchecked
+                mCheckedArray[position] = isChecked;
+            }
         }
 
         public IngredientViewHolder(View itemView) {

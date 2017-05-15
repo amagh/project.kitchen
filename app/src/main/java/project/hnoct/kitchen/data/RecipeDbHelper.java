@@ -63,8 +63,8 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
         // Table for relating the amount of ingredients in each recipe
         final String SQL_CREATE_INGREDIENT_LINK_TABLE = "CREATE TABLE " + LinkIngredientEntry.TABLE_NAME + " (" +
                 LinkRecipeBookEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                RecipeEntry.COLUMN_RECIPE_ID + " REAL NOT NULL, " +
-                IngredientEntry.COLUMN_INGREDIENT_ID + " REAL NOT NULL, " +
+                RecipeEntry.COLUMN_RECIPE_ID + " INTEGER NOT NULL, " +
+                IngredientEntry.COLUMN_INGREDIENT_ID + " INTEGER NOT NULL, " +
                 LinkIngredientEntry.COLUMN_QUANTITY + " TEXT NOT NULL, " +
                 LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + " INTEGER NOT NULL, " +
                 LinkIngredientEntry.COLUMN_SHOPPING + " INTEGER, " +
@@ -94,7 +94,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 ChapterEntry.COLUMN_CHAPTER_NAME + " TEXT, " +
                 ChapterEntry.COLUMN_CHAPTER_DESCRIPTION + " TEXT, " +
                 ChapterEntry.COLUMN_CHAPTER_ORDER + " INTEGER NOT NULL, " +
-                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " REAL NOT NULL, " +
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " INTEGER NOT NULL, " +
                 "FOREIGN KEY (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + ") REFERENCES " +
                 RecipeBookEntry.TABLE_NAME + " (" + RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + "));";
 
@@ -106,7 +106,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
 //                ChapterEntry.COLUMN_CHAPTER_ID + " REAL NOT NULL, " +
                 ChapterEntry.COLUMN_CHAPTER_ID + " INTEGER NOT NULL, " +
                 LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + " INTEGER NOT NULL, " +
-                RecipeEntry.COLUMN_RECIPE_ID + " REAL NOT NULL, " +
+                RecipeEntry.COLUMN_RECIPE_ID + " INTEGER NOT NULL, " +
                 // Utilize a combination of all three columns as the primary key because each
                 // chapter in the recipe book should be unique and each recipe should only occupy
                 // a spot in the ordering within the chapter

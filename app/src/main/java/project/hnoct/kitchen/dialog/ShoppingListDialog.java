@@ -3,7 +3,6 @@ package project.hnoct.kitchen.dialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.ContentProviderOperation;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
@@ -19,7 +18,6 @@ import android.view.View;
 import android.widget.CheckBox;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -111,7 +109,7 @@ public class ShoppingListDialog extends DialogFragment {
 
         public SetDatabaseShoppingList() {
             // Initialize member variables
-            shoppingListValues = mAdapter.getShoppingListValues();
+            shoppingListValues = mAdapter.getListCheckedArray();
             editOperationsList = new ArrayList<>(shoppingListValues.length);
         }
 

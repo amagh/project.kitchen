@@ -184,7 +184,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                     mSource = cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
                     mRecipeId = cursor.getLong(RecipeEntry.IDX_RECIPE_ID);
 
-                    // If the recipe is not user added, set the recipeId as the negative of the recipe
+                    // If the recipe is not user added, set the recipeIdArray as the negative of the recipe
                     // so the original can be easily referenced
                     mRecipeSourceId = mSource.equals(getString(R.string.attribution_custom))
                             ? cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE_ID)
@@ -203,7 +203,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                 // Close the Cursor
                 if (cursor != null) cursor.close();
 
-                // Set the Cursor to query all tables and filtering by recipeId and recipe source
+                // Set the Cursor to query all tables and filtering by recipeIdArray and recipe source
                 cursor = mContext.getContentResolver().query(
                         LinkIngredientEntry.buildIngredientUriFromRecipe(mRecipeId),
                         LinkIngredientEntry.LINK_PROJECTION,
@@ -241,7 +241,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
         }
 
         if (mRecipeSourceId == null) {
-            // If no saved data exists, generate a new recipeId
+            // If no saved data exists, generate a new recipeIdArray
             mRecipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
             mRecipeSourceId = "*" + mRecipeId;
             mRecipeAuthor = getUserAuthor();
@@ -739,12 +739,12 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                 String quantity = ingredientPair.first;
                 String ingredient = ingredientPair.second;
 
-                // Check to see if ingredient already exists in database, if so, set the ingredientId correctly
+                // Check to see if ingredient already exists in database, if so, set the ingredientIdArray correctly
                 boolean newIngredient = true;
                 long ingredientId = Utilities.getIngredientIdFromName(mContext, ingredient);
 
                 if (ingredientId == -1) {
-                    // If no ingredientId exists, then generate a new Id for the ingredient
+                    // If no ingredientIdArray exists, then generate a new Id for the ingredient
                     ingredientId = Utilities.generateNewId(mContext, Utilities.INGREDIENT_TYPE);
                 } else {
                     // If ingredient is already found in database, there is no need to add this
@@ -752,14 +752,14 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                     newIngredient = false;
                 }
 
-                // Check to make sure ingredientId isn't already contained in this recipe's list of
+                // Check to make sure ingredientIdArray isn't already contained in this recipe's list of
                 // ingredient IDs
                 while (newIngredient && ingredientIdNameMap.keySet().contains(ingredientId) && !ingredient.equals(ingredientIdNameMap.get(ingredientId))) {
-                    // If it does, iterate the ingredientId until a new one is generated
+                    // If it does, iterate the ingredientIdArray until a new one is generated
                     ingredientId++;
                 }
 
-                // Add the ingredientId to the Map of ingredientIds to check against subsequent ingredients
+                // Add the ingredientIdArray to the Map of ingredientIds to check against subsequent ingredients
                 ingredientIdNameMap.put(ingredientId, ingredient);
 
                 // Add the values to the ContentValues for ingredients

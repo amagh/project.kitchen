@@ -55,7 +55,7 @@ public class ActivityCreateRecipe extends AppCompatActivity {
             // Retrieve the recipeSourceId
             String recipeSourceId = Utilities.getRecipeSourceIdFromUri(this, recipeUri);
 
-            // Retrieve the recipeId so that if the user deletes the recipe, it can be easily
+            // Retrieve the recipeIdArray so that if the user deletes the recipe, it can be easily
             // referenced
             mRecipeId = RecipeContract.RecipeEntry.getRecipeIdFromUri(recipeUri);
 
