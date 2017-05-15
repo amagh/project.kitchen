@@ -63,4 +63,7 @@
 
     <!-- Shopping List Dialog -->
     <dimen name="dialog_recyclerview_height">400dp</dimen>
+
+    <!-- Shopping List Items -->
+    <dimen name="shopping_list_recipe_title_separation">8dp</dimen>
 </resources>

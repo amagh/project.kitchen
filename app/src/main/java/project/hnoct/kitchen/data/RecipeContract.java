@@ -193,7 +193,7 @@ public class RecipeContract {
                 "chopped", "diced", "minced", "separated", "peeled", "deveined", "juiced", "cut",
                 "with", "without", "divided", "shelled", "trimmed", "sliced", "whipped", "grated",
                 "split", "softened", "crushed", "melted", "°", "quartered", "cored", "beaten",
-                "temperature", "shaved", "thawed"
+                "temperature", "shaved", "thawed", "halved", "rinsed", "removed"
         };
 
         /** See RecipeEntry for comments on following methods **/

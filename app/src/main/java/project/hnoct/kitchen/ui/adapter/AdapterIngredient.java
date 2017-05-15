@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.graphics.Typeface;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +34,7 @@ import project.hnoct.kitchen.data.Utilities;
 
 public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.IngredientViewHolder> {
     /** Constants **/
+    private final static String LOG_TAG = AdapterIngredient.class.getSimpleName();
     private final int INGREDIENT_VIEW = 0;
     private final int SHOPPING_LIST_VIEW = 1;
     private final int RECIPE_TITLE_VIEW = 2;
@@ -80,29 +82,28 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
 
     @Override
     public void onBindViewHolder(IngredientViewHolder holder, int position) {
+        // Initialize a position modifier to compensate for the recipe title positions
+        int positionModifier = 0;
+
         // Check whether the Adapter is in shopping-list-mode
-        if (isShoppingList) {
-            // Initialize a position modifier to compensate for the recipe title positions
-            int positionModifier = 0;
+        if (showRecipeTitles) {
+            // Iterate through mRecipeTitlePosition and check if the position matches
+            for (int i = 0; i < mRecipeTitlePositionList.size(); i++) {
+                if (position == mRecipeTitlePositionList.get(i)) {
+                    // If it matches, then populate the view with the recipe title
+                    String recipeTitle = mRecipeTitlesList.get(i);
+                    holder.ingredientNameText.setText(recipeTitle);
 
-            if (showRecipeTitles) {
-                // Iterate through mRecipeTitlePosition and check if the position matches
-                for (int i = 0; i < mRecipeTitlePositionList.size(); i++) {
-                    if (position == mRecipeTitlePositionList.get(i)) {
-                        // If it matches, then populate the view with the recipe title
-                        String recipeTitle = mRecipeTitlesList.get(i);
-                        holder.ingredientNameText.setText(recipeTitle);
-
-                        return;
-                    } else if (position > mRecipeTitlePositionList.get(i)) {
-                        // If it is greater than the position, then increment the position modifier
-                        positionModifier++;
-                    }
+                    return;
+                } else if (position > mRecipeTitlePositionList.get(i)) {
+                    // If it is greater than the position, then increment the position modifier
+                    positionModifier++;
                 }
-
-                // Compensate for any added recipe titles
-                position = position - positionModifier;
             }
+
+            // Compensate for any added recipe titles
+            position = position - positionModifier;
+            holder.itemView.setTag(positionModifier);
         }
 
         // Move Cursor to correct position
@@ -118,6 +119,9 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         if (isShoppingList) {
             // If in shopping-list-mode remove preparation steps from the ingredient String
             ingredient = Utilities.removePreparation(ingredient);
+
+            Log.d(LOG_TAG, "Ingredient: " + ingredient);
+            Log.d(LOG_TAG, "Position: " + (position) + " | Modifier: " + positionModifier);
 
             // Check whether the CheckBox should be checked
             boolean isChecked = mShoppingListArray[position];
@@ -164,7 +168,7 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
     @Override
     public int getItemCount() {
         if (mCursor != null) {
-            if (isShoppingList && mRecipeTitlesList != null) {
+            if (showRecipeTitles) {
                 // If the shopping list contains recipe titles, then add the size of the list to the
                 // Cursor's count
                 return mCursor.getCount() + mRecipeTitlesList.size();
@@ -312,13 +316,19 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         void onCheckChanged(boolean isChecked) {
             // Retrieve the position of the ViewHolder
             int position = getAdapterPosition();
+            int positionModifier = 0;
 
+            if (showRecipeTitles) {
+                positionModifier = (int) itemView.getTag();
+            }
             // Set whether the ingredient has been checked or unchecked
             if (isChecked) {
-                mShoppingListArray[position] = true;
+                mShoppingListArray[position - positionModifier] = true;
             } else {
-                mShoppingListArray[position] = false;
+                mShoppingListArray[position - positionModifier] = false;
             }
+
+            Log.d(LOG_TAG, position - positionModifier + " is " + isChecked);
         }
 
         public IngredientViewHolder(View itemView) {
