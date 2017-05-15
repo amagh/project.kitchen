@@ -25,15 +25,25 @@ import java.nio.channels.FileChannel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeDbHelper;
 import project.hnoct.kitchen.prefs.SettingsActivity;
 
 public class ActivityShoppingList extends AppCompatActivity {
+    // Member Variables
+    FragmentShoppingList mShoppingListFragment;
+
     // ButterKnife Bounds Views
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.navigation_drawer) NavigationView mNavigationView;
     @BindView(R.id.main_drawer_layout) DrawerLayout mDrawerLayout;
+    @BindView(R.id.shopping_list_fab) FloatingActionButton mDeleteFab;
+
+    @OnClick(R.id.shopping_list_fab)
+    void onClick(View view) {
+        mShoppingListFragment.deleteCheckedItems();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,10 +64,10 @@ public class ActivityShoppingList extends AppCompatActivity {
         });
 
         if (savedInstanceState == null) {
-            FragmentShoppingList fragment = new FragmentShoppingList();
+            mShoppingListFragment = new FragmentShoppingList();
 
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
+                    .replace(R.id.fragment_container, mShoppingListFragment)
                     .commit();
         }
 
@@ -96,13 +106,13 @@ public class ActivityShoppingList extends AppCompatActivity {
                 break;
             }
             case R.id.action_my_recipe_books: {
+                startActivity(new Intent(this, ActivityRecipeBook.class));
+                hideNavigationDrawer();
+                ActivityRecipeList.mDetailsVisible = false;
+                finish();
                 break;
             }
             case R.id.action_shopping_list: {
-                hideNavigationDrawer();
-                Intent intent = new Intent(this, ActivityShoppingList.class);
-                startActivity(intent);
-                ActivityRecipeList.mDetailsVisible = false;
                 break;
             }
             case R.id.action_copy_db: {
