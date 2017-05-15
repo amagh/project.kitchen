@@ -536,7 +536,7 @@ public class FragmentChapter extends Fragment implements LoaderManager.LoaderCal
         }
     };
 
-    class ModifyDatabase extends AsyncTask<Void, Void, Void> {
+    private class ModifyDatabase extends AsyncTask<Void, Void, Void> {
         // Member variables
         int start = -1;
         int end = -1;

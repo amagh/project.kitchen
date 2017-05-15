@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -45,6 +46,7 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
 
     // ButterKnife Bounds Views
     @BindView(R.id.shopping_list_recyclerView) RecyclerView mRecyclerView;
+    @BindView(R.id.shopping_list_info_cardview) CardView mCardView;
 
     public FragmentShoppingList() {
     }
@@ -104,6 +106,12 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
             }
 
             mAdapter.addRecipeTitles();
+
+            if (cursor.moveToFirst()) {
+                mCardView.setVisibility(View.GONE);
+            } else {
+                mCardView.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -203,5 +211,74 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
 
         // Initiailize the CursorLoader
         getLoaderManager().initLoader(SHOPPING_LOADER, null, this);
+    }
+
+    public void deleteCheckedItems() {
+        boolean[] checkedArray = mAdapter.getListCheckedArray();
+        int[] recipeIdArray = new int[checkedArray.length];
+        int[] ingredientIdArray = new int[checkedArray.length];
+
+        // Create an Array of matching recipe and ingredient IDs
+        for (int i = 0; i < recipeIdArray.length; i++) {
+            mCursor.moveToPosition(i);
+            recipeIdArray[i] = mCursor.getInt(LinkIngredientEntry.IDX_RECIPE_ID);
+            ingredientIdArray[i] = mCursor.getInt(LinkIngredientEntry.IDX_INGREDIENT_ID);
+        }
+
+        ModifyDatabaseDeleteChecked deleteAsyncTask = new ModifyDatabaseDeleteChecked(recipeIdArray, ingredientIdArray, checkedArray);
+        deleteAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private class ModifyDatabaseDeleteChecked extends AsyncTask<Void, Void, Void> {
+        // Member Variables
+        int[] recipeIdArray;
+        int[] ingredientIdArray;
+        boolean[] checkedArray;
+
+        public ModifyDatabaseDeleteChecked(int[] recipeIdArray, int[] ingredientIdArray, boolean[] checkedArray) {
+            // Set up the parameters for modifying the database
+            this.recipeIdArray = recipeIdArray;
+            this.ingredientIdArray = ingredientIdArray;
+            this.checkedArray = checkedArray;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+
+            // Set up the update operation parameters
+            String selection = RecipeEntry.COLUMN_RECIPE_ID + " = ? AND " +
+                    IngredientEntry.COLUMN_INGREDIENT_ID + " = ?";
+
+            // Build a ContentProviderOperation for each item in the Array
+            for (int i = 0; i < recipeIdArray.length; i++) {
+                // Initialize the selection arguments
+                String[] selectionArgs = new String[]{Integer.toString(recipeIdArray[i]),
+                        Integer.toString(ingredientIdArray[i])};
+
+                // Builder the update operation
+                ContentProviderOperation operation =
+                        ContentProviderOperation.newUpdate(LinkIngredientEntry.CONTENT_URI)
+                                .withSelection(selection, selectionArgs)
+                                .withValue(LinkIngredientEntry.COLUMN_SHOPPING_CHECKED, 0)
+                                .withValue(LinkIngredientEntry.COLUMN_SHOPPING, checkedArray[i] ? 0 : 1)
+                                .build();
+
+                // Add the operation to the List of operations to be performed on the database
+                operations.add(operation);
+            }
+
+            // Batch apply all update operations
+            try {
+                mContext.getContentResolver().applyBatch(
+                        RecipeContract.CONTENT_AUTHORITY,
+                        operations
+                );
+            } catch (OperationApplicationException | RemoteException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
     }
 }
