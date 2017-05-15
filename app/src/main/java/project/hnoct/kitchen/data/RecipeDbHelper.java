@@ -14,12 +14,15 @@ import project.hnoct.kitchen.data.RecipeContract.*;
 public class RecipeDbHelper extends SQLiteOpenHelper {
     // Constants
     private static final String LOG_TAG = RecipeDbHelper.class.getSimpleName();
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     public static final String DATABASE_NAME = "recipe.db";
 
     // SQL Statements for upgrades
     private final String SQL_ADD_SHOPPING_COLUMN = "ALTER TABLE " + LinkIngredientEntry.TABLE_NAME + " " +
             "ADD COLUMN " + LinkIngredientEntry.COLUMN_SHOPPING + " INTEGER;";
+
+    private final String SQL_ADD_CHECKED_COLUMN = "ALTER TABLE " + LinkIngredientEntry.TABLE_NAME + " " +
+            "ADD COLUMN " + LinkIngredientEntry.COLUMN_SHOPPING_CHECKED + " INTEGER;";
 
     public RecipeDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -65,6 +68,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
                 LinkIngredientEntry.COLUMN_QUANTITY + " TEXT NOT NULL, " +
                 LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + " INTEGER NOT NULL, " +
                 LinkIngredientEntry.COLUMN_SHOPPING + " INTEGER, " +
+                LinkIngredientEntry.COLUMN_SHOPPING_CHECKED + " INTEGER, " +
                 // Utilize the combination of unique index and ingredient as the primary key
 //                "PRIMARY KEY (" + RecipeEntry.COLUMN_RECIPE_ID + "," +
 //                RecipeEntry.COLUMN_SOURCE + ") " +
@@ -134,6 +138,9 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
         switch (oldVersion) {
             case 1: {
                 sqLiteDatabase.execSQL(SQL_ADD_SHOPPING_COLUMN);
+            }
+            case 2: {
+                sqLiteDatabase.execSQL(SQL_ADD_CHECKED_COLUMN);
             }
         }
 

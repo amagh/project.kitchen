@@ -240,7 +240,8 @@ public class RecipeContract {
         // foreign keys)
         public static final String COLUMN_QUANTITY = "quantity";                    // TEXT NOT NULL
         public static final String COLUMN_INGREDIENT_ORDER = "ingredient_order";    // INTEGER NOT NULL
-        public static final String COLUMN_SHOPPING = "shopping_list";               // INTEGER NOT NULL
+        public static final String COLUMN_SHOPPING = "shopping_list";               // INTEGER
+        public static final String COLUMN_SHOPPING_CHECKED = "checked";             // INTEGER
 
         // Column projection and index
         public static final String[] LINK_PROJECTION = new String[] {
@@ -266,7 +267,9 @@ public class RecipeContract {
                 IngredientEntry.TABLE_NAME + "." + IngredientEntry.COLUMN_INGREDIENT_ID,
                 IngredientEntry.COLUMN_INGREDIENT_NAME,
                 COLUMN_QUANTITY,
-                COLUMN_INGREDIENT_ORDER
+                COLUMN_INGREDIENT_ORDER,
+                COLUMN_SHOPPING,
+                COLUMN_SHOPPING_CHECKED
         };
 
         public static final int IDX_RECIPE_ID = 0;
@@ -292,6 +295,8 @@ public class RecipeContract {
         public static final int IDX_INGREDIENT_NAME = 20;
         public static final int IDX_LINK_QUANTITY = 21;
         public static final int IDX_LINK_INGREDIENT_ORDER = 22;
+        public static final int IDX_LINK_SHOPPING = 23;
+        public static final int IDX_LINK_CHECKED = 24;
 
         /** See RecipeEntry for comments on following methods **/
 
