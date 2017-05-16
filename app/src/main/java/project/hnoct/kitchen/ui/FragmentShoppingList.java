@@ -181,6 +181,7 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
             if (mAdapter.getItemsCheckedCount() > 0) {
                 ((ActivityShoppingList)getActivity()).mDeleteFab.show();
             } else {
+                showFab = false;
                 ((ActivityShoppingList)getActivity()).mDeleteFab.hide();
             }
         }

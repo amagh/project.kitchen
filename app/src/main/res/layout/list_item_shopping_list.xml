@@ -5,10 +5,10 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingEnd="@dimen/activity_horizontal_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingStart="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/dialog_horizontal_margin"
+    android:paddingEnd="@dimen/dialog_horizontal_margin"
+    android:paddingLeft="@dimen/dialog_horizontal_margin"
+    android:paddingStart="@dimen/dialog_horizontal_margin"
     android:gravity="center_vertical"
     android:minHeight="@dimen/list_ingredient_min_height">
     
