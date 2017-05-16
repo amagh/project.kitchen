@@ -1,5 +1,9 @@
 package project.hnoct.kitchen.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
@@ -20,6 +24,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 
 import java.util.ArrayList;
 
@@ -43,6 +48,8 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
     private Cursor mCursor;
     private AdapterIngredient mAdapter;
     private LinearLayoutManager mLayoutManager;
+
+    private boolean animateCard = false;
 
     // ButterKnife Bounds Views
     @BindView(R.id.shopping_list_recyclerView) RecyclerView mRecyclerView;
@@ -107,12 +114,58 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
 
             mAdapter.addRecipeTitles();
 
+            // Check if the Cursor returned any rows
             if (cursor.moveToFirst()) {
+                // Hide the Card with information for user
                 mCardView.setVisibility(View.GONE);
+
+                // Set the boolean to animate the card when all items are checked off shopping list
+                animateCard = true;
             } else {
-                mCardView.setVisibility(View.VISIBLE);
+                // Check whether to play animation for the Card, then show card w/wo animation
+                if (animateCard) {
+                    animateCard();
+                } else {
+                    // *Animation does not play smoothly when Activity is first started so the
+                    // CardView is set to visible to work around it.
+                    mCardView.setVisibility(View.VISIBLE);
+                }
             }
         }
+    }
+
+    /**
+     * Animation for the intro of the CardView informing the user that the shopping list is empty
+     */
+    private void animateCard() {
+        // Initialize the interpolater to be used for the animation
+        AccelerateDecelerateInterpolator interpolator = new AccelerateDecelerateInterpolator();
+
+        // Instantiate the AnimatorSet
+        AnimatorSet animSet = new AnimatorSet();
+
+        // Animate the X-scale
+        ObjectAnimator scaleXAnim = ObjectAnimator.ofFloat(mCardView, "scaleX", 0.1f, 1.0f);
+        scaleXAnim.setDuration(300);
+        scaleXAnim.setInterpolator(interpolator);
+
+        // Animate the Y-scale
+        ObjectAnimator scaleYAnim = ObjectAnimator.ofFloat(mCardView, "scaleY", 0.1f, 1.0f);
+        scaleXAnim.setDuration(300);
+        scaleXAnim.setInterpolator(interpolator);
+
+        // Set the animations to play together
+        animSet.playTogether(scaleXAnim, scaleYAnim);
+        animSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                // Ensure the CardView is visible
+                mCardView.setVisibility(View.VISIBLE);
+            }
+        });
+
+        // Start the animation
+        animSet.start();
     }
 
     @Override
@@ -279,6 +332,13 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
             }
 
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            if (mCursor.getCount() == 0) {
+                animateCard();
+            }
         }
     }
 }
