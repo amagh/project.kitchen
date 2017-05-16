@@ -4,10 +4,13 @@ package project.hnoct.kitchen.ui.adapter;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
@@ -15,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -53,6 +57,8 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
     private List<Integer> mRecipeTitlePositionList;
     private List<String> mRecipeTitlesList;
 
+    private CheckListener mCheckListener;
+
     public AdapterIngredient(Context context) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
@@ -80,6 +86,35 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         view.setFocusable(true);
 
         return new IngredientViewHolder(view);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        // Utilize the Link ID as the item ID so that animations can be correctly used when items
+        // are removed from the Cursor and notifyDataSetChanged is called
+        if (mCursor != null) {
+            // Initialize the position modifier
+            int positionModifier = 0;
+            for (int i : mRecipeTitlePositionList) {
+                // For recipe titles, they can just return their position as they do not need to
+                // be animated
+                if (position == i) {
+                    return position;
+                } else if (position > i) {
+                    // Add one to the position modifier for every title it is greater than
+                    positionModifier++;
+                }
+
+                // Modify the position the Cursor should point to
+                position = position - positionModifier;
+            }
+
+            // Retrieve the Link ID to be used as the item ID
+            mCursor.moveToPosition(position);
+            return mCursor.getInt(LinkIngredientEntry.IDX_LINK_ID);
+        } else {
+            return position;
+        }
     }
 
     @Override
@@ -131,7 +166,14 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             // Set CheckBox status
             holder.mCheckBox.setChecked(isChecked);
 
-//            Log.d(LOG_TAG, "Position: " + position + " | Checked: " + isChecked);
+            // Change the background of the item to better show that an item has been checked off
+            if (showRecipeTitles) {
+                if (isChecked) {
+                    holder.itemView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.grey_300));
+                } else {
+                    holder.itemView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.transparent_white));
+                }
+            }
         }
 
         // Check to see if ingredient is a header (headers are notated with a ":")
@@ -159,6 +201,7 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
                 holder.quantityText.setVisibility(View.VISIBLE);
                 holder.ingredientNameText.setGravity(Gravity.NO_GRAVITY);
             }
+
         }
 
         // Set the view parameters
@@ -205,6 +248,37 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
      */
     public boolean getToggleStatus() {
         return toggleChecked;
+    }
+
+    /**
+     * Listener for informing an observer when the number of items checked has changed and its count
+     */
+    public interface CheckListener {
+        void onChecked(int itemsChecked);
+    }
+
+    /**
+     * Setter for the CheckListener
+     * @param listener CheckListener to be registered to the observer
+     */
+    public void setCheckListener(CheckListener listener) {
+        mCheckListener = listener;
+    }
+
+    /**
+     * Counts the number of items checked off in the shopping list and returns the count
+     * @return Number of items that are checked
+     */
+    public int getItemsCheckedCount() {
+        int itemsChecked = 0;
+        for (boolean checked : mCheckedArray) {
+            // Increment itemsChecks if checked is true
+            if (checked) {
+                itemsChecked++;
+            }
+        }
+
+        return itemsChecked;
     }
 
     /**
@@ -361,6 +435,28 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
             if (previousChecked != isChecked) {
                 // Set whether the ingredient has been checked or unchecked
                 mCheckedArray[position] = isChecked;
+
+                // Set the background correctly.
+                if (showRecipeTitles) {
+                    if (isChecked) {
+                        itemView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.grey_300));
+                    } else {
+                        itemView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.transparent_white));
+                    }
+                }
+            }
+
+            // Count the number of items that are checked
+            int itemsChecked = 0;
+            for (boolean checked : mCheckedArray) {
+                if (checked) {
+                    itemsChecked++;
+                }
+            }
+
+            // Inform any registered observers of the number of items checked off
+            if (mCheckListener != null) {
+                mCheckListener.onChecked(itemsChecked);
             }
         }
 

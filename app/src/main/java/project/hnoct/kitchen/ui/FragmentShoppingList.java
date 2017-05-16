@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.ContentProviderOperation;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
@@ -50,6 +49,7 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
     private LinearLayoutManager mLayoutManager;
 
     private boolean animateCard = false;
+    private boolean showFab = false;
 
     // ButterKnife Bounds Views
     @BindView(R.id.shopping_list_recyclerView) RecyclerView mRecyclerView;
@@ -67,14 +67,59 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
         // Initialize member variables
         mContext = getActivity();
 
+        // Setup the AdapterIngredient
         mAdapter = new AdapterIngredient(mContext);
+        mAdapter.setHasStableIds(true);     // Allows animatios to occur correctly when calling notifyDatasetChanged
         mAdapter.useAsShoppingList();
+        mAdapter.setCheckListener(new AdapterIngredient.CheckListener() {
+            @Override
+            public void onChecked(int itemsChecked) {
+                // Show the FAB if there is at least one item checked off
+                if (itemsChecked > 0) {
+                    if (!((ActivityShoppingList)getActivity()).mDeleteFab.isShown()) {
+                        ((ActivityShoppingList)getActivity()).mDeleteFab.show();
+                    }
+
+                    // Set the member variable to true to inform the ScrollListener to show the
+                    // FAB when finished scrolling
+                    showFab = true;
+
+                } else {
+                    if (((ActivityShoppingList)getActivity()).mDeleteFab.isShown()) {
+                        ((ActivityShoppingList)getActivity()).mDeleteFab.hide();
+                    }
+
+                    // Set the member variable so the ScrollListener does not show the FAB
+                    showFab = false;
+                }
+            }
+        });
 
         mLayoutManager = new LinearLayoutManager(mContext);
 
         // Set the Adapter and LayoutManager for the RecyclerView
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
+
+        // Set a ScrollListener to show the FAB when the user finishes scrolling
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (dy > 0 || dy < 0 && ((ActivityShoppingList)getActivity()).mDeleteFab.isShown()) {
+                    // Hide the FAB while the user is scrolling
+                    ((ActivityShoppingList)getActivity()).mDeleteFab.hide();
+                }
+            }
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE && showFab) {
+                    // Show the FAB when the user finishes scrolling
+                    ((ActivityShoppingList)getActivity()).mDeleteFab.show();
+                }
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+        });
 
         return rootView;
     }
@@ -130,6 +175,13 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
                     // CardView is set to visible to work around it.
                     mCardView.setVisibility(View.VISIBLE);
                 }
+            }
+
+            // Show the FAB is there is at least one item already checked
+            if (mAdapter.getItemsCheckedCount() > 0) {
+                ((ActivityShoppingList)getActivity()).mDeleteFab.show();
+            } else {
+                ((ActivityShoppingList)getActivity()).mDeleteFab.hide();
             }
         }
     }
@@ -266,7 +318,11 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
         getLoaderManager().initLoader(SHOPPING_LOADER, null, this);
     }
 
+    /**
+     * Sets up the AsyncTask to modify items in the database so that they are removed from mAdapter
+     */
     public void deleteCheckedItems() {
+        // Initialize Arrays to be passed to ModifyDatabaseDeleteChecked
         boolean[] checkedArray = mAdapter.getListCheckedArray();
         int[] recipeIdArray = new int[checkedArray.length];
         int[] ingredientIdArray = new int[checkedArray.length];
@@ -278,15 +334,21 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
             ingredientIdArray[i] = mCursor.getInt(LinkIngredientEntry.IDX_INGREDIENT_ID);
         }
 
+        // Call the AsyncTask
         ModifyDatabaseDeleteChecked deleteAsyncTask = new ModifyDatabaseDeleteChecked(recipeIdArray, ingredientIdArray, checkedArray);
         deleteAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    /**
+     * AsyncTask for modifying the database in the background to flip the bit used to hold the value
+     * determining whether AdapterIngredient should show the item
+     */
     private class ModifyDatabaseDeleteChecked extends AsyncTask<Void, Void, Void> {
         // Member Variables
         int[] recipeIdArray;
         int[] ingredientIdArray;
         boolean[] checkedArray;
+
 
         public ModifyDatabaseDeleteChecked(int[] recipeIdArray, int[] ingredientIdArray, boolean[] checkedArray) {
             // Set up the parameters for modifying the database
@@ -297,6 +359,7 @@ public class FragmentShoppingList extends Fragment implements LoaderManager.Load
 
         @Override
         protected Void doInBackground(Void... voids) {
+            // Instantiate the ArrayList that will hold the update operations
             ArrayList<ContentProviderOperation> operations = new ArrayList<>();
 
             // Set up the update operation parameters

@@ -42,7 +42,8 @@ public class ActivityShoppingList extends AppCompatActivity {
 
     @OnClick(R.id.shopping_list_fab)
     void onClick(View view) {
-        mShoppingListFragment.deleteCheckedItems();
+        ((FragmentShoppingList) getSupportFragmentManager().findFragmentById(R.id.fragment_container))
+                .deleteCheckedItems();
     }
 
     @Override

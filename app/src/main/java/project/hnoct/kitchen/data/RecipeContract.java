@@ -269,7 +269,8 @@ public class RecipeContract {
                 COLUMN_QUANTITY,
                 COLUMN_INGREDIENT_ORDER,
                 COLUMN_SHOPPING,
-                COLUMN_SHOPPING_CHECKED
+                COLUMN_SHOPPING_CHECKED,
+                _ID
         };
 
         public static final int IDX_RECIPE_ID = 0;
@@ -297,6 +298,7 @@ public class RecipeContract {
         public static final int IDX_LINK_INGREDIENT_ORDER = 22;
         public static final int IDX_LINK_SHOPPING = 23;
         public static final int IDX_LINK_CHECKED = 24;
+        public static final int IDX_LINK_ID = 25;
 
         /** See RecipeEntry for comments on following methods **/
 

@@ -37,6 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/activity_horizontal_margin"
             android:layout_gravity="bottom|end"
+            android:visibility="invisible"
             android:src="@drawable/ic_menu_delete"/>
 
     </android.support.design.widget.CoordinatorLayout>
