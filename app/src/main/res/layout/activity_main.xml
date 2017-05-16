@@ -94,17 +94,19 @@
                 android:padding="@dimen/fab_label_padding"
                 android:textColor="@color/opaque_white"
                 android:background="@drawable/fab_label_background"
-                android:visibility="gone"
-                app:layout_gravity="center_vertical|end"/>
+                android:visibility="invisible"
+                app:layout_gravity="center_vertical|end"
+                tools:visibility="visible"/>
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/main_add_recipe_fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
+                android:visibility="invisible"
                 app:layout_gravity="center_horizontal"
                 app:srcCompat="@drawable/ic_menu_edit"
-                app:fabSize="mini"/>
+                app:fabSize="mini"
+                tools:visibility="visible"/>
 
             <TextView
                 android:id="@+id/main_import_recipe_text"
@@ -112,18 +114,21 @@
                 android:padding="@dimen/fab_label_padding"
                 android:textColor="@color/opaque_white"
                 android:background="@drawable/fab_label_background"
-                android:visibility="gone"
-                app:layout_gravity="center_vertical|end"/>
+                android:layout_marginTop="@dimen/fab_margin"
+                android:visibility="invisible"
+                app:layout_gravity="center_vertical|end"
+                tools:visibility="visible"/>
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/main_import_recipe_fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/fab_margin"
-                android:visibility="gone"
+                android:visibility="invisible"
                 app:layout_gravity="center_horizontal"
                 app:srcCompat="@drawable/ic_menu_download_custom"
-                app:fabSize="mini"/>
+                app:fabSize="mini"
+                tools:visibility="visible"/>
 
             <TextView
                 android:id="@+id/main_menu_text"
@@ -131,8 +136,9 @@
                 android:padding="@dimen/fab_label_padding"
                 android:textColor="@color/opaque_white"
                 android:background="@drawable/fab_label_background"
-                android:visibility="gone"
-                app:layout_gravity="center_vertical|end"/>
+                android:visibility="invisible"
+                app:layout_gravity="center_vertical|end"
+                tools:visibility="visible"/>
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/main_menu_fab"

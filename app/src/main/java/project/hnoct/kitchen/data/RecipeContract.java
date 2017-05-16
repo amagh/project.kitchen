@@ -184,9 +184,9 @@ public class RecipeContract {
         public static final String COLUMN_FOOD_INGREDIENT_ID = "food_id";               // REAL
 
         public static final String[] measurements = new String[] {
-                "mL", "loaf", "can", "package", "container", "tablespoon", "teaspoon", "clove",
+                "loaf", "can", "package", "container", "tablespoon", "teaspoon", "clove",
                 "cup", "pint", "quart", "gallon", "ounce", "fluid ounce", "jar", "dashes", "dash",
-                "pinch", "slice", "pound", "drop", "lb", "bunch", "tsp", "tbsp", "g"
+                "pinch", "slice", "pound", "drop", "lb", "bunch", "tsp", "tbsp", "g", "ml"
         };
 
         public static final String[] preparations = new String[] {

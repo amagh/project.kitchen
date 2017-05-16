@@ -36,6 +36,7 @@ import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 import project.hnoct.kitchen.ui.adapter.RecipeItemAnimator;
 import project.hnoct.kitchen.view.StaggeredGridLayoutManagerWithSmoothScroll;
 
+import static android.content.Context.ACCESSIBILITY_SERVICE;
 import static project.hnoct.kitchen.sync.RecipeSyncService.SYNC_INVALID;
 import static project.hnoct.kitchen.sync.RecipeSyncService.SYNC_SERVER_DOWN;
 import static project.hnoct.kitchen.sync.RecipeSyncService.SYNC_SUCCESS;
@@ -83,7 +84,6 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
         mRecipeAdapter = new AdapterRecipe(getActivity(), new AdapterRecipe.RecipeAdapterOnClickHandler() {
             @Override
             public void onClick(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
-
                 // Set position to the position of the clicked item
                 mPosition = viewHolder.getAdapterPosition();
 
@@ -135,6 +135,40 @@ public class FragmentRecipeList extends Fragment implements LoaderManager.Loader
             }
         });
         mRecipeRecyclerView.setItemAnimator(animator);
+        mRecipeRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                // Hide the FAB when scrolling down and show it again when scrolling up
+                if (dy > 0) {
+                    // Check whether the FAB menu is open
+                    if (ActivityRecipeList.hideFab) {
+                        return;
+                    }
+                    if (ActivityRecipeList.mFabMenuOpen) {
+                        // Set the boolean to true so that the FAB is closed at the end of the
+                        // menu closing animation
+                        ActivityRecipeList.hideFab = true;
+
+                        // Start the animation to close the FAB menu
+                        ((ActivityRecipeList)getActivity()).closeFabMenu();
+                    } else {
+                        ((ActivityRecipeList)getActivity()).mFab.hide();
+                    }
+
+                } else {
+                    // Set the boolean so that the FAB can be hidden again if the menu is opened
+                    ActivityRecipeList.hideFab = false;
+
+                    // Close the FAB menu
+                    if (ActivityRecipeList.mFabMenuOpen) {
+                        ((ActivityRecipeList)getActivity()).closeFabMenu();
+                    }
+
+                    // Show the FAB
+                    ((ActivityRecipeList)getActivity()).mFab.show();
+                }
+            }
+        });
 
         // Initialize the listener for when the user attempts to search for a recipe
         ((ActivityRecipeList) getActivity()).setSearchListener(new ActivityRecipeList.SearchListener() {

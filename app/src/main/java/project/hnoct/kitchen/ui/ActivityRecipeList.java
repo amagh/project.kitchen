@@ -1,5 +1,9 @@
 package project.hnoct.kitchen.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.PendingIntent;
@@ -27,6 +31,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
+import android.support.v4.view.accessibility.AccessibilityRecordCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -38,6 +43,8 @@ import android.view.View;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -88,7 +95,8 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     private final long HOUR_IN_SECONDS = 3600;
 
     /** Member Variables **/
-    private static boolean mFabMenuOpen;
+    public static boolean mFabMenuOpen;
+    public static boolean hideFab = false;
     public static boolean mTwoPane = false;
     public static boolean mDetailsVisible = false;
     private static int mPosition;
@@ -97,6 +105,10 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     private boolean isConnected;
     private boolean connectivityRegistered = false;
     private Snackbar mSnackBar;
+
+    public static List<AnimatorSet> mAnimQueue = new ArrayList<>();
+    private boolean animQueueLock = false;
+
 
     // Bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -566,39 +578,292 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     }
 
     /**
-     * Opens the FAB Menu
+     * Opens the FAB Menu with animation
      */
-    private void showFabMenu() {
+    public void showFabMenu() {
+        // Initialize the Interpolator to be used
+        AccelerateDecelerateInterpolator interpolator = new AccelerateDecelerateInterpolator();
+
+        // Initialize the AnimatorSets for each animation
+        final AnimatorSet addRecipeAnimSet = new AnimatorSet();
+        final AnimatorSet importRecipeAnimSet = new AnimatorSet();
+        final AnimatorSet textAnimSet = new AnimatorSet();
+
+        // Scale animation for mAddRecipeFab
+        ObjectAnimator addRecipeXAnim = ObjectAnimator.ofFloat(mAddRecipeFab, "scaleX", 0.1f, 1.0f);
+        addRecipeXAnim.setDuration(150);
+        ObjectAnimator addRecipeYAnim = ObjectAnimator.ofFloat(mAddRecipeFab, "scaleY", 0.1f, 1.0f);
+        addRecipeYAnim.setDuration(150);
+        addRecipeYAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mAddRecipeFab.setVisibility(View.VISIBLE);
+            }
+        });
+
+        // Scale animation for mImportRecipeFab
+        ObjectAnimator importRecipeXAnim = ObjectAnimator.ofFloat(mImportRecipeFab, "scaleX", 0.1f, 1.0f);
+        importRecipeXAnim.setDuration(150);
+        ObjectAnimator importRecipeYAnim = ObjectAnimator.ofFloat(mImportRecipeFab, "scaleY", 0.1f, 1.0f);
+        importRecipeYAnim.setDuration(150);
+        importRecipeYAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mImportRecipeFab.setVisibility(View.VISIBLE);
+            }
+        });
+
+        // Scale animation for mMainFabText
+        mMainFabText.setPivotX(mMainFabText.getWidth());
+        ObjectAnimator mainTextXAnim = ObjectAnimator.ofFloat(mMainFabText, "scaleX", 0.1f, 1.0f);
+        mainTextXAnim.setDuration(100);
+        mainTextXAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mMainFabText.setVisibility(View.VISIBLE);
+            }
+        });
+
+        // Scale animation for mAddRecipeText
+        mAddRecipeText.setPivotX(mAddRecipeText.getWidth());
+        ObjectAnimator addTextXAnim = ObjectAnimator.ofFloat(mAddRecipeText, "scaleX", 0.1f, 1.0f);
+        addTextXAnim.setDuration(100);
+        addTextXAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mAddRecipeText.setVisibility(View.VISIBLE);
+
+            }
+        });
+
+        // Scale animation for mImportRecipeText
+        mImportRecipeText.setPivotX(mImportRecipeText.getWidth());
+        ObjectAnimator importTextXAnim = ObjectAnimator.ofFloat(mImportRecipeText, "scaleX", 0.1f, 1.0f);
+        importTextXAnim.setDuration(100);
+        importTextXAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mImportRecipeText.setVisibility(View.VISIBLE);
+            }
+        });
+
+        // Rotation animation for mFab
+        ObjectAnimator fabRotationAnim = ObjectAnimator.ofFloat(mFab, "rotation", 0f, 360f);
+        fabRotationAnim.setDuration(150);
+        fabRotationAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mFab.setImageResource(R.drawable.ic_menu_close_clear_cancel);
+            }
+        });
+
+        // Setup the AnimatorSets
+        // Set up the AnimatorSets
+        addRecipeAnimSet.playTogether(addRecipeXAnim, addRecipeYAnim);
+        addRecipeAnimSet.setInterpolator(interpolator);
+        addRecipeAnimSet.setStartDelay(100);
+        addRecipeAnimSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mAnimQueue.contains(addRecipeAnimSet) && !animQueueLock) {
+                    mAnimQueue.remove(addRecipeAnimSet);
+                }
+            }
+        });
+        importRecipeAnimSet.playTogether(importRecipeXAnim, importRecipeYAnim, fabRotationAnim);
+        importRecipeAnimSet.setInterpolator(interpolator);
+
+        importRecipeAnimSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mAnimQueue.contains(importRecipeAnimSet) && !animQueueLock) {
+                    mAnimQueue.remove(importRecipeAnimSet);
+                }
+            }
+        });
+        textAnimSet.playSequentially(mainTextXAnim, importTextXAnim, addTextXAnim);
+        textAnimSet.setInterpolator(interpolator);
+        textAnimSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mAnimQueue.contains(textAnimSet) && !animQueueLock) {
+                    mAnimQueue.remove(textAnimSet);
+                }
+            }
+        });
+
+        // Remove any animations that have yet to be played
+        if (!animQueueLock) {
+            animQueueLock = true;
+            for (AnimatorSet anim : mAnimQueue) {
+                if (anim.equals(addRecipeAnimSet) || anim.equals(importRecipeAnimSet) || anim.equals(textAnimSet)) {
+                    continue;
+                }
+                anim.cancel();
+            }
+            animQueueLock = false;
+        }
+
+        // Add AnimatorSets to mAnimQueue
+        if (!animQueueLock) {
+            mAnimQueue.add(addRecipeAnimSet);
+            mAnimQueue.add(importRecipeAnimSet);
+            mAnimQueue.add(textAnimSet);
+        }
+
+        // Start the animations
+        addRecipeAnimSet.start();
+        importRecipeAnimSet.start();
+        textAnimSet.start();
+        fabRotationAnim.start();
+
         // Set the boolean to true
         mFabMenuOpen = true;
-
-        // Make the menu options VISIBLE
-        mAddRecipeFab.setVisibility(View.VISIBLE);
-        mImportRecipeFab.setVisibility(View.VISIBLE);
-        mMainFabText.setVisibility(View.VISIBLE);
-        mAddRecipeText.setVisibility(View.VISIBLE);
-        mImportRecipeText.setVisibility(View.VISIBLE);
-
-        // Set the icon for the FAB to the cancel icon
-        mFab.setImageResource(R.drawable.ic_menu_close_clear_cancel);
     }
 
     /**
-     * Closes the FAB Menu
+     * Closes the FAB Menu with animation
      */
-    private void closeFabMenu() {
+    public void closeFabMenu() {
+        // Initialize the interpolater to be used
+        AccelerateDecelerateInterpolator interpolator = new AccelerateDecelerateInterpolator();
+
+        // Initialize the AnimatorSets for each animation
+        final AnimatorSet addRecipeAnimSet = new AnimatorSet();
+        final AnimatorSet importRecipeAnimSet = new AnimatorSet();
+        final AnimatorSet textAnimSet = new AnimatorSet();
+
+        // Scale animation for mAddRecipeFab
+        ObjectAnimator addRecipeXAnim = ObjectAnimator.ofFloat(mAddRecipeFab, "scaleX", 1.0f, 0.1f);
+        addRecipeXAnim.setDuration(150);
+        ObjectAnimator addRecipeYAnim = ObjectAnimator.ofFloat(mAddRecipeFab, "scaleY", 1.0f, 0.1f);
+        addRecipeYAnim.setDuration(150);
+        addRecipeYAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mAddRecipeFab.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        // Scale animation for mImportRecipeFab
+        ObjectAnimator importRecipeXAnim = ObjectAnimator.ofFloat(mImportRecipeFab, "scaleX", 1.0f, 0.1f);
+        importRecipeXAnim.setDuration(150);
+        ObjectAnimator importRecipeYAnim = ObjectAnimator.ofFloat(mImportRecipeFab, "scaleY", 1.0f, 0.1f);
+        importRecipeYAnim.setDuration(150);
+        importRecipeYAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mImportRecipeFab.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        // Scale animation for mMainFabText
+        mMainFabText.setPivotX(mMainFabText.getWidth());
+        ObjectAnimator mainTextXAnim = ObjectAnimator.ofFloat(mMainFabText, "scaleX", 1.0f, 0.1f);
+        mainTextXAnim.setDuration(100);
+        mainTextXAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mMainFabText.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        // Scale animation for mAddRecipeText
+        mAddRecipeText.setPivotX(mAddRecipeText.getWidth());
+        ObjectAnimator addTextXAnim = ObjectAnimator.ofFloat(mAddRecipeText, "scaleX", 1.0f, 0.1f);
+        addTextXAnim.setDuration(100);
+        addTextXAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mAddRecipeText.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        // Scale animation for mImportRecipeText
+        mImportRecipeText.setPivotX(mImportRecipeText.getWidth());
+        ObjectAnimator importTextXAnim = ObjectAnimator.ofFloat(mImportRecipeText, "scaleX", 1.0f, 0.1f);
+        importTextXAnim.setDuration(100);
+        importTextXAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mImportRecipeText.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        // Rotation animation for mFab
+        ObjectAnimator fabRotationAnim = ObjectAnimator.ofFloat(mFab, "rotation", 0f, 360f);
+        fabRotationAnim.setDuration(150);
+        fabRotationAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mFab.setImageResource(R.drawable.ic_menu_add_custom);
+            }
+        });
+
+        // Set up the AnimatorSets
+        addRecipeAnimSet.playTogether(addRecipeXAnim, addRecipeYAnim, fabRotationAnim);
+        addRecipeAnimSet.setInterpolator(interpolator);
+        addRecipeAnimSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mAnimQueue.contains(addRecipeAnimSet) && !animQueueLock) {
+                    mAnimQueue.remove(addRecipeAnimSet);
+                }
+            }
+        });
+        importRecipeAnimSet.playTogether(importRecipeXAnim, importRecipeYAnim);
+        importRecipeAnimSet.setInterpolator(interpolator);
+        importRecipeAnimSet.setStartDelay(100);
+        importRecipeAnimSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mAnimQueue.contains(importRecipeAnimSet) && !animQueueLock) {
+                    mAnimQueue.remove(importRecipeAnimSet);
+                }
+            }
+        });
+        textAnimSet.playSequentially(addTextXAnim, importTextXAnim, mainTextXAnim);
+        textAnimSet.setInterpolator(interpolator);
+        textAnimSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mAnimQueue.contains(textAnimSet) && !animQueueLock) {
+                    mAnimQueue.remove(textAnimSet);
+                }
+
+                if (hideFab) {
+                    mFab.hide();
+                }
+            }
+        });
+
+        // Remove any animations that have yet to be played
+        if (!animQueueLock) {
+            animQueueLock = true;
+            for (AnimatorSet anim : mAnimQueue) {
+                if (anim.equals(addRecipeAnimSet) || anim.equals(importRecipeAnimSet) || anim.equals(textAnimSet)) {
+                    continue;
+                }
+                anim.cancel();
+            }
+            animQueueLock = false;
+        }
+
+        // AnimatorSets to mAnimQueue
+        if (!animQueueLock) {
+            mAnimQueue.add(addRecipeAnimSet);
+            mAnimQueue.add(importRecipeAnimSet);
+            mAnimQueue.add(textAnimSet);
+        }
+
+        // Play the animations
+        addRecipeAnimSet.start();
+        importRecipeAnimSet.start();
+        textAnimSet.start();
+        fabRotationAnim.start();
+
         // Set the boolean to false
         mFabMenuOpen = false;
-
-        // Make the menu options GONE
-        mAddRecipeFab.setVisibility(View.GONE);
-        mImportRecipeFab.setVisibility(View.GONE);
-        mMainFabText.setVisibility(View.GONE);
-        mAddRecipeText.setVisibility(View.GONE);
-        mImportRecipeText.setVisibility(View.GONE);
-
-        // Set the FAB icon to the add icon
-        mFab.setImageResource(R.drawable.ic_menu_add_custom);
     }
 
     /**
