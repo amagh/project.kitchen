@@ -33,6 +33,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.view.accessibility.AccessibilityRecordCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
@@ -105,6 +106,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     private boolean isConnected;
     private boolean connectivityRegistered = false;
     private Snackbar mSnackBar;
+    private ActionBarDrawerToggle mDrawerToggle;
 
     public static List<AnimatorSet> mAnimQueue = new ArrayList<>();
     private boolean animQueueLock = false;
@@ -185,7 +187,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     @Optional
     @OnClick(R.id.search_icon)
     void onClick() {
-        if (mSearchView.getVisibility() == View.GONE) {
+        if (mSearchView.getVisibility() == View.INVISIBLE) {
             showSearch();
         } else {
             hideSearch();
@@ -196,17 +198,41 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
      * Shows the SearchView, allowing the user to search recipes
      */
     void showSearch() {
-        // Set the visibility of the SearchView
-        mSearchView.setVisibility(View.VISIBLE);
+        AccelerateDecelerateInterpolator interpolator = new AccelerateDecelerateInterpolator();
+        // Setup the animation for mSearchView
+        mSearchView.setPivotY(mSearchView.getHeight());
+        ObjectAnimator searchAnim = ObjectAnimator.ofFloat(mSearchView, "scaleY", 0.1f, 1.0f);
+        searchAnim.setDuration(100);
+        searchAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                // Set the visibility of the SearchView
+                mSearchView.setVisibility(View.VISIBLE);
 
-        // Request focus
-        mSearchView.requestFocus();
+                // Request focus
+                mSearchView.requestFocus();
+            }
+        });
+
+        // Setup the animation for mTitle
+        mTitle.setPivotY(mTitle.getHeight());
+        ObjectAnimator titleAnim = ObjectAnimator.ofFloat(mTitle, "scaleY", 1.0f, 0.0f);
+        searchAnim.setDuration(50);
+
+        AnimatorSet animSet = new AnimatorSet();
+        animSet.playSequentially(titleAnim, searchAnim);
+        animSet.setInterpolator(interpolator);
+        animSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // Hide the app title
+                mTitle.setVisibility(View.INVISIBLE);
+            }
+        });
+        animSet.start();
 
         // Change the search icon to a cancel icon
         mSearchIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_close_clear_cancel));
-
-        // Hide the app title
-        mTitle.setVisibility(View.GONE);
 
         // Show the soft keyboard
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -217,15 +243,42 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
      * Hides the SearchView and resets the filter
      */
     void hideSearch() {
+        AccelerateDecelerateInterpolator interpolator = new AccelerateDecelerateInterpolator();
+
+        // Setup the animation for mSearchView
+        mSearchView.setPivotY(mSearchView.getHeight());
+        ObjectAnimator searchAnim = ObjectAnimator.ofFloat(mSearchView, "scaleY", 1.0f, 0.0f);
+        searchAnim.setDuration(100);
+        searchAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // Set the visibility of the SearchView
+                mSearchView.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        // Setup the animation for mTitle
+        mTitle.setPivotY(mTitle.getHeight());
+        ObjectAnimator titleAnim = ObjectAnimator.ofFloat(mTitle, "scaleY", 0.1f, 1.0f);
+        searchAnim.setDuration(100);
+
+        AnimatorSet animSet = new AnimatorSet();
+        animSet.playSequentially(searchAnim, titleAnim);
+        animSet.setInterpolator(interpolator);
+        animSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                // Hide the app title
+                mTitle.setVisibility(View.VISIBLE);
+            }
+        });
+        animSet.start();
+
         // Hide the SearchView and show the search icon
-        mSearchView.setVisibility(View.GONE);
         mSearchIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_search));
 
         // Hide the Card allowing the user to search additional recipes online
         mSearchMore.setVisibility(View.GONE);
-
-        // Show the app title
-        mTitle.setVisibility(View.VISIBLE);
 
         if (mSearchListener != null) {
             // Reset the search filter
@@ -282,6 +335,11 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         ButterKnife.bind(this);
 
         setSupportActionBar(mToolbar);
+
+        // Set up the hamburger menu used for opening mDrawerLayout
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.button_confirm, R.string.button_deny);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerToggle.syncState();
 
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override

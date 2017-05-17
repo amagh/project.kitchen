@@ -13,7 +13,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.transition.ActionBarTransition;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -32,28 +34,26 @@ import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
 public class ActivityMyRecipes extends AppCompatActivity implements FragmentMyRecipes.RecipeCallback {
+    // Member Variables
+    private ActionBarDrawerToggle mDrawerToggle;
 
+    // Views Bound by ButterKnife
     @BindView(R.id.navigation_drawer) NavigationView mNavigationView;
     @BindView(R.id.main_drawer_layout) DrawerLayout mDrawerLayout;
+    @BindView(R.id.toolbar) Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_recipes);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
         ButterKnife.bind(this);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setSupportActionBar(mToolbar);
+
+        // Set up the hamburger menu used for opening mDrawerLayout
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.button_confirm, R.string.button_deny);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerToggle.syncState();
 
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -125,6 +125,7 @@ public class ActivityMyRecipes extends AppCompatActivity implements FragmentMyRe
                 Intent intent = new Intent(this, ActivityShoppingList.class);
                 startActivity(intent);
                 ActivityRecipeList.mDetailsVisible = false;
+                finish();
                 break;
             }
             case R.id.action_copy_db: {

@@ -13,6 +13,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -33,7 +34,10 @@ import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
 public class ActivityFavorites extends AppCompatActivity implements FragmentFavorites.RecipeCallBack {
+    // Member Variables
+    private ActionBarDrawerToggle mDrawerToggle;
 
+    // Views Bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.navigation_drawer) NavigationView mNavigationView;
     @BindView(R.id.main_drawer_layout) DrawerLayout mDrawerLayout;
@@ -46,6 +50,11 @@ public class ActivityFavorites extends AppCompatActivity implements FragmentFavo
 
         setSupportActionBar(mToolbar);
 
+        // Set up the hamburger menu used for opening mDrawerLayout
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.button_confirm, R.string.button_deny);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerToggle.syncState();
+
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -53,9 +62,6 @@ public class ActivityFavorites extends AppCompatActivity implements FragmentFavo
                 return true;
             }
         });
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
     }
 
     private void selectDrawerItem(MenuItem item) {
@@ -99,6 +105,7 @@ public class ActivityFavorites extends AppCompatActivity implements FragmentFavo
                 Intent intent = new Intent(this, ActivityShoppingList.class);
                 startActivity(intent);
                 ActivityRecipeList.mDetailsVisible = false;
+                finish();
                 break;
             }
             case R.id.action_copy_db: {

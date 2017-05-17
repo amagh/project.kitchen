@@ -13,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -40,12 +41,14 @@ public class ActivityRecipeBook extends AppCompatActivity implements RecipeBookD
     private static final String LOG_TAG = ActivityRecipeBook.class.getSimpleName();
 
     /** Member Variables **/
+    private ActionBarDrawerToggle mDrawerToggle;
 
     // Views bound by ButterKnife
     @BindView(R.id.recipe_book_recyclerview) RecyclerView mRecyclerView;
     @BindView(R.id.recipe_book_fab) FloatingActionButton mFab;
     @BindView(R.id.navigation_drawer) NavigationView mNavigationView;
     @BindView(R.id.main_drawer_layout) DrawerLayout mDrawerLayout;
+    @BindView(R.id.toolbar) Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +58,11 @@ public class ActivityRecipeBook extends AppCompatActivity implements RecipeBookD
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // Set up the hamburger menu used for opening mDrawerLayout
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.button_confirm, R.string.button_deny);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerToggle.syncState();
 
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -153,6 +160,7 @@ public class ActivityRecipeBook extends AppCompatActivity implements RecipeBookD
                 Intent intent = new Intent(this, ActivityShoppingList.class);
                 startActivity(intent);
                 ActivityRecipeList.mDetailsVisible = false;
+                finish();
                 break;
             }
             case R.id.action_copy_db: {
