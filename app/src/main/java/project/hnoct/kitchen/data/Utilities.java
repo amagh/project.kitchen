@@ -525,7 +525,7 @@ public class Utilities {
                 if (cursor != null && cursor.moveToFirst()) {
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                     int recipesDeleted = prefs.getInt(context.getString(R.string.recipes_deleted_key), 0);
-                    id = cursor.getLong(cursor.getColumnIndex(RecipeEntry.COLUMN_RECIPE_ID)) + recipesDeleted + 1;
+                    id = cursor.getCount() + recipesDeleted + 1;
                 }
 
                 // Close the cursor
