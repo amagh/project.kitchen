@@ -60,6 +60,12 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        getLoaderManager().restartLoader(MY_RECIPES_LOADER, null, this);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_my_recipes, container, false);
@@ -94,6 +100,8 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
 //                if (resetLayout) setLayoutColumns();
             }
         });
+
+
 
         mRecipeAdapter.setHasStableIds(true);
 
@@ -176,11 +184,11 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
         // Retrieved the index populated by the ScrollingAlphabeticalIndex
         mRecipeIndex = mIndex.getIndex();
 
+        // Instantiate the member variable mCursor
+        mCursor = cursor;
+
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                // Instantiate the member variable mCursor
-                mCursor = cursor;
-
                 // Create the Map used as the index
                 do {
                     // Get the first letter of the recipe
@@ -197,7 +205,7 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
 
                 // Reset the Cursor to the first position and swap it into mRecipeAdapter
                 cursor.moveToFirst();
-                mRecipeAdapter.swapCursor(mCursor);
+
 
                 // Set the position of any letters that haven't been favorite'd
                 int lastPos = cursor.getCount();    // Used to hold the last position that had a favorite'd recipe with the first letter
@@ -233,6 +241,9 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
                 }
             }
         }
+
+        // Swap the Cursor into mRecipeAdapter
+        mRecipeAdapter.swapCursor(mCursor);
     }
 
     /**

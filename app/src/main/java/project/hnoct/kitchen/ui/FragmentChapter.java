@@ -102,8 +102,8 @@ public class FragmentChapter extends Fragment implements LoaderManager.LoaderCal
         mRecyclerView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
         mChapterAdapter.setRecipeClickListener(new AdapterChapter.RecipeClickListener() {
             @Override
-            public void onRecipeClicked(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
-                ((ActivityChapter) getActivity()).onRecipeSelected(recipeUrl, viewHolder);
+            public void onRecipeClicked(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+                ((ActivityChapter) getActivity()).onRecipeSelected(recipeUrl, imageUrl, viewHolder);
             }
 
             @Override
@@ -404,7 +404,7 @@ public class FragmentChapter extends Fragment implements LoaderManager.LoaderCal
          * @param recipeUrl URL of the recipe to be added
          * @param viewHolder ViewHolder holding the recipe's information
          */
-        void onRecipeSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder);
+        void onRecipeSelected(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder);
 
         /**
          * For opening a dialog allowing the user to select a recipe to add

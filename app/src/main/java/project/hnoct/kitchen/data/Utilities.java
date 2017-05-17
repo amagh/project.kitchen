@@ -506,7 +506,7 @@ public class Utilities {
      * @return Unused Id for the given type
      */
     public static long generateNewId(Context context, int type) {
-        long id = 1;
+        long id = -1;
         switch (type) {
             case RECIPE_TYPE: {
                 // Instantiate a new List that will hold all the recipeIds that already exist

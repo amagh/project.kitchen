@@ -635,8 +635,6 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
             }
         }
 
-
-
         RecipeViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);

@@ -12,7 +12,12 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.view.Window;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -152,14 +157,24 @@ public class ActivityChapter extends AppCompatActivity implements ChapterDetails
     }
 
     @Override
-    public void onRecipeSelected(String recipeUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
+    public void onRecipeSelected(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
         // If in single-view mode, then start the ActivityRecipeDetails
+        View statusBar = findViewById(android.R.id.statusBarBackground);
+        View navigationBar = findViewById(android.R.id.navigationBarBackground);
+
+        List<Pair<View, String>> pairs = new ArrayList<>();
+        pairs.add(Pair.create(statusBar, Window.STATUS_BAR_BACKGROUND_TRANSITION_NAME));
+        if (navigationBar != null) {
+            pairs.add(Pair.create(navigationBar, Window.NAVIGATION_BAR_BACKGROUND_TRANSITION_NAME));
+        }
+        pairs.add(Pair.create((View) viewHolder.recipeImage, getString(R.string.transition_recipe_image)));
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                 this,
-                new Pair(viewHolder.recipeImage, getString(R.string.transition_recipe_image))
+                pairs.toArray(new Pair[pairs.size()])
         );
         Intent intent = new Intent(this, ActivityRecipeDetails.class);
         intent.setData(Uri.parse(recipeUrl));
+        intent.putExtra(getString(R.string.extra_image), imageUrl);
         ActivityCompat.startActivity(this, intent, options.toBundle());
     }
 
@@ -198,7 +213,7 @@ public class ActivityChapter extends AppCompatActivity implements ChapterDetails
                     recipeOrder = 0;
                 }
 
-                long recipeId = Utilities.getRecipeIdFromUrl(getParent(), recipeUrl);
+                long recipeId = Utilities.getRecipeIdFromUrl(ActivityChapter.this, recipeUrl);
 
                 // Create the ContentValues to insert into the linked recipe book table
                 ContentValues values = new ContentValues();

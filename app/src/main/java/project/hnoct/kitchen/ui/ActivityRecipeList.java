@@ -607,6 +607,10 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
                     }
 
                 }
+
+
+
+
                 break;
             }
             case R.id.action_clear_data: {
@@ -620,6 +624,10 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
                         getBaseContext(), 0, new Intent(getIntent()),
                         PendingIntent.FLAG_ONE_SHOT);
                 mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, restartIntent);
+
+                // Clear SharedPreferences
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                prefs.edit().clear().commit();
 
                 // Exit the application
                 System.exit(2);
