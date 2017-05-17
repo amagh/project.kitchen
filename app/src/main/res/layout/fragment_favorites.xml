@@ -18,14 +18,22 @@
 
     </android.support.v7.widget.RecyclerView>
 
-    <TextView
+    <android.support.v7.widget.CardView
+        android:id="@+id/favorites_cardview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/activity_horizontal_margin"
         android:gravity="center"
-        android:padding="@dimen/activity_horizontal_margin"
-        app:layout_anchor="@id/favorites_recyclerview"
-        app:layout_anchorGravity="fill"
-        tools:text="Favorite a recipe to see it here!" />
+        app:cardCornerRadius="@dimen/card_corner_radius"
+        app:contentPadding="@dimen/activity_horizontal_margin" >
+
+        <TextView
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Favorite a recipe to see it here!"/>
+
+    </android.support.v7.widget.CardView>
 
     <project.hnoct.kitchen.view.SlidingAlphabeticalIndex
         android:id="@+id/favorites_sliding_index"
