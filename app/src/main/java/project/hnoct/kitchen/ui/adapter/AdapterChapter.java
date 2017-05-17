@@ -14,6 +14,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -63,6 +64,7 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
     private ItemTouchHelper[] mItemTouchHelperArray;
     private List<Map<String, Object>> mList;
     private boolean editMode = false;
+    private boolean dialogMode = false;
     public int[] editOperations = {-1, -1, -1};
     private List<Integer> editChapters;
 
@@ -70,6 +72,7 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
     private static final int CHAPTER_VIEW_NORMAL = 0;
     private static final int CHAPTER_VIEW_EDIT = 1;
     private static final int CHAPTER_VIEW_EDIT_LAST = 2;
+    private static final int CHAPTER_VIEW_CARD = 3;
 
     // Map key values
     private String CHAPTER_ID = "chapterId";
@@ -150,12 +153,18 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
         return mCursor;
     }
 
+    /**
+     * Sets the Adapter to use the edit layout and logic
+     */
     public void enterEditMode() {
         editMode = true;
         editChapters = new ArrayList<>();
         notifyDataSetChanged();
     }
 
+    /**
+     * Sets the Adapter to just display the chapters and its recipes
+     */
     public void exitEditMode() {
         editMode = false;
 
@@ -167,12 +176,27 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
         notifyDataSetChanged();
     }
 
+    /**
+     * Method for checking whether the Adapter is in edit-mode
+     * @return Boolean value for whether AdapterChapter is in edit mode
+     */
     public boolean isInEditMode() {
         return editMode;
     }
 
+    /**
+     * Returns a List of chapters to be manipulated by an ItemHandler
+     * @return List of chapters currently in the Adapter
+     */
     public List<Map<String, Object>> getList() {
         return mList;
+    }
+
+    /**
+     * Sets up the Adapter to utilize the CardView layout for easier differentiation
+     */
+    public void useInDialog() {
+        dialogMode = true;
     }
 
     @Override
@@ -189,6 +213,10 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
                     view = LayoutInflater.from(mContext).inflate(R.layout.list_item_chapter_edit, parent, false);
                     break;
                 }
+                case CHAPTER_VIEW_CARD: {
+                    view = LayoutInflater.from(mContext).inflate(R.layout.list_item_chapter_card, parent, false);
+                    break;
+                }
                 default:
                     return null;
             }
@@ -202,6 +230,8 @@ public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterV
     public int getItemViewType(int position) {
         if (editMode) {
             return CHAPTER_VIEW_EDIT;
+        } if (dialogMode) {
+            return CHAPTER_VIEW_CARD;
         } else {
             return CHAPTER_VIEW_NORMAL;
         }

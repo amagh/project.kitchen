@@ -85,6 +85,7 @@ public class AddToRecipeBookDialog extends DialogFragment {
 
         // Initialize the AdapterChapter used for selecting the chapter the recipe is to be added to
         mChapterAdapter = new AdapterChapter(mContext);
+        mChapterAdapter.useInDialog();
         mChapterAdapter.setChapterClickListener(new AdapterChapter.ChapterClickListener() {
             @Override
             public void onChapterClicked(long chapterId) {

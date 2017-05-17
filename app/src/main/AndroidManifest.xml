@@ -82,7 +82,8 @@
             android:name=".ui.ActivityChapter"
             android:label="@string/title_activity_chapter"
             android:parentActivityName=".ui.ActivityRecipeBook"
-            android:theme="@style/AppTheme.Chapter">
+            android:theme="@style/AppTheme.Chapter"
+            android:windowSoftInputMode="stateHidden|adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="project.hnoct.kitchen.ui.ActivityRecipeBook" />

@@ -207,10 +207,14 @@ public class ActivityChapter extends AppCompatActivity implements ChapterDetails
                 int recipeOrder;
                 if (cursor !=  null && cursor.moveToFirst()) {
                     recipeOrder = cursor.getInt(LinkRecipeBookEntry.IDX_RECIPE_ORDER) + 1;
-                    // Close the Cursor
-                    cursor.close();
+
                 } else {
                     recipeOrder = 0;
+                }
+
+                // Close the Cursor
+                if (cursor != null) {
+                    cursor.close();
                 }
 
                 long recipeId = Utilities.getRecipeIdFromUrl(ActivityChapter.this, recipeUrl);

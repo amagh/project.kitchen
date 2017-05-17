@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/default_list_item_vertical_separation"
+    android:layout_marginRight="@dimen/dialog_horizontal_margin"
+    android:layout_marginEnd="@dimen/dialog_horizontal_margin"
+    android:layout_marginLeft="@dimen/dialog_horizontal_margin"
+    android:layout_marginStart="@dimen/dialog_horizontal_margin"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:contentPadding="@dimen/dialog_horizontal_margin">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/list_chapter_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/titleText"
+            tools:text="Chapter One"/>
+
+        <TextView
+            android:id="@+id/list_chapter_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/text_vertical_padding_small"
+            style="@style/descriptionText"
+            tools:text="This is the first chapter of my book and it contains some decent recipes... I think."/>
+
+        <project.hnoct.kitchen.view.NonScrollingRecyclerView
+            android:id="@+id/list_chapter_recipe_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+        </project.hnoct.kitchen.view.NonScrollingRecyclerView>
+
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>
