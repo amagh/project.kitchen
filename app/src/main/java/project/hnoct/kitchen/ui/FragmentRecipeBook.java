@@ -1,5 +1,9 @@
 package project.hnoct.kitchen.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,12 +17,14 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Toast;
 
 import butterknife.BindView;
@@ -46,8 +52,10 @@ public class FragmentRecipeBook extends Fragment implements LoaderManager.Loader
     private int mPosition;
     private long deleteBookId;
     private int deletePosition;
+    private boolean animateCard = false;
 
     @BindView(R.id.recipe_book_recyclerview) RecyclerView mRecyclerView;
+    @BindView(R.id.recipe_book_cardview) CardView mCardView;
 
     public FragmentRecipeBook() {
     }
@@ -134,30 +142,45 @@ public class FragmentRecipeBook extends Fragment implements LoaderManager.Loader
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         if (loader.getId() == RECIPE_BOOK_LOADER) {
             // Main Cursor for the AdapterRecipeBook
-            if (cursor != null && cursor.moveToFirst()) {
-                for (int i = 0; i < cursor.getCount(); i++) {
-                    // Retrieve the bookId to query for chapters
-                    long bookId = cursor.getLong(RecipeBookEntry.IDX_BOOK_ID);
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    for (int i = 0; i < cursor.getCount(); i++) {
+                        // Retrieve the bookId to query for chapters
+                        long bookId = cursor.getLong(RecipeBookEntry.IDX_BOOK_ID);
 
-                    // Initialize the parameters to query the database
-                    Uri bookUri = LinkRecipeBookEntry.buildChapterUriFromRecipeBookId(bookId);
-                    String[] projection = LinkRecipeBookEntry.PROJECTION;
-                    String sortOrder = LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + " ASC, " + ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
+                        // Initialize the parameters to query the database
+                        Uri bookUri = LinkRecipeBookEntry.buildChapterUriFromRecipeBookId(bookId);
+                        String[] projection = LinkRecipeBookEntry.PROJECTION;
+                        String sortOrder = LinkRecipeBookEntry.COLUMN_RECIPE_ORDER + " ASC, " + ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
 
-                    // Create a Bundle and add the arguments needed to generate the Cursor for the
-                    // requesting recipe book
-                    Bundle args = new Bundle();
-                    args.putParcelable(getString(R.string.uri_key), bookUri);
-                    args.putStringArray(getString(R.string.projection_key), projection);
-                    args.putString(getString(R.string.sort_order_key), sortOrder);
+                        // Create a Bundle and add the arguments needed to generate the Cursor for the
+                        // requesting recipe book
+                        Bundle args = new Bundle();
+                        args.putParcelable(getString(R.string.uri_key), bookUri);
+                        args.putStringArray(getString(R.string.projection_key), projection);
+                        args.putString(getString(R.string.sort_order_key), sortOrder);
 
-                    // Initialize a new Loader with a position modifier so that its position in the
-                    // Adapter is maintained
-                    generateHelperLoader(i, args);
+                        // Initialize a new Loader with a position modifier so that its position in the
+                        // Adapter is maintained
+                        generateHelperLoader(i, args);
 
-                    // Move the Cursor to the next position to prepare for the next iteration
-                    cursor.moveToNext();
+                        // Move the Cursor to the next position to prepare for the next iteration
+                        cursor.moveToNext();
+                    }
+
+                    // Hide mCardView
+                    mCardView.setVisibility(View.GONE);
+
+                    // Set the boolean so that the CardView is animated next time it is shown
+                    animateCard = true;
+                } else {
+                    if (animateCard) {
+                        animateCardIn();
+                    } else {
+                        mCardView.setVisibility(View.VISIBLE);
+                    }
                 }
+
             }
 
             // Swap the Cursor into the AdapterRecipeBook
@@ -184,6 +207,34 @@ public class FragmentRecipeBook extends Fragment implements LoaderManager.Loader
             // If it has not been started, initialize a new CursorLoader
             getLoaderManager().initLoader(position + POSITION_MODIFIER, args, this);
         }
+    }
+
+    /**
+     * Sets up and plays an animation to reveal the CardView
+     */
+    private void animateCardIn() {
+        // Initialize the interpolator used for the animation
+        AccelerateDecelerateInterpolator interpolator = new AccelerateDecelerateInterpolator();
+
+        // Initialize the AnimatorSet to play the animation
+        AnimatorSet animSet = new AnimatorSet();
+
+        // Set up the animations for scaling X and Y axes
+        ObjectAnimator scaleXAnim = ObjectAnimator.ofFloat(mCardView, "scaleX", 0.1f, 1.0f);
+        ObjectAnimator scaleYAnim = ObjectAnimator.ofFloat(mCardView, "scaleY", 0.1f, 1.0f);
+
+        // Set up the AnimatorSet
+        animSet.playTogether(scaleXAnim, scaleYAnim);
+        animSet.setDuration(300);
+        animSet.setInterpolator(interpolator);
+        animSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mCardView.setVisibility(View.VISIBLE);
+            }
+        });
+
+        animSet.start();
     }
 
     @Override
