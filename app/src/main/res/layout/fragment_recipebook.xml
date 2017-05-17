@@ -13,7 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/activity_horizontal_margin"
-        app:contentPadding="@dimen/activity_horizontal_margin">
+        app:contentPadding="@dimen/activity_horizontal_margin"
+        app:cardCornerRadius="@dimen/card_corner_radius">
 
         <TextView
             android:layout_width="match_parent"

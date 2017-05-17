@@ -1,5 +1,9 @@
 package project.hnoct.kitchen.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.Nullable;
@@ -8,12 +12,14 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,10 +49,12 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
     private int mPosition;
     private Map<String, Integer> mRecipeIndex;
     private StaggeredGridLayoutManagerWithSmoothScroll mStaggeredLayoutManager;
+    private boolean animateCard = false;
 
     // Views bound by ButterKnife
     @BindView(R.id.my_recipes_sliding_index) SlidingAlphabeticalIndex mIndex;
     @BindView(R.id.my_recipes_recyclerview) RecyclerView mRecipeRecyclerView;
+    @BindView(R.id.my_recipes_cardview) CardView mCardView;
 
     public FragmentMyRecipes() {
     }
@@ -168,52 +176,91 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
         // Retrieved the index populated by the ScrollingAlphabeticalIndex
         mRecipeIndex = mIndex.getIndex();
 
-        if (cursor != null && cursor.moveToFirst()) {
-            // Instantiate the member variable mCursor
-            mCursor = cursor;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                // Instantiate the member variable mCursor
+                mCursor = cursor;
 
-            for (String letter : mRecipeIndex.keySet()) {
-                Log.d(LOG_TAG, letter + ": " + mRecipeIndex.get(letter));
-            }
+                // Create the Map used as the index
+                do {
+                    // Get the first letter of the recipe
+                    String letter = cursor.getString(RecipeContract.RecipeEntry.IDX_RECIPE_NAME).substring(0,1);
+                    if (mRecipeIndex.get(letter) != -1) {
+                        // If the position of the first instance of the letter already exists, then skip
+                        continue;
+                    }
 
-            // Create the Map used as the index
-            do {
-                // Get the first letter of the recipe
-                String letter = cursor.getString(RecipeContract.RecipeEntry.IDX_RECIPE_NAME).substring(0,1);
-                if (mRecipeIndex.get(letter) != -1) {
-                    // If the position of the first instance of the letter already exists, then skip
-                    continue;
+                    // Put the position of the first instance of the letter in mRecipeIndex
+                    mRecipeIndex.put(letter, cursor.getPosition());
+
+                } while (cursor.moveToNext());
+
+                // Reset the Cursor to the first position and swap it into mRecipeAdapter
+                cursor.moveToFirst();
+                mRecipeAdapter.swapCursor(mCursor);
+
+                // Set the position of any letters that haven't been favorite'd
+                int lastPos = cursor.getCount();    // Used to hold the last position that had a favorite'd recipe with the first letter
+
+                for (int i = 1; i < ALPHABET.length() + 1; i++) {
+                    // Iterate in reverse so that missing letters will jump to the position of the next letter
+                    String letter = Character.toString(ALPHABET.charAt(ALPHABET.length() - i));
+
+                    if (mRecipeIndex.get(letter) == -1) {
+                        // If no recipe has been favorite'd that start with that letter, then set it go
+                        // go to the same position as the letter after it (e.g. If no N exist, it will
+                        // go to the first position of O)
+                        mRecipeIndex.put(letter, lastPos);
+                    } else {
+                        // If recipe does exist that starts with that letter, then set it as the last
+                        // position to be used for the next unused letter
+                        lastPos = mRecipeIndex.get(letter);
+                    }
+
                 }
 
-                // Put the position of the first instance of the letter in mRecipeIndex
-                mRecipeIndex.put(letter, cursor.getPosition());
+                // Hide mCardView
+                mCardView.setVisibility(View.INVISIBLE);
 
-            } while (cursor.moveToNext());
-
-            // Reset the Cursor to the first position and swap it into mRecipeAdapter
-            cursor.moveToFirst();
-            mRecipeAdapter.swapCursor(mCursor);
-
-            // Set the position of any letters that haven't been favorite'd
-            int lastPos = cursor.getCount();    // Used to hold the last position that had a favorite'd recipe with the first letter
-
-            for (int i = 1; i < ALPHABET.length() + 1; i++) {
-                // Iterate in reverse so that missing letters will jump to the position of the next letter
-                String letter = Character.toString(ALPHABET.charAt(ALPHABET.length() - i));
-
-                if (mRecipeIndex.get(letter) == -1) {
-                    // If no recipe has been favorite'd that start with that letter, then set it go
-                    // go to the same position as the letter after it (e.g. If no N exist, it will
-                    // go to the first position of O)
-                    mRecipeIndex.put(letter, lastPos);
+                // Set the boolean so the CardView is animated next time it is shown
+                animateCard = true;
+            } else {
+                // Show mCardView
+                if (animateCard) {
+                    animateCardIn();
                 } else {
-                    // If recipe does exist that starts with that letter, then set it as the last
-                    // position to be used for the next unused letter
-                    lastPos = mRecipeIndex.get(letter);
+                    mCardView.setVisibility(View.VISIBLE);
                 }
-
             }
         }
+    }
+
+    /**
+     * Sets up and plays an animation to reveal the CardView
+     */
+    private void animateCardIn() {
+        // Initialize the interpolator used for the animation
+        AccelerateDecelerateInterpolator interpolator = new AccelerateDecelerateInterpolator();
+
+        // Initialize the AnimatorSet to play the animation
+        AnimatorSet animSet = new AnimatorSet();
+
+        // Set up the animations for scaling X and Y axes
+        ObjectAnimator scaleXAnim = ObjectAnimator.ofFloat(mCardView, "scaleX", 0.1f, 1.0f);
+        ObjectAnimator scaleYAnim = ObjectAnimator.ofFloat(mCardView, "scaleY", 0.1f, 1.0f);
+
+        // Set up the AnimatorSet
+        animSet.playTogether(scaleXAnim, scaleYAnim);
+        animSet.setDuration(300);
+        animSet.setInterpolator(interpolator);
+        animSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mCardView.setVisibility(View.VISIBLE);
+            }
+        });
+
+        animSet.start();
     }
 
     @Override
