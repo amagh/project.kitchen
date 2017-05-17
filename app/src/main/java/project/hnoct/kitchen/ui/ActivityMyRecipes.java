@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -19,6 +20,7 @@ import android.support.v7.transition.ActionBarTransition;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import java.io.File;
@@ -28,6 +30,8 @@ import java.nio.channels.FileChannel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnCheckedChanged;
+import butterknife.OnClick;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeDbHelper;
 import project.hnoct.kitchen.prefs.SettingsActivity;
@@ -41,6 +45,14 @@ public class ActivityMyRecipes extends AppCompatActivity implements FragmentMyRe
     @BindView(R.id.navigation_drawer) NavigationView mNavigationView;
     @BindView(R.id.main_drawer_layout) DrawerLayout mDrawerLayout;
     @BindView(R.id.toolbar) Toolbar mToolbar;
+    @BindView(R.id.my_recipes_fab) FloatingActionButton mFab;
+
+    @OnClick(R.id.my_recipes_fab)
+    void onClick(View view) {
+        // Launch ActivityCreateRecipe
+        Intent intent = new Intent(this, ActivityCreateRecipe.class);
+        startActivity(intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)  {

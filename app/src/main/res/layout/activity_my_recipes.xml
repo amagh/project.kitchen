@@ -31,13 +31,15 @@
 
         <include layout="@layout/content_my_recipes" />
 
-        <!--<android.support.design.widget.FloatingActionButton-->
-            <!--android:id="@+id/fab"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="bottom|end"-->
-            <!--android:layout_margin="@dimen/fab_margin"-->
-            <!--app:srcCompat="@android:drawable/ic_dialog_email" />-->
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/my_recipes_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/fab_margin"
+            android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_gravity="bottom|end"
+            app:srcCompat="@drawable/ic_menu_add_custom" />
 
     </android.support.design.widget.CoordinatorLayout>
 

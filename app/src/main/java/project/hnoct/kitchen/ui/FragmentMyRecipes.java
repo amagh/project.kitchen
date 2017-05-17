@@ -95,13 +95,8 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
                         viewHolder
                 );
 
-
-
-//                if (resetLayout) setLayoutColumns();
             }
         });
-
-
 
         mRecipeAdapter.setHasStableIds(true);
 
@@ -128,6 +123,22 @@ public class FragmentMyRecipes extends Fragment implements LoaderManager.LoaderC
             @Override
             public void onFinishAnimateDetail() {
                 mRecipeRecyclerView.scrollToPosition(mPosition);
+            }
+        });
+
+        // Add ScrollListener to hide FAB when user is scrolling and show again when stopped
+        mRecipeRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                ((ActivityMyRecipes)getActivity()).mFab.hide();
+            }
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    ((ActivityMyRecipes)getActivity()).mFab.show();
+                }
+                super.onScrollStateChanged(recyclerView, newState);
             }
         });
 
