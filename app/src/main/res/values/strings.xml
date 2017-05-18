@@ -218,5 +218,5 @@
     <!-- Text Cards -->
     <string name="favorites_empty_card">Favorite a recipe to see it here!</string>
     <string name="recipe_book_empty_card">Create a recipe book with the button below!</string>
-    <string name="my_recipes_empty_card">Recipes that you create will show up here.</string>
+    <string name="my_recipes_empty_card">Recipes that you create will show up here.\nCreate one now by clicking the button below!</string>
 </resources>
