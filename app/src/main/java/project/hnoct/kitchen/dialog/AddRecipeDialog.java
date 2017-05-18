@@ -16,6 +16,9 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.RuntimeExecutionException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,6 +26,7 @@ import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 import project.hnoct.kitchen.ui.ActivityRecipeList;
 
@@ -44,14 +48,14 @@ public class AddRecipeDialog extends DialogFragment {
 
     // Views Bound by ButterKnife
     @BindView(R.id.dialog_add_recipe_recyclerview) RecyclerView mRecyclerView;
-    @Nullable @BindView(R.id.dialog_add_recipe_buttons) LinearLayout mButtonLayout;
-    @Nullable @BindView(R.id.dialog_add_recipe_search_layout) LinearLayout mSearchLayout;
-    @Nullable @BindView(R.id.dialog_add_recipe_search) EditText mSearchEditText;
-    @Nullable @BindView(R.id.dialog_add_recipe_search_icon) ImageView mSearchButton;
-    @Nullable @BindView(R.id.dialog_add_recipe_favorites) LinearLayout mFavoritesButton;
-    @Nullable @BindView(R.id.dialog_add_recipe_my_recipes) LinearLayout mMyRecipesButton;
-    @Nullable @BindView(R.id.dialog_add_recipe_favorites_icon) ImageView mFavoritesIcon;
-    @Nullable @BindView(R.id.dialog_add_recipe_my_recipes_icon) ImageView mMyRecipesIcon;
+    @BindView(R.id.dialog_add_recipe_buttons) LinearLayout mButtonLayout;
+    @BindView(R.id.dialog_add_recipe_search_layout) LinearLayout mSearchLayout;
+    @BindView(R.id.dialog_add_recipe_search) EditText mSearchEditText;
+    @BindView(R.id.dialog_add_recipe_search_icon) ImageView mSearchButton;
+    @BindView(R.id.dialog_add_recipe_favorites) LinearLayout mFavoritesButton;
+    @BindView(R.id.dialog_add_recipe_my_recipes) LinearLayout mMyRecipesButton;
+    @BindView(R.id.dialog_add_recipe_favorites_icon) ImageView mFavoritesIcon;
+    @BindView(R.id.dialog_add_recipe_my_recipes_icon) ImageView mMyRecipesIcon;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -68,14 +72,23 @@ public class AddRecipeDialog extends DialogFragment {
                     @Override
                     public void onClick(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
                         if (mListener != null) {
-                            // Utilize Callback interface to send information about recipe that was
-                            // selected
-                            mListener.onRecipeSelected(recipeUrl);
+                            // Retrieve the recipeId
+                            long recipeId = Utilities.getRecipeIdFromUrl(getActivity(), recipeUrl);
 
-                            // Close the Cursor
-                            if (mCursor != null) mCursor.close();
+                            // Check if the chapter already contains the recipe
+                            if (isRecipeInChapter(recipeId)) {
+                                // Chapter contains recipe, show a Toast to inform the user
+                                Toast.makeText(getActivity(), "Recipe already in chapter!", Toast.LENGTH_LONG).show();
+                            } else {
+                                // Utilize Callback interface to send information about recipe that was
+                                // selected
+                                mListener.onRecipeSelected(recipeUrl);
 
-                            dismiss();
+                                // Close the Cursor
+                                if (mCursor != null) mCursor.close();
+
+                                dismiss();
+                            }
                         }
                     }
                 }
@@ -107,9 +120,46 @@ public class AddRecipeDialog extends DialogFragment {
     }
 
     /**
+     * Checks whether the chapter already contains a given recipe
+     * @param recipeId Recipe ID of the recipe to check if it is already in the chapter
+     * @return Boolean value for whether the chapter contains the recipe
+     */
+    private boolean isRecipeInChapter(long recipeId) {
+        // Set up the selection and selection args for the Cursor
+        String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ? AND " +
+                RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = ?";
+        String[] selectionArgs = new String[] {Integer.toString(chapterId), Long.toString(recipeId)};
+
+        // Generate a Cursor filtering for chapter and recipeId
+        Cursor cursor = getActivity().getContentResolver().query(
+                LinkRecipeBookEntry.CONTENT_URI,
+                LinkRecipeBookEntry.PROJECTION,
+                selection,
+                selectionArgs,
+                null
+        );
+
+        // Check if the Cursor contains any entries
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                // Cursor found a match
+                cursor.close();
+                return true;
+            } else {
+                // Cursor did not find a match
+                cursor.close();
+                return false;
+            }
+        } else {
+            // Invalid query
+            return false;
+        }
+    }
+
+    /**
      * Sets the member chapterId so that it can be checked whether the chapter already contains
      * a selected recipe
-     * @param chapterId
+     * @param chapterId ID of the chapter attempting to add a recipe
      */
     public void setChapterId(int chapterId) {
         this.chapterId = chapterId;
@@ -117,58 +167,101 @@ public class AddRecipeDialog extends DialogFragment {
 
     @OnClick(R.id.dialog_add_recipe_favorites)
     void onClickFavorites(View view) {
+        // Check if already filtering for favorites
         if (!favoritesOnly) {
+            // Not yet filtered, so filter for favorites
             favoritesOnly = true;
+
+            // Set the boolean for filtering for custom-recipes to false
             myRecipesOnly = false;
+
+            // Generate and swap the new Cursor in
             swapCursorFavorites();
+
+            // Changed the icons so user has visual representation for what filter is being applied
             mFavoritesIcon.setImageResource(R.drawable.btn_rating_star_on_normal_holo_light);
             mMyRecipesIcon.setImageResource(R.drawable.ic_my_recipes);
         } else {
+            // Disable filter by favorites
             favoritesOnly = false;
+
+            // Reset the Cursor to return all recipes
             swapCursorNoFilters();
+
+            // Reset the icon to indicate no filter is being applied
             mFavoritesIcon.setImageResource(R.drawable.btn_rating_star_off_normal_holo_light);
         }
     }
 
+    /**
+     * @see #onClickFavorites
+     * @param view View being clicked
+     */
     @OnClick(R.id.dialog_add_recipe_my_recipes)
     void onClickMyRecipes(View view) {
         if (!myRecipesOnly) {
+            // Filter for custom-recipes
             myRecipesOnly = true;
             favoritesOnly = false;
+
             swapCursorMyRecipes();
+
             mMyRecipesIcon.setImageResource(R.drawable.ic_my_recipes_selected);
             mFavoritesIcon.setImageResource(R.drawable.btn_rating_star_off_normal_holo_light);
         } else {
+            // Disable filter
             myRecipesOnly = false;
+
             swapCursorNoFilters();
+
             mMyRecipesIcon.setImageResource(R.drawable.ic_my_recipes);
         }
     }
 
     @OnClick(R.id.dialog_add_recipe_search_icon)
     void onClickSearch(View view) {
+        // Check whether user is already in search mode
         if (search) {
+            // Already searching, so disable filter
             search = false;
+
+            // Set the icon for a new  search
             mSearchButton.setImageResource(R.drawable.ic_menu_search);
+
+            // Clear mSearchEditText to prepare for new input
             mSearchEditText.setText("");
+
+            // Check if a filter is already being applied
             if (favoritesOnly) {
+                // Return to showing all favorites
                 swapCursorFavorites();
             } else if (myRecipesOnly) {
+                // Return to showing all custom-recipes
                 swapCursorMyRecipes();
             } else {
+                // Return to showing all recipes
                 swapCursorNoFilters();
             }
         } else {
+            // User has input a term and clicked search, set the boolean to true
             search = true;
+
+            // Retrieve the searchTerm from the EditText
             String searchTerm = mSearchEditText.getText().toString();
+
+            // Check if a filter is already being applied
             if (favoritesOnly) {
+                // Search only favorites
                 searchFavorites(searchTerm);
             } else if (myRecipesOnly) {
+                // Search only custom-recipes
                 searchMyRecipes(searchTerm);
             } else {
+                // Search all recipes
                 search(searchTerm);
             }
 
+            // Set the icon to a clear to allow the user to quickly reset their search
             mSearchButton.setImageResource(R.drawable.ic_menu_close_clear_cancel);
         }
 
@@ -176,27 +269,47 @@ public class AddRecipeDialog extends DialogFragment {
 
     @OnEditorAction(R.id.dialog_add_recipe_search)
     boolean onEditorAction(int actionId) {
+        // Check if the user has pressed the search key on the soft keyboard
         if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            // User has input a term, set the boolean to true
             search = true;
+
+            // Retrieve the searchTerm from the EditText
             String searchTerm = mSearchEditText.getText().toString();
+
+            // Check if a filter is already being applied
             if (favoritesOnly) {
+                // Search only favorites
                 searchFavorites(searchTerm);
             } else if (myRecipesOnly) {
+                // Search only custom-recipes
                 searchMyRecipes(searchTerm);
             } else {
+                // Search all recipes
                 search(searchTerm);
             }
 
+            // Set the icon to a clear to allow the user to quickly reset their search
             mSearchButton.setImageResource(R.drawable.ic_menu_close_clear_cancel);
-
-            return true;
         }
 
         return false;
     }
 
+    /**
+     * Generates a new Cursor, returning all recipes with no filter, and swaps it into
+     * mRecipeAdapter
+     */
     private void swapCursorNoFilters() {
+        // Close the previous Cursor
+        if (mCursor != null) {
+            mCursor.close();
+        }
+
+        // Set up the parameters for querying the database
         String sortOrder = RecipeEntry.COLUMN_DATE_ADDED + " DESC";
+
+        // Generate a Cursor by querying the database
         mCursor = getActivity().getContentResolver().query(
                 RecipeEntry.CONTENT_URI,
                 RecipeEntry.RECIPE_PROJECTION,
@@ -209,11 +322,23 @@ public class AddRecipeDialog extends DialogFragment {
         mRecipeAdapter.swapCursor(mCursor);
     }
 
+    /**
+     * Generates a Cursor, filtering recipes for those that match a search term, and swaps it into
+     * mRecipeAdapter
+     * @param searchTerm Search term to filter by
+     */
     private void search(String searchTerm) {
-        // Query the database for all recipes sorting by favorites and then date added
+        // Close the previous Cursor
+        if (mCursor != null) {
+            mCursor.close();
+        }
+
+        // Initialize parameters for filtering database
         String selection = RecipeEntry.COLUMN_RECIPE_NAME + " LIKE ?";
         String[] selectionArgs = new String[] {"%" + searchTerm + "%"};
         String sortOrder = RecipeEntry.COLUMN_DATE_ADDED + " DESC";
+
+        // Generate Cursor by querying the database
         mCursor = getActivity().getContentResolver().query(
                 RecipeEntry.CONTENT_URI,
                 RecipeEntry.RECIPE_PROJECTION,
@@ -226,13 +351,25 @@ public class AddRecipeDialog extends DialogFragment {
         mRecipeAdapter.swapCursor(mCursor);
     }
 
+    /**
+     * Generates a Cursor, filtering the favorites results for those that match a search term, and
+     * swaps it into mRecipeAdapter
+     * @param searchTerm Search term to filter the favorites results by
+     */
     private void searchFavorites(String searchTerm) {
+        // Close the previous Cursor
+        if (mCursor != null) {
+            mCursor.close();
+        }
+
+        // Initialize parameters for the Cursor
         String selection = RecipeEntry.COLUMN_FAVORITE + " = ? AND " +
                 RecipeEntry.COLUMN_RECIPE_NAME + " LIKE ?";
         String[] selectionArgs = new String[] {"1", "%" + searchTerm + "%"};
         String sortOrder = RecipeEntry.COLUMN_RECIPE_NAME + " ASC";
 
-        Cursor cursor = getActivity().getContentResolver().query(
+        // Generate a Cursor by querying the database
+        mCursor = getActivity().getContentResolver().query(
                 RecipeEntry.CONTENT_URI,
                 RecipeEntry.RECIPE_PROJECTION,
                 selection,
@@ -240,18 +377,29 @@ public class AddRecipeDialog extends DialogFragment {
                 sortOrder
         );
 
-        mCursor = cursor;
-
+        // Swap the Cursor into AdapterRecipe
         mRecipeAdapter.swapCursor(mCursor);
     }
 
+    /**
+     * Generates a Cursor, filtering custom-recipe results for those that match a search term, and
+     * swaps it into mRecipeAdapter
+     * @param searchTerm Search term to filter custom-recipes results by
+     */
     private void searchMyRecipes(String searchTerm) {
+        // Close the previous Cursor
+        if (mCursor != null) {
+            mCursor.close();
+        }
+
+        // Initialize parameters for the Cursor
         String selection = RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " LIKE ? AND " +
                 RecipeEntry.COLUMN_RECIPE_NAME + " LIKE ?";
         String[] selectionArgs = new String[] {"*%", "%" + searchTerm + "%"};
         String sortOrder = RecipeEntry.COLUMN_RECIPE_NAME + " ASC";
 
-        Cursor cursor = getActivity().getContentResolver().query(
+        // Generate a Cursor by querying the database
+        mCursor = getActivity().getContentResolver().query(
                 RecipeEntry.CONTENT_URI,
                 RecipeEntry.RECIPE_PROJECTION,
                 selection,
@@ -259,19 +407,27 @@ public class AddRecipeDialog extends DialogFragment {
                 sortOrder
         );
 
-        mCursor = cursor;
-
+        // Swap the Cursor into mRecipeAdapter
         mRecipeAdapter.swapCursor(mCursor);
     }
 
+    /**
+     * Generates a Cursor filtering recipes for only those that are favorites and swaps it into
+     * mRecipeAdapter
+     */
     private void swapCursorFavorites() {
-        myRecipesOnly = false;
-        favoritesOnly = true;
+        // Close the previous Cursor
+        if (mCursor != null) {
+            mCursor.close();
+        }
+
+        // Initialize parameters for the Cursor
         String selection = RecipeEntry.COLUMN_FAVORITE + " = ?";
         String[] selectionArgs = new String[] {"1"};
         String sortOrder = RecipeEntry.COLUMN_RECIPE_NAME + " ASC";
 
-        Cursor cursor = getActivity().getContentResolver().query(
+        // Generate Cursor
+        mCursor = getActivity().getContentResolver().query(
                 RecipeEntry.CONTENT_URI,
                 RecipeEntry.RECIPE_PROJECTION,
                 selection,
@@ -279,19 +435,26 @@ public class AddRecipeDialog extends DialogFragment {
                 sortOrder
         );
 
-        mCursor = cursor;
-
+        // Swap the Cursor into the AdapterRecipe
         mRecipeAdapter.swapCursor(mCursor);
     }
 
+    /**
+     * Generates a Cursor, filtering for only custom-recipes and swaps it into mRecipeAdapter
+     */
     private void swapCursorMyRecipes() {
-        favoritesOnly = false;
-        myRecipesOnly = true;
+        // Close the previous Cursor
+        if (mCursor != null) {
+            mCursor.close();
+        }
+
+        // Parameters for Cursor
         String selection = RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " LIKE ?";
         String[] selectionArgs = new String[] {"*%"};
         String sortOrder = RecipeEntry.COLUMN_RECIPE_NAME + " ASC";
 
-        Cursor cursor = getActivity().getContentResolver().query(
+        // Generate Cursor
+        mCursor = getActivity().getContentResolver().query(
                 RecipeEntry.CONTENT_URI,
                 RecipeEntry.RECIPE_PROJECTION,
                 selection,
@@ -299,8 +462,7 @@ public class AddRecipeDialog extends DialogFragment {
                 sortOrder
         );
 
-        mCursor = cursor;
-
+        // Swap the Cursor into the AdapterRecipe
         mRecipeAdapter.swapCursor(mCursor);
     }
 

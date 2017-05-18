@@ -183,6 +183,9 @@ public class ActivityChapter extends AppCompatActivity implements ChapterDetails
         // Initialize the Dialog that will show recipes
         AddRecipeDialog dialog = new AddRecipeDialog();
 
+        // Pass the chapterId to the Dialog
+        dialog.setChapterId((int) chapterId);
+
         // Set the listener for when a recipe is selected
         dialog.setSelectionListener(new AddRecipeDialog.SelectionListener() {
 
