@@ -115,50 +115,36 @@ public class Utilities {
             }
 
             // Check to see if any measurement is used in the input String
-            if (ingredientAndQuantity.contains(measurement)) {
-                // If found, split the String in two so that the quantity and ingredient are separated
+            if (ingredientAndQuantity.matches(".* " + measurement + "[e?s]? .*")) {
+                // Create a Regex Pattern that will also match plurals of the measurement
+                Pattern pattern = Pattern.compile("(.+\\b" + measurement + "[e?s]?\\b)( ?of)? (\\b.+)");
 
-                // Make sure the measurement isn't just part of an ingredient
-                // e.g. 'can' in 'American cheese'
-                if (ingredientAndQuantity.charAt(ingredientAndQuantity.indexOf(measurement) - 1) != ' ') {
-                    continue;
+                // Match the pattern to the ingredientAndQuantity String
+                Matcher match = pattern.matcher(ingredientAndQuantity);
+
+                if (match.find()) {
+                    // If a match is found, split the ingredient and quantity
+                    String quantity = match.group(1);
+                    String ingredient = match.group(3);
+
+                    if (quantity.length() > 25) {
+                        // If the ingredient quantity is an abnormal length, it is usually because the
+                        // measurement is a clarification within the ingredient and not the actual
+                        // quantity
+                        //
+                        // e.g. 1 large bunch lacinato (Tuscan) kale, washed, tough stems
+                        // removed and discarded, and roughly chopped (about 300g ; 10 ounces after
+                        // de-stemming) - ounces will be caught, but is not the actual quantity of the
+                        // ingredient
+
+                        continue;
+                    }
+
+                    return new Pair<>(ingredient, quantity);
                 }
-
-                // Get the last index of the measurement in the input String
-                int lastCharIdx = ingredientAndQuantity.indexOf(measurement) + measurement.length();
-
-                if (ingredientAndQuantity.charAt(lastCharIdx) == 's' ||
-                        ingredientAndQuantity.charAt(lastCharIdx) == ')') {
-                    // Check to see if next character is an 's' or end parenthesis ')'. If so, include it
-                    lastCharIdx++;
-                }
-
-                if (ingredientAndQuantity.length() == lastCharIdx || ingredientAndQuantity.charAt(lastCharIdx) != ' ') {
-                    // If the index of the last character of the quantity is the length of the
-                    // String or part of another word then skip
-                    continue;
-                }
-
-                // Create two strings as substrings of the inputString
-                String ingredientQuantity = ingredientAndQuantity.substring(0, lastCharIdx).trim();
-                String ingredient = ingredientAndQuantity.substring(lastCharIdx).trim();
-
-                if (ingredientQuantity.length() > 25) {
-                    // If the ingredient quantity is an abnormal length, it is usually because the
-                    // measurement is a clarification within the ingredient and not the actual
-                    // quantity
-                    //
-                    // e.g. 1 large bunch lacinato (Tuscan) kale, washed, tough stems
-                    // removed and discarded, and roughly chopped (about 300g ; 10 ounces after
-                    // de-stemming) - ounces will be caught, but is not the actual quantity of the
-                    // ingredient
-                    continue;
-                }
-
-                // Return the Strings as a Pair
-                return new Pair<>(ingredient, ingredientQuantity);
             }
         }
+
         // If the input String does not contain any known measurements, then use Regex to
         // obtain the quantity of the ingredient
         Pattern pattern = Pattern.compile("(\\D*) *([0-9]* *-* *[1-9]+\\/*[1-9]*) (.*)");
@@ -1469,7 +1455,7 @@ public class Utilities {
                 boolean removed = false;    // Checks for whether the ingredient has already been removed
                 for (String preparation : IngredientEntry.preparations) {
                     // Iterate through the preparation array to search for matches to preparation verbiage
-                    if (!removed && ingredientArray[i].contains(preparation)) {
+                    if (!removed && ingredientArray[i].matches(".* " + preparation + ".*")) {
                         // If String includes preparation, remove from ingredientStringList
                         ingredientStringList.remove(i);
 

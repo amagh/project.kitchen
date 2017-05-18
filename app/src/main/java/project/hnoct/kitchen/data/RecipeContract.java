@@ -184,16 +184,19 @@ public class RecipeContract {
         public static final String COLUMN_FOOD_INGREDIENT_ID = "food_id";               // REAL
 
         public static final String[] measurements = new String[] {
-                "loaf", "can", "package", "container", "tablespoon", "teaspoon", "clove",
-                "cup", "pint", "quart", "gallon", "ounce", "fluid ounce", "jar", "dashes", "dash",
-                "pinch", "slice", "pound", "drop", "lb", "bunch", "tsp", "tbsp", "g", "ml"
+                "[Ll]oaf", "[Cc]an", "[Pp]ackage", "[Cc]ontainer", "[Tt]ablespoon", "[Tt]easpoon",
+                "[Cc]love", "[Cc]up", "[Pp]int", "[Qq]uart", "[Gg]allon", "[Oo]unce",
+                "[Ff]luid [Oo]unce", "[Jj]ar", "[Dd]ashes", "[Dd]ash", "[Pp]inch", "[Ss]lice",
+                "[Pp]ound", "[Dd]rop", "lb", "[Bb]unch", "tsp", "tbsp", "g", "ml", "oz"
         };
 
         public static final String[] preparations = new String[] {
-                "chopped", "diced", "minced", "separated", "peeled", "deveined", "juiced", "cut",
-                "with", "without", "divided", "shelled", "trimmed", "sliced", "whipped", "grated",
-                "split", "softened", "crushed", "melted", "°", "quartered", "cored", "beaten",
-                "temperature", "shaved", "thawed", "halved", "rinsed", "removed"
+                "[Cc]hopped", "[Dd]iced", "[Mm]inced", "[Ss]eparated", "[Pp]eeled", "[Dd]eveined",
+                "[Jj]uiced", "[Cc]ut", "[Ww]ith", "[Ww]ithout", "[Dd]ivided", "[Ss]helled",
+                "[Tt]rimmed", "[Ss]liced", "[Ww]hipped", "[G]grated", "[Ss]plit", "[Ss]oftened",
+                "[Cc]rushed", "[Mm]elted", "°", "[Qq]uartered", "[Cc]ored", "[Bb]eaten",
+                "[Tt]emperature", "[Ss]haved", "[Tt]hawed", "[Hh]alved", "[Rr]insed", "[Rr]emoved",
+                "[Ss]eeded", "[Pp]icked"
         };
 
         /** See RecipeEntry for comments on following methods **/
