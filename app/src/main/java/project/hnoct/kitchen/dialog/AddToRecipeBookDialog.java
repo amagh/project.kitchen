@@ -3,6 +3,7 @@ package project.hnoct.kitchen.dialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,11 +12,12 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
-import project.hnoct.kitchen.data.RecipeContract;
+import project.hnoct.kitchen.data.RecipeContract.*;
 import project.hnoct.kitchen.ui.ActivityRecipeList;
 import project.hnoct.kitchen.ui.adapter.AdapterChapter;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipeBook;
@@ -33,6 +35,7 @@ public class AddToRecipeBookDialog extends DialogFragment {
     private ChapterSelectedListener mListener;
     private Cursor mCursor;
     private long mBookId;
+    private long recipeId;
     Context mContext;
 
     // Views Bound by ButterKnife
@@ -54,32 +57,32 @@ public class AddToRecipeBookDialog extends DialogFragment {
         // Initialize the AdapterRecipeBook
         mRecipeBookAdapter = new AdapterRecipeBook(mContext, new AdapterRecipeBook.RecipeBookAdapterOnClickHandler() {
             @Override
-            public void onClick(AdapterRecipeBook.RecipeBookViewHolder viewHolder, long bookId) {
-                // Initialize member variable
-                mBookId = bookId;
+            public void onClick(AdapterRecipeBook.RecipeBookViewHolder viewHolder, final long bookId) {
+                if (isRecipeInBook(bookId)) {
+                    final AlertDialog dialog = new AlertDialog.Builder(mContext).create();
+                    dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.button_confirm), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            swapCursorChapter(bookId);
+                            dialog.dismiss();
+                        }
+                    });
 
-                // Set the AdapterRecipeBook to null so the AdapterChapter can be set to mRecyclerView
-                mRecipeBookAdapter.swapCursor(null);
-                mRecyclerView.setAdapter(mChapterAdapter);
+                    dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.button_deny), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialog.dismiss();
+                        }
+                    });
 
-                // Initialize parameters for querying database for chapters of a specific recipe book
-                Uri uri = RecipeContract.ChapterEntry.CONTENT_URI;
-                String[] projection = RecipeContract.ChapterEntry.PROJECTION;
-                String selection = RecipeContract.RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = ?";
-                String[] selectionArgs = new String[] {Long.toString(bookId)};
-                String sortOrder = RecipeContract.ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
+                    dialog.setMessage(getString(R.string.dialog_confirm_add_recipe_to_recipe_book));
 
-                // Query the database
-                mCursor = mContext.getContentResolver().query(
-                        uri,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        sortOrder
-                );
+                    dialog.show();
+                } else {
+                    swapCursorChapter(bookId);
+                }
 
-                // Swap the new Cursor into the AdapterChapter
-                mChapterAdapter.swapCursor(mCursor);
+
             }
         });
 
@@ -89,12 +92,19 @@ public class AddToRecipeBookDialog extends DialogFragment {
         mChapterAdapter.setChapterClickListener(new AdapterChapter.ChapterClickListener() {
             @Override
             public void onChapterClicked(long chapterId) {
-                if (mListener != null) {
-                    // Pass recipe book and chapter ID to the Activity requesting the dialog
-                    mListener.onChapterSelected(mBookId, chapterId);
+                // Check if the recipe already exists in the chapter
+                if (isRecipeInChapter(chapterId)) {
+                    // Recipe exists, show a toast informing the user
+                    Toast.makeText(mContext, R.string.toast_recipe_in_chapter, Toast.LENGTH_LONG).show();
+                } else {
+                    // Does not exist, add the recipe to the chapter
+                    if (mListener != null) {
+                        // Pass recipe book and chapter ID to the Activity requesting the dialog
+                        mListener.onChapterSelected(mBookId, chapterId);
 
-                    // Dismiss the dialog
-                    dismiss();
+                        // Dismiss the dialog
+                        dismiss();
+                    }
                 }
             }
         });
@@ -115,11 +125,11 @@ public class AddToRecipeBookDialog extends DialogFragment {
         mRecyclerView.setAdapter(mRecipeBookAdapter);
 
         // Initialize the parameters used to query the database for the recipe book information
-        Uri uri = RecipeContract.RecipeBookEntry.CONTENT_URI;
-        String[] projection = RecipeContract.RecipeBookEntry.PROJECTION;
+        Uri uri = RecipeBookEntry.CONTENT_URI;
+        String[] projection = RecipeBookEntry.PROJECTION;
         String selection = null;
         String[] selectionArgs = null;
-        String sortOrder = RecipeContract.RecipeBookEntry.COLUMN_RECIPE_BOOK_NAME + " ASC";
+        String sortOrder = RecipeBookEntry.COLUMN_RECIPE_BOOK_NAME + " ASC";
 
         // Query the database
         mCursor = mContext.getContentResolver().query(
@@ -140,6 +150,46 @@ public class AddToRecipeBookDialog extends DialogFragment {
     }
 
     /**
+     * Generates a Cursor for all chapters of a recipe book
+     */
+    private void swapCursorChapter(long bookId) {
+        // Initialize member variable
+        mBookId = bookId;
+
+        // Set the AdapterRecipeBook to null so the AdapterChapter can be set to mRecyclerView
+        mRecipeBookAdapter.swapCursor(null);
+        mRecyclerView.setAdapter(mChapterAdapter);
+
+        // Initialize parameters for querying database for chapters of a specific recipe book
+        Uri uri = ChapterEntry.CONTENT_URI;
+        String[] projection = ChapterEntry.PROJECTION;
+        String selection = RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = ?";
+        String[] selectionArgs = new String[] {Long.toString(bookId)};
+        String sortOrder = ChapterEntry.COLUMN_CHAPTER_ORDER + " ASC";
+
+        // Query the database
+        mCursor = mContext.getContentResolver().query(
+                uri,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+        );
+
+        // Swap the new Cursor into the AdapterChapter
+        mChapterAdapter.swapCursor(mCursor);
+    }
+
+    /**
+     * Method of passing the recipeId of the recipe to be added to a recipe book to check whether
+     * the recipe book already contains the recipe
+     * @param recipeId
+     */
+    public void setRecipeId(long recipeId) {
+        this.recipeId = recipeId;
+    }
+
+    /**
      * Listener for when a chapter has been selected for which the recipe is to be added to
      */
     public interface ChapterSelectedListener {
@@ -152,5 +202,78 @@ public class AddToRecipeBookDialog extends DialogFragment {
      */
     public void setChapterSelectedListener(ChapterSelectedListener listener) {
         mListener = listener;
+    }
+
+    /**
+     * Checks whether the recipe is in a given recipe book
+     * @param bookId ID of the recipe book to be checked
+     * @return Boolean value for whether the recipe book contains the recipe
+     */
+    private boolean isRecipeInBook(long bookId) {
+        // Parameters for Cursor
+        String selection = RecipeBookEntry.TABLE_NAME + "." +
+                RecipeBookEntry.COLUMN_RECIPE_BOOK_ID + " = ? AND " +
+                RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = ?";
+
+        String[] selectionArgs = new String[] {Long.toString(bookId), Long.toString(recipeId)};
+
+        // Query the database to see if recipe book contains recipe
+        Cursor cursor = getActivity().getContentResolver().query(
+                LinkRecipeBookEntry.CONTENT_URI,
+                LinkRecipeBookEntry.PROJECTION,
+                selection,
+                selectionArgs,
+                null
+        );
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                // Recipe book contains recipe, close the Cursor
+                cursor.close();
+                return true;
+            } else {
+                // Does not contain recipe, close the Cursor
+                cursor.close();
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Checks whether a recipe is in a given chapter
+     * @param chapterId ID of the chapter to be checked
+     * @return Boolean value for whether the chapter contains the recipe
+     */
+    private boolean isRecipeInChapter(long chapterId) {
+        // Parameters for Cursor
+        String selection = ChapterEntry.TABLE_NAME + "." + ChapterEntry.COLUMN_CHAPTER_ID + " = ? AND " +
+                RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_ID + " = ?";
+
+        String[] selectionArgs = new String[] {Long.toString(chapterId), Long.toString(recipeId)};
+
+        // Query the database to see if chapter contains recipe
+        Cursor cursor = getActivity().getContentResolver().query(
+                LinkRecipeBookEntry.CONTENT_URI,
+                LinkRecipeBookEntry.PROJECTION,
+                selection,
+                selectionArgs,
+                null
+        );
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                // Recipe book contains recipe, close the Cursor
+                cursor.close();
+                return true;
+            } else {
+                // Does not contain recipe, close the Cursor
+                cursor.close();
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }

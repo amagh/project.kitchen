@@ -208,9 +208,12 @@
 
     <!-- Toast messages -->
     <string name="toast_no_recipe_books">Please create a recipe book first to save this recipe to your recipe book!</string>
+    <string name="toast_chapter_contains_recipe">This chapter already contains this recipe. Please select another recipe!</string>
+    <string name="toast_recipe_in_chapter">This chapter already contains this recipe. Please select another chapter!</string>
     <string name="dialog_confirm_delete_chapter">Are you sure you want to remove this chapter and all its contents?</string>
     <string name="dialog_confirm_delete_recipe_book">Are you sure you want to remove this recipe book and all its contents?</string>
     <string name="dialog_confirm_delete_recipe">Are you sure you want to remove this recipe and all its contents?</string>
+    <string name="dialog_confirm_add_recipe_to_recipe_book">This recipe book already contains a chapter with this recipe. Would you like to continue?</string>
 
     <!-- Text Cards -->
     <string name="favorites_empty_card">Favorite a recipe to see it here!</string>

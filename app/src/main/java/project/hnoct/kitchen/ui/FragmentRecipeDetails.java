@@ -534,7 +534,6 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
             mProgressBar.setVisibility(View.INVISIBLE);
         }
 
-
         // Initialize CursorLoader
         getLoaderManager().initLoader(DETAILS_LOADER, null, this);
     }
@@ -593,7 +592,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
             }
 
             case R.id.detail_menu_add_to_recipebook: {
-                // Check whether there is already a recipebook and chapters created
+                // Check whether there is already a recipe book and chapters created
                 Cursor cursor = mContentResolver.query(
                         ChapterEntry.CONTENT_URI,
                         null,
@@ -613,6 +612,8 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
 
                 if (bookExists) {
                     AddToRecipeBookDialog dialog = new AddToRecipeBookDialog();
+                    dialog.setRecipeId(mRecipeId);
+
                     dialog.show(getActivity().getFragmentManager(), "dialog");
                     dialog.setChapterSelectedListener(new AddToRecipeBookDialog.ChapterSelectedListener() {
                         @Override
