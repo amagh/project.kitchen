@@ -117,15 +117,21 @@ public class Utilities {
             // Check to see if any measurement is used in the input String
             if (ingredientAndQuantity.matches(".* " + measurement + "[e?s]? .*")) {
                 // Create a Regex Pattern that will also match plurals of the measurement
-                Pattern pattern = Pattern.compile("(.+\\b" + measurement + "[e?s]?\\b)( ?of)? (\\b.+)");
+                Pattern pattern = Pattern.compile("(?:(.+\\b" + measurement + "[e?s]{0,2}\\b)(?: \\(\\d+ ?\\w*(?:gram[s]?|g|ml|mL)\\)) ?(?: of)? (.+))|(?:(.+\\b" + measurement + "[e?s]{0,2}\\b(?: \\(.*\\))?) ?(?: of)? (.+))");
 
                 // Match the pattern to the ingredientAndQuantity String
                 Matcher match = pattern.matcher(ingredientAndQuantity);
 
                 if (match.find()) {
                     // If a match is found, split the ingredient and quantity
-                    String quantity = match.group(1);
-                    String ingredient = match.group(3);
+                    String quantity, ingredient;
+                    if (match.group(1) != null) {
+                        quantity = match.group(1);
+                        ingredient = match.group(2);
+                    } else {
+                        quantity = match.group(3);
+                        ingredient = match.group(4);
+                    }
 
                     if (quantity.length() > 25) {
                         // If the ingredient quantity is an abnormal length, it is usually because the
@@ -322,6 +328,10 @@ public class Utilities {
 
         return direction;
     }
+
+//    public static String convertFromUnicodeFractions(Context context, String quantity) {
+//
+//    }
 
     /**
      * Queries the databse for the favorite status of a recipe

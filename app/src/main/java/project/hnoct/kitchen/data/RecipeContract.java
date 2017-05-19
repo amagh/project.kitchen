@@ -187,7 +187,7 @@ public class RecipeContract {
                 "[Ll]oaf", "[Cc]an", "[Pp]ackage", "[Cc]ontainer", "[Tt]ablespoon", "[Tt]easpoon",
                 "[Cc]love", "[Cc]up", "[Pp]int", "[Qq]uart", "[Gg]allon", "[Oo]unce",
                 "[Ff]luid [Oo]unce", "[Jj]ar", "[Dd]ashes", "[Dd]ash", "[Pp]inch", "[Ss]lice",
-                "[Pp]ound", "[Dd]rop", "lb", "[Bb]unch", "tsp", "tbsp", "g", "ml", "oz"
+                "[Pp]ound", "[Dd]rop", "lb", "[Bb]unch", "[Pp]ack", "tsp", "tbsp", "g", "ml", "oz"
         };
 
         public static final String[] preparations = new String[] {
