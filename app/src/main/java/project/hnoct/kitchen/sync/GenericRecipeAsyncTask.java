@@ -68,6 +68,7 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
             String authority = Uri.parse(mRecipeUrl).getAuthority();
             String recipeId = Long.toString(Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE));
             String recipeTitle = jsonRecipe ? getJsonRecipeTitle() : getRecipeTitle();
+            String description = jsonRecipe ? getJsonDescription() : getDescription();
             String imageUrl = jsonRecipe ? getJsonImageUrl() : getImageUrl();
             String author = jsonRecipe ? getJsonAuthor() : getRecipeAuthor();
             double rating = jsonRecipe ? -1 : getRating();
@@ -78,8 +79,22 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
                 // Do not include reviews/ratings if there are none found
             }
 
-            Log.d(LOG_TAG, "Recipe name: " + recipeTitle);
             Log.d(LOG_TAG, "Recipe Source ID: " + recipeId);
+            Log.d(LOG_TAG, "Recipe name: " + recipeTitle);
+
+            if (description == null || description.isEmpty()) {
+                StringBuilder  builder = new StringBuilder();
+                for (String descriptionString : getAllDescription()) {
+                    if (!descriptionString.trim().isEmpty()) {
+                        builder.append(descriptionString)
+                                .append("\n");
+                    }
+                }
+
+                description = builder.toString().trim();
+            }
+
+            Log.d(LOG_TAG, "Description: " + description);
             Log.d(LOG_TAG, "Image URL: " + imageUrl);
             Log.d(LOG_TAG, "Author: " + author);
             Log.d(LOG_TAG, "Source: " + authority);
@@ -87,20 +102,42 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
             Log.d(LOG_TAG, "Reviews: " + reviews);
             Log.d(LOG_TAG, "Servings: " + servings);
 
+            if (recipeTitle == null || imageUrl == null) {
+                // Title and image are too important to not have for a recipe. If they are not
+                // found, terminate the process
+                return null;
+            }
+
+            if (author == null) {
+                // If author is not found, then just set it to an empty String so the recipe can
+                // still be added to the database
+                author = "";
+            }
+
             List<Pair<String, String>> ingredientQuantityPairList = jsonRecipe ? getJsonIngredients() : getIngredientsAndQuantities();
 
             for (Pair<String, String> ingredientQuantityPair : ingredientQuantityPairList) {
                 Log.d(LOG_TAG, "Quantity: " + ingredientQuantityPair.second + " | Ingredient: " + ingredientQuantityPair.first);
             }
 
+            if (ingredientQuantityPairList.isEmpty()) {
+                // No ingredients, no recipe
+                return null;
+            }
+
             String directions = jsonRecipe ? getJsonDirections() : getRecipeDirections();
+
+            if (directions == null || directions.isEmpty()) {
+                // No directions, no recipe
+                return null;
+            }
 
             Log.d(LOG_TAG, "Directions: " + directions);
 
         } catch (IOException e) {
 
         } catch (JSONException e) {
-
+            e.printStackTrace();
         }
 
         return null;
@@ -128,6 +165,51 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
     }
 
     /**
+     * Retrieve the description of the recipe from the Document
+     * @return String of the description
+     */
+    private String getDescription() {
+        // Array of Elements that could potentiall contain the recipe's description
+        Element[] elementArray = new Element[] {
+                mRecipeElement.select("[name=description]").first()
+        };
+        // Iterate and find a valid Element containing the description
+        for (Element descriptionElement : elementArray) {
+            if (descriptionElement != null) {
+                // Return the description
+                return descriptionElement.attr("content");
+            }
+        }
+
+        return null;
+    }
+
+    private List<String> getAllDescription() {
+        StringBuilder builder = new StringBuilder();
+
+        for (String line : mRecipeDocument.toString().split("\n")) {
+            if (line.matches(".*//schema.org/[Rr]ecipe.*")) {
+                break;
+            }
+
+            builder.append(line)
+                    .append("\n");
+        }
+
+        Document partialDocument = Jsoup.parse(builder.toString());
+
+        Elements descriptionElements = partialDocument.select("p");
+
+        List<String> descriptionList = new ArrayList<>();
+
+        for (Element descriptionElement : descriptionElements) {
+            descriptionList.add(descriptionElement.text());
+        }
+
+        return descriptionList;
+    }
+
+    /**
      * Retrieve the recipe's image URL from the document
      * @return String of the URL for the recipe's image
      */
@@ -135,6 +217,7 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
         // Array of Elements that could potentially contain the image URL
         String[] elementArray  = new String[] {
                 mRecipeElement.select("[itemprop=image]").attr("href"),
+                mRecipeElement.select("img[alt*=" + getRecipeTitle() + "]").attr("src"),
                 mRecipeDocument.select("img[srcset").attr("src"),
                 mRecipeDocument.select("img[src]").attr("src")
         };
@@ -192,7 +275,8 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
         Elements[] elementsArray = new Elements[] {
                 mRecipeElement.select("div[class*=ngredient]").select("ul").select("[itemprop*=ingredients]"),
                 mRecipeElement.select("div[class*=content]").select("ul").select("[itemprop*=ingredients]"),
-                mRecipeElement.select("div[class*=list").select("[itemprop*=ingredients]")
+                mRecipeElement.select("div[class*=list").select("[itemprop*=ingredients]"),
+                mRecipeElement.select("ul[class*=list],ul[id*=list]").select("p,li,div")
         };
 
         // Iterate through the Array of Elements and check for validity of the Elements
@@ -202,6 +286,11 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
                 for (Element ingredientElement : ingredientElements) {
                     // Convert the list item to String
                     String ingredientQuantity = ingredientElement.text();
+
+                    if (ingredientQuantity.trim().isEmpty()) {
+                        // If the Element is just used as spacing, it can be skipped
+                        continue;
+                    }
 
                     // Break the String into Pairs with quantity separated
                     Pair<String, String> ingredientQuantityPair = Utilities.getIngredientQuantity(ingredientQuantity);
@@ -228,7 +317,8 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
                 mRecipeElement.select("div[class*=content").select("ol").select("li"),
                 mRecipeElement.select("div[class*=nstruction]").select("p"),
                 mRecipeElement.select("div[itemprop*=nstruction").select("ol").select("li"),
-                mRecipeElement.select("div[itemprop*=nstruction").select("p")
+                mRecipeElement.select("div[itemprop*=nstruction").select("p"),
+                mRecipeElement.select("ol[id*=nstruction],ol[id=irection]").select("li,div")
         };
 
         // Initialize the StringBuilder that will be used to link the direction list items into a
@@ -251,7 +341,14 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
             }
         }
 
-        return builder.toString().trim();
+        String directions = builder.toString().trim();
+
+        // Check that directions is not empty before returning it
+        if (directions.isEmpty()) {
+            return null;
+        } else {
+            return directions;
+        }
     }
 
     /**
@@ -313,9 +410,17 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
                 // Retrieve the yield as a String
                 String yield = yieldElement.text();
 
+//                Log.d(LOG_TAG, "URL: " + mRecipeUrl);
+//                Log.d(LOG_TAG, "Yield: " + yield);
+
                 // Strip all words and upper limits for the serving information out
                 // e.g. "2-4 servings" will remove "-4 servings"
-                return Integer.parseInt(yield.replaceAll("(-\\d)?( \\w*)", ""));
+                Pattern pattern = Pattern.compile("(\\d+) ?.*");
+                Matcher match = pattern.matcher(yield);
+                if (match.find()) {
+                    return Integer.parseInt(match.group(1));
+                }
+                return Integer.parseInt(yield.replaceAll("(-\\d)?", "").replaceAll("\\D*", ""));
             }
         }
 
@@ -370,6 +475,10 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
                 }
             }
 
+            if (!line.matches("\"@type\":\"Recipe\"")) {
+                return null;
+            }
+
             return new JSONObject(line.substring(jsonStart, jsonEnd));
         }
 
@@ -417,7 +526,14 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
             yield = yield.replaceAll("[Ee]ight", "8");
             yield = yield.replaceAll("[Nn]ine", "9");
 
-            return Integer.parseInt(yield.replaceAll("(-\\d)?( \\w*)", ""));
+            Pattern pattern = Pattern.compile("(\\d+) ?.*");
+            Matcher match = pattern.matcher(yield);
+
+            if (match.find()) {
+                return Integer.parseInt(match.group(1));
+            }
+
+            return Integer.parseInt(yield.replaceAll("(-\\d)?", "").replaceAll("\\D*", ""));
         }
     }
 
@@ -453,6 +569,13 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
                     .append("\n");
         }
 
-        return builder.toString().trim();
+        String directions = builder.toString().trim();
+
+        // Check that directions aren't empty before returning the value
+        if (directions.isEmpty()) {
+            return null;
+        } else {
+            return builder.toString().trim();
+        }
     }
 }

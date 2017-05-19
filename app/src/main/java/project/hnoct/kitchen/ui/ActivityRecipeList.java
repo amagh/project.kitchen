@@ -17,6 +17,7 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -80,6 +81,7 @@ import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.sync.AllRecipesService;
 import project.hnoct.kitchen.sync.EpicuriousService;
 import project.hnoct.kitchen.sync.FoodDotComService;
+import project.hnoct.kitchen.sync.GenericRecipeAsyncTask;
 import project.hnoct.kitchen.sync.RecipeImporter;
 import project.hnoct.kitchen.sync.RecipeGcmService;
 import project.hnoct.kitchen.sync.SeriousEatsService;
@@ -303,7 +305,18 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     @OnClick(R.id.main_import_recipe_fab)
     public void onClickFabImport() {
         closeFabMenu();
-        showImportDialog();
+//        String testIngredient = "1/2 Teaspoon of salt";
+//        Utilities.getIngredientQuantity(testIngredient);
+        GenericRecipeAsyncTask asyncTask1 = new GenericRecipeAsyncTask(this, "http://whatsgabycooking.com/slutty-brownies/");
+        asyncTask1.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        GenericRecipeAsyncTask asyncTask2 = new GenericRecipeAsyncTask(this, "https://mymealprepsunday.com/2016/10/25/red-curry-chicken-stir-fry/");
+//        asyncTask2.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        GenericRecipeAsyncTask asyncTask3 = new GenericRecipeAsyncTask(this, "http://notwithoutsalt.com/");
+//        asyncTask3.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        GenericRecipeAsyncTask asyncTask4 = new GenericRecipeAsyncTask(this, "http://www.andiemitchell.com/chicken-parmesan-wraps/");
+//        asyncTask4.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+
+//        showImportDialog();
     }
 
     @OnClick(R.id.main_add_recipe_fab)
@@ -607,8 +620,61 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
                     }
 
                 }
+//                Cursor cursor = getContentResolver().query(
+//                        RecipeContract.RecipeEntry.CONTENT_URI,
+//                        RecipeContract.RecipeEntry.RECIPE_PROJECTION,
+//                        null,
+//                        null,
+//                        RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " DESC"
+//                );
 
+//                if (cursor != null) {
+//                    cursor.moveToFirst();
+//                    int lastId = cursor.getInt(RecipeContract.RecipeEntry.IDX_RECIPE_ID);
+//                    int count = cursor.getCount();
+//
+//                    int recipeDeleted = lastId - count;
+//
+//                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//                    int prefsDeleted = prefs.getInt(getString(R.string.recipes_deleted_key), 0);
+//
+//                    cursor.close();
+//
+//                    SharedPreferences.Editor editor = prefs.edit();
+//                    editor.putInt(getString(R.string.recipes_deleted_key), recipeDeleted);
+//                    editor.apply();
+//                }
 
+//                getContentResolver().delete(
+//                        RecipeContract.RecipeEntry.CONTENT_URI,
+//                        RecipeContract.RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ?",
+//                        new String[] {"*591b18595e3ad7530e554fe5"}
+//                );
+//
+//                Cursor cursor = getContentResolver().query(
+//                        RecipeContract.RecipeEntry.CONTENT_URI,
+//                        RecipeContract.RecipeEntry.RECIPE_PROJECTION,
+//                        null,
+//                        null,
+//                        RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " DESC"
+//                );
+//
+//                if (cursor != null) {
+//                    cursor.moveToFirst();
+//                    int lastId = cursor.getInt(RecipeContract.RecipeEntry.IDX_RECIPE_ID);
+//                    int count = cursor.getCount();
+//
+//                    int recipesDeleted = lastId - count;
+//
+//                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//                    recipesDeleted++;
+//
+//                    SharedPreferences.Editor editors = prefs.edit();
+//                    editors.putInt(getString(R.string.recipes_deleted_key), recipesDeleted);
+//                    editors.apply();
+//
+//                    cursor.close();
+//                }
 
 
                 break;
