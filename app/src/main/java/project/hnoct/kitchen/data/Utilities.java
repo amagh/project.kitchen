@@ -466,20 +466,20 @@ public class Utilities {
      * @return String containing the quantity and abbreviated measurement of an ingredient
      */
     public static String abbreviateMeasurements(String quantity) {
-        if (quantity.contains("teaspoon")) {
-            quantity = quantity.replaceAll("teaspoons{0,1}", "tsp");
+        if (quantity.matches(".*[Tt]easpoon.*")) {
+            quantity = quantity.replaceAll("[Tt]easpoons{0,1}", "tsp");
         }
-        if (quantity.contains("tablespoon")) {
-            quantity = quantity.replaceAll("tablespoons{0,1}", "tbsp");
+        if (quantity.matches(".*[Tt]ablespoon.*")) {
+            quantity = quantity.replaceAll("[Tt]ablespoons{0,1}", "tbsp");
         }
-        if (quantity.contains("pound")) {
-            quantity = quantity.replaceAll("pound", "lb");
+        if (quantity.matches(".*[Pp]ound.*")) {
+            quantity = quantity.replaceAll("[Pp]ound", "lb");
         }
-        if (quantity.contains("fluid ounce")) {
-            quantity = quantity.replaceAll("fluid ounces{0,1}", "fl oz");
+        if (quantity.matches(".*[Ff]luid [Oo]unce.*")) {
+            quantity = quantity.replaceAll("[Ff]luid [Oo]unces{0,1}", "fl oz");
         }
-        if (quantity.contains("ounce")) {
-            quantity = quantity.replaceAll("ounces{0,1}", "oz");
+        if (quantity.matches(".*[Oo]unce.*")) {
+            quantity = quantity.replaceAll("[Oo]unces{0,1}", "oz");
         }
 
         return quantity;

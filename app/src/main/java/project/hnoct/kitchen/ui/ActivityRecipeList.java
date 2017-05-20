@@ -307,16 +307,26 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         closeFabMenu();
 //        String testIngredient = "1/2 Teaspoon of salt";
 //        Utilities.getIngredientQuantity(testIngredient);
-        GenericRecipeAsyncTask asyncTask1 = new GenericRecipeAsyncTask(this, "http://whatsgabycooking.com/slutty-brownies/");
-        asyncTask1.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-        GenericRecipeAsyncTask asyncTask2 = new GenericRecipeAsyncTask(this, "https://mymealprepsunday.com/2016/10/25/red-curry-chicken-stir-fry/");
-//        asyncTask2.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-        GenericRecipeAsyncTask asyncTask3 = new GenericRecipeAsyncTask(this, "http://notwithoutsalt.com/");
+//        GenericRecipeAsyncTask asyncTask1 = new GenericRecipeAsyncTask(this, "http://gimmedelicious.com/2016/12/17/meal-prep-healthy-roasted-chicken-and-veggies/");
+////        asyncTask1.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+//        GenericRecipeAsyncTask asyncTask2 = new GenericRecipeAsyncTask(this, "https://mymealprepsunday.com/2016/10/25/red-curry-chicken-stir-fry/");
+////        asyncTask2.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+//        GenericRecipeAsyncTask asyncTask3 = new GenericRecipeAsyncTask(this, "http://notwithoutsalt.com/");
 //        asyncTask3.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-        GenericRecipeAsyncTask asyncTask4 = new GenericRecipeAsyncTask(this, "http://www.andiemitchell.com/chicken-parmesan-wraps/");
+//        GenericRecipeAsyncTask asyncTask4 = new GenericRecipeAsyncTask(this, "http://www.andiemitchell.com/chicken-parmesan-wraps/");
 //        asyncTask4.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
 
-//        showImportDialog();
+//        RecipeImporter.importRecipeFromUrl(this, new RecipeImporter.UtilitySyncer() {
+//            @Override
+//            public void onFinishLoad() {
+//                FragmentRecipeList recipeListFragment =
+//                        (FragmentRecipeList) getSupportFragmentManager().findFragmentById(R.id.fragment);
+//                recipeListFragment.mRecipeAdapter.notifyDataSetChanged();
+//                recipeListFragment.mRecipeAdapter.setDetailCardPosition(0);
+//            }
+//        }, recipeUrl);
+
+        showImportDialog();
     }
 
     @OnClick(R.id.main_add_recipe_fab)
@@ -981,7 +991,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             animQueueLock = false;
         }
 
-        // AnimatorSets to mAnimQueue
+        // Add AnimatorSets to mAnimQueue
         if (!animQueueLock) {
             mAnimQueue.add(addRecipeAnimSet);
             mAnimQueue.add(importRecipeAnimSet);
@@ -1071,12 +1081,21 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
                     recipeListFragment.mRecipeAdapter.notifyDataSetChanged();
                     recipeListFragment.mRecipeAdapter.setDetailCardPosition(0);
                 }
+
+                @Override
+                public void onError() {
+                    Toast.makeText(getParent(),
+                            "Unable to identify the recipe on the website. \n Please use our \"Create recipe\" function to import the recipe.",
+                            Toast.LENGTH_LONG)
+                            .show();
+                }
             }, recipeUrl);
 
         } else if (!mTwoPane) {
             // If in single-view mode, then start the ActivityRecipeDetails
             Intent intent = new Intent(this, ActivityRecipeDetails.class);
             intent.setData(Uri.parse(recipeUrl));
+            intent.putExtra(getString(R.string.extra_generic_boolean), true);
             startActivity(intent);
         } else {
             mDetailsVisible = true;

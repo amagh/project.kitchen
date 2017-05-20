@@ -33,7 +33,6 @@ public class RecipeImporter {
 
         // Check to make sure scheme is properly set
         String recipeScheme = recipeUri.getScheme();
-        Log.d(LOG_TAG, "Scheme: " + recipeScheme);
 
         if (recipeScheme == null) {
             // Add scheme if missing
@@ -86,7 +85,19 @@ public class RecipeImporter {
                 });
                 break;
             }
-            default: throw new UnsupportedOperationException("Unknown URL: " + recipeUrl);
+            default:
+                syncTask = new GenericRecipeAsyncTask(context, new UtilitySyncer() {
+                    @Override
+                    public void onFinishLoad() {
+                        syncer.onFinishLoad();
+                    }
+
+                    @Override
+                    public void onError() {
+                        syncer.onError();
+                    }
+                });
+                break;
         }
 
         syncTask.execute(recipeUri.toString());
@@ -94,5 +105,7 @@ public class RecipeImporter {
 
     public interface UtilitySyncer {
         void onFinishLoad();
+
+        void onError();
     }
 }

@@ -23,13 +23,15 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import project.hnoct.kitchen.data.RecipeContract.*;
+import project.hnoct.kitchen.data.RecipeHelper;
 import project.hnoct.kitchen.data.Utilities;
 
 /**
  * Created by hnoct on 5/18/2017.
  */
 
-public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
+public class GenericRecipeAsyncTask extends AsyncTask<Object, Void, Boolean> {
     // Constants
     private static final String LOG_TAG = GenericRecipeAsyncTask.class.getSimpleName();
 
@@ -41,14 +43,26 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
     private JSONObject mJsonRecipe;
     private boolean jsonRecipe = false;
 
-    public GenericRecipeAsyncTask(Context context, String recipeUrl) {
+    private RecipeHelper mRecipeHelper;
+    private RecipeImporter.UtilitySyncer mListener;
+
+    public GenericRecipeAsyncTask(Context context, RecipeImporter.UtilitySyncer syncCallback) {
         // Initialize member variables
         mContext = context;
-        mRecipeUrl = recipeUrl;
+        mListener = syncCallback;
     }
 
     @Override
-    protected Void doInBackground(Void... voids) {
+    protected Boolean doInBackground(Object... args) {
+        mRecipeUrl = (String) args[0];
+
+        if (mRecipeUrl == null || mRecipeUrl.isEmpty()) {
+            return null;
+        }
+
+        // Initialize the RecipeHelper that will be used to manage all the recipe's values
+        mRecipeHelper = RecipeHelper.getInstance(mContext, this);
+
         try {
             // Connect to the supplied URL and retrieve the HTML document
             mRecipeDocument = Jsoup.connect(mRecipeUrl).get();
@@ -61,7 +75,7 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
             mRecipeElement = mRecipeDocument.select("[itemtype*=//schema.org/Recipe]").first();
             if (!jsonRecipe && mRecipeElement == null) {
                 Log.d(LOG_TAG, "No recipe found at: " + mRecipeUrl);
-                return null;
+                return false;
             }
 
             // Retrieve the recipe information from the Document
@@ -75,25 +89,20 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
             int reviews = jsonRecipe ? -1 : getReviews();
             int servings = jsonRecipe ? getJsonYield() : getRecipeYield();
 
-            if (rating == -1 && reviews == -1) {
-                // Do not include reviews/ratings if there are none found
-            }
-
-            Log.d(LOG_TAG, "Recipe Source ID: " + recipeId);
-            Log.d(LOG_TAG, "Recipe name: " + recipeTitle);
-
             if (description == null || description.isEmpty()) {
                 StringBuilder  builder = new StringBuilder();
                 for (String descriptionString : getAllDescription()) {
-                    if (!descriptionString.trim().isEmpty()) {
-                        builder.append(descriptionString)
-                                .append("\n");
-                    }
+                    builder.append(descriptionString)
+                            .append("\n");
                 }
 
                 description = builder.toString().trim();
             }
 
+            String directions = jsonRecipe ? getJsonDirections() : getRecipeDirections();
+
+            Log.d(LOG_TAG, "Recipe Source ID: " + recipeId);
+            Log.d(LOG_TAG, "Recipe name: " + recipeTitle);
             Log.d(LOG_TAG, "Description: " + description);
             Log.d(LOG_TAG, "Image URL: " + imageUrl);
             Log.d(LOG_TAG, "Author: " + author);
@@ -102,37 +111,42 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
             Log.d(LOG_TAG, "Reviews: " + reviews);
             Log.d(LOG_TAG, "Servings: " + servings);
 
-            if (recipeTitle == null || imageUrl == null) {
-                // Title and image are too important to not have for a recipe. If they are not
-                // found, terminate the process
-                return null;
-            }
-
-            if (author == null) {
-                // If author is not found, then just set it to an empty String so the recipe can
-                // still be added to the database
-                author = "";
-            }
-
-            List<Pair<String, String>> ingredientQuantityPairList = jsonRecipe ? getJsonIngredients() : getIngredientsAndQuantities();
-
-            for (Pair<String, String> ingredientQuantityPair : ingredientQuantityPairList) {
-                Log.d(LOG_TAG, "Quantity: " + ingredientQuantityPair.second + " | Ingredient: " + ingredientQuantityPair.first);
-            }
-
-            if (ingredientQuantityPairList.isEmpty()) {
-                // No ingredients, no recipe
-                return null;
-            }
-
-            String directions = jsonRecipe ? getJsonDirections() : getRecipeDirections();
-
             if (directions == null || directions.isEmpty()) {
                 // No directions, no recipe
-                return null;
+                return false;
+            }
+
+            List<String> ingredientList = jsonRecipe ? getJsonIngredients() : getIngredientsAndQuantities();
+
+            for (String ingredient : ingredientList) {
+                Log.d(LOG_TAG, "Ingredient: " + ingredient);
             }
 
             Log.d(LOG_TAG, "Directions: " + directions);
+
+            if (ingredientList.isEmpty()) {
+                // No ingredients, no recipe
+                return false;
+            }
+
+            mRecipeHelper.setRecipeName(recipeTitle)
+                    .setRecipeAuthor(author)
+                    .setDescription(description)
+                    .setImageUrl(imageUrl)
+                    .setRecipeUrl(mRecipeUrl)
+                    .setRating(rating)
+                    .setReviews(reviews)
+                    .setServings(servings)
+                    .setDirections(directions);
+
+            for (String ingredient : ingredientList) {
+                mRecipeHelper.addIngredient(mContext, ingredient);
+            }
+
+            boolean inserted = mRecipeHelper.insertAllValues(mContext);
+            if (!inserted) {
+                return false;
+            }
 
         } catch (IOException e) {
 
@@ -140,7 +154,16 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
             e.printStackTrace();
         }
 
-        return null;
+        return true;
+    }
+
+    @Override
+    protected void onPostExecute(Boolean imported) {
+        if (imported) {
+            mListener.onFinishLoad();
+        } else {
+            mListener.onError();
+        }
     }
 
     /**
@@ -218,6 +241,7 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
         String[] elementArray  = new String[] {
                 mRecipeElement.select("[itemprop=image]").attr("href"),
                 mRecipeElement.select("img[alt*=" + getRecipeTitle() + "]").attr("src"),
+                mRecipeDocument.select("[class=photo").attr("src"),
                 mRecipeDocument.select("img[srcset").attr("src"),
                 mRecipeDocument.select("img[src]").attr("src")
         };
@@ -226,6 +250,12 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
         for (String imageUrl : elementArray) {
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 // If the String is valid, return it as the image URL
+                if (!Uri.parse(imageUrl).getScheme().matches(".*http.*")) {
+                    continue;
+                }
+                if (!imageUrl.matches(".*jpg.*") && !imageUrl.matches(".*png.*")) {
+                    continue;
+                }
                 return imageUrl;
             }
         }
@@ -267,16 +297,30 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
      * @return List of Pairs with the first value being the ingredient and the second value being
      * the quantity
      */
-    private List<Pair<String, String>> getIngredientsAndQuantities() {
+    private List<String> getIngredientsAndQuantities() {
         // Initialize the List that will contain the ingredient-quantity Pairs
-        List<Pair<String, String>> ingredientQuantityPairList = new ArrayList<>();
+        List<String> ingredientQuantityList = new ArrayList<>();
 
         // Array of Elements that could potentially contain the ingredient information
         Elements[] elementsArray = new Elements[] {
-                mRecipeElement.select("div[class*=ngredient]").select("ul").select("[itemprop*=ingredients]"),
-                mRecipeElement.select("div[class*=content]").select("ul").select("[itemprop*=ingredients]"),
-                mRecipeElement.select("div[class*=list").select("[itemprop*=ingredients]"),
-                mRecipeElement.select("ul[class*=list],ul[id*=list]").select("p,li,div")
+                mRecipeElement.select("div[class*=ngredient]," +
+                        "div[class*=content]," +
+                        "div[class*=list")
+                        .select("ul").select("[itemprop*=ingredients]"),
+                mRecipeElement.select("ul[class*=list],ul[id*=list]").select("p,li,div"),
+                mRecipeElement.select("div[class*=ngredient]," +
+                        "div[class*=content]," +
+                        "div[class*=list")
+                        .select("ul").select("li"),
+                mRecipeElement.select("div[class*=ngredient]," +
+                        "div[class*=content]," +
+                        "div[class*=list")
+                        .select("p"),
+                mRecipeElement.select("div[class*=ngredient]," +
+                        "div[class*=content]," +
+                        "div[class*=list")
+                        .select("div"),
+                mRecipeElement.select("ul").select("li")
         };
 
         // Iterate through the Array of Elements and check for validity of the Elements
@@ -292,17 +336,13 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
                         continue;
                     }
 
-                    // Break the String into Pairs with quantity separated
-                    Pair<String, String> ingredientQuantityPair = Utilities.getIngredientQuantity(ingredientQuantity);
-
-                    // Add the Pair to the List
-                    ingredientQuantityPairList.add(ingredientQuantityPair);
+                    ingredientQuantityList.add(ingredientQuantity);
                 }
                 break;
             }
         }
 
-        return ingredientQuantityPairList;
+        return ingredientQuantityList;
     }
 
     /**
@@ -318,7 +358,8 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
                 mRecipeElement.select("div[class*=nstruction]").select("p"),
                 mRecipeElement.select("div[itemprop*=nstruction").select("ol").select("li"),
                 mRecipeElement.select("div[itemprop*=nstruction").select("p"),
-                mRecipeElement.select("ol[id*=nstruction],ol[id=irection]").select("li,div")
+                mRecipeElement.select("ol[id*=nstruction],ol[id=irection]").select("li,div"),
+                mRecipeElement.select("ol").select("li,div,p")
         };
 
         // Initialize the StringBuilder that will be used to link the direction list items into a
@@ -332,8 +373,8 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
                 for (Element directionElement : directionElements) {
                     // Append the direction onto the StringBuilder and a new line so it can be easily
                     // separated at a later time
-                    if (directionElement.text() != null && !directionElement.text().isEmpty()) {
-                        builder.append(directionElement.text().replaceAll("^([Ss]tep)? ?[1-9]\\.?:?", "").trim())
+                    if (directionElement.text() != null) {
+                        builder.append(directionElement.text().replaceAll("^([Ss]tep)? ?[1-9]\\.?:?", ""))
                                 .append("\n");
                     }
                 }
@@ -475,7 +516,7 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
                 }
             }
 
-            if (!line.matches("\"@type\":\"Recipe\"")) {
+            if (!line.matches(".*\"@type\":\"Recipe\".*")) {
                 return null;
             }
 
@@ -537,22 +578,20 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
         }
     }
 
-    private List<Pair<String, String>> getJsonIngredients() throws JSONException {
+    private List<String> getJsonIngredients() throws JSONException {
         String JSON_INGREDIENT_ARRAY = "recipeIngredient";
 
-        List<Pair<String, String>> ingredientQuantityPairList = new ArrayList<>();
+        List<String> ingredientQuantityList = new ArrayList<>();
 
         JSONArray jsonIngredientArray = mJsonRecipe.getJSONArray(JSON_INGREDIENT_ARRAY);
 
         for (int i = 0; i < jsonIngredientArray.length(); i++) {
             String ingredientQuantity = jsonIngredientArray.getString(i);
 
-            Pair<String, String> ingredientQuantityPair = Utilities.getIngredientQuantity(ingredientQuantity);
-
-            ingredientQuantityPairList.add(ingredientQuantityPair);
+            ingredientQuantityList.add(ingredientQuantity);
         }
 
-        return ingredientQuantityPairList;
+        return ingredientQuantityList;
     }
 
     private String getJsonDirections() throws JSONException {
@@ -565,7 +604,7 @@ public class GenericRecipeAsyncTask extends AsyncTask<Void, Void, Void> {
         for (int i = 0; i < jsonDirectionsArray.length(); i++) {
             String direction = jsonDirectionsArray.getString(i);
 
-            builder.append(direction.replaceAll("^([Ss]tep)? ?[1-9]\\.?:?", "").trim())
+            builder.append(direction.replaceAll("^([Ss]tep)? ?[1-9]\\.?:?", ""))
                     .append("\n");
         }
 

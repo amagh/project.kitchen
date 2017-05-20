@@ -10,6 +10,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.util.Log;
 
+import java.sql.SQLClientInfoException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -56,34 +58,28 @@ public class RecipeHelper {
     private static IngredientHelper mIngredientHelper = null;
 
     // Lists that will hold the values that are to be inserted into the database
-    List<ContentValues> mRecipeCVList = null;
-    List<ContentValues> mIngredientCVList = null;
-    List<ContentValues> mLinkCVList = null;
+    private List<ContentValues> mRecipeCVList = null;
+    private List<ContentValues> mIngredientCVList = null;
+    private List<ContentValues> mLinkCVList = null;
 
-
-    private static Context mContext;
     private static Object mObjectLock;
 
     /**
      * Initializes the RecipeHelper if it is not yet initialized and then returns the instance
      * if the lock matches
-     * @param context Interface to global Context
      * @param objectLock The Object that the RecipeHelper will be locked to until it finishes its
      *                   operations. If mObjectLock is already set, then it checks to ensure
      *                   objectLock matches mObjectLock prior to returning the RecipeHelper instance
      * @return The Singleton instance of RecipeHelper
      */
     public static RecipeHelper getInstance(Context context, @NonNull Object objectLock) {
-        if (mContext == null) {
-            // Set the member variable
-            mContext = context;
-
+        if (mObjectLock == null) {
             // Lock RecipeHelper to the first Object that calls it so that
             mObjectLock = objectLock;
         }
         // Initialize the RecipeHelper if it is not initialized yet
         if (mRecipeHelper == null) {
-            mRecipeHelper = new RecipeHelper();
+            mRecipeHelper = new RecipeHelper(context);
         }
 
         if (mObjectLock == objectLock) {
@@ -99,7 +95,7 @@ public class RecipeHelper {
     /**
      * Private Constructor for Singleton Construction
      */
-    private RecipeHelper() {
+    private RecipeHelper(Context context) {
         // Stub for Singleton
         initializeCVLists();
 
@@ -108,7 +104,7 @@ public class RecipeHelper {
             mIngredientHelper = new IngredientHelper();
         }
 
-        recipeId = (int) Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
+        recipeId = (int) Utilities.generateNewId(context, Utilities.RECIPE_TYPE);
     }
 
     /**
@@ -138,13 +134,32 @@ public class RecipeHelper {
         return recipeId - 1;
     }
 
-    public void insertAllValues() {
-        insertRecipeValues();
-        insertIngredientValues();
-        insertLinkValues();
+    public boolean insertAllValues(Context context) {
+        boolean recipeInserted = false;
 
-        mIngredientHelper = null;
-        mRecipeHelper = null;
+        try {
+            // Insert the recipe values and check that at least one recipe was inserted
+            recipeInserted = insertRecipeValues(context) > 0;
+
+            // Ingredient values are independent of recipe values so they can be inserted regardless
+            // of whether a recipe was successfully inserted
+            insertIngredientValues(context);
+
+            if (recipeInserted) {
+                // Can't insert link values unless there is a recipe linked to it
+                insertLinkValues(context);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // Reset RecipeHelper so it can be used elsewhere
+            mIngredientHelper = null;
+            mRecipeHelper = null;
+            resetRecipeValues();
+            mObjectLock = null;
+        }
+
+        return recipeInserted;
     }
 
     /**
@@ -259,7 +274,7 @@ public class RecipeHelper {
      * Inserts all ContentValues in mRecipeCVList into the database
      * @return Number of recipes inserted into database
      */
-    public int insertRecipeValues() {
+    public int insertRecipeValues(Context context) throws SQLException {
         if (checkRecipeValues()) {
             mRecipeCVList.add(generateRecipeValues());
             resetRecipeValues();
@@ -268,7 +283,7 @@ public class RecipeHelper {
         if (mRecipeCVList.size() == 0) {
             return 0;
         } else if (mRecipeCVList.size() == 1) {
-            mContext.getContentResolver().insert(
+            context.getContentResolver().insert(
                     RecipeEntry.CONTENT_URI,
                     mRecipeCVList.get(0)
             );
@@ -276,7 +291,7 @@ public class RecipeHelper {
             ContentValues[] recipeCVArray = new ContentValues[mRecipeCVList.size()];
             mRecipeCVList.toArray(recipeCVArray);
 
-            mContext.getContentResolver().bulkInsert(
+            context.getContentResolver().bulkInsert(
                     RecipeEntry.CONTENT_URI,
                     recipeCVArray
             );
@@ -286,15 +301,15 @@ public class RecipeHelper {
     }
 
     /**
-     * @see #insertRecipeValues()
+     * @see #insertRecipeValues(Context)
      *
      * @return Number of ingredients inserted into the database
      */
-    public int insertIngredientValues() {
+    public int insertIngredientValues(Context context) throws SQLException {
         if (mIngredientCVList.size() == 0) {
             return 0;
         } else if (mIngredientCVList.size() == 1) {
-            mContext.getContentResolver().insert(
+            context.getContentResolver().insert(
                     IngredientEntry.CONTENT_URI,
                     mIngredientCVList.get(0)
             );
@@ -302,7 +317,7 @@ public class RecipeHelper {
             ContentValues[] ingredientCVArray = new ContentValues[mIngredientCVList.size()];
             mIngredientCVList.toArray(ingredientCVArray);
 
-            mContext.getContentResolver().bulkInsert(
+            context.getContentResolver().bulkInsert(
                     IngredientEntry.CONTENT_URI,
                     ingredientCVArray
             );
@@ -312,14 +327,14 @@ public class RecipeHelper {
     }
 
     /**
-     * @see #insertRecipeValues()
+     * @see #insertRecipeValues(Context)
      * @return Number of link values inserted into database
      */
-    public int insertLinkValues() {
+    public int insertLinkValues(Context context) throws SQLException {
         if (mLinkCVList.size() == 0) {
             return 0;
         } else if (mLinkCVList.size() == 1) {
-            mContext.getContentResolver().insert(
+            context.getContentResolver().insert(
                     LinkIngredientEntry.CONTENT_URI,
                     mLinkCVList.get(0)
             );
@@ -327,7 +342,7 @@ public class RecipeHelper {
             ContentValues[] linkCVArray = new ContentValues[mLinkCVList.size()];
             mLinkCVList.toArray(linkCVArray);
 
-            mContext.getContentResolver().bulkInsert(
+            context.getContentResolver().bulkInsert(
                     LinkIngredientEntry.CONTENT_URI,
                     linkCVArray
             );
@@ -361,8 +376,8 @@ public class RecipeHelper {
         }
     }
 
-    public void addIngredient(String ingredientAndQuality) {
-        mIngredientHelper.addIngredient(ingredientAndQuality);
+    public void addIngredient(Context context, String ingredientAndQuality) {
+        mIngredientHelper.addIngredient(context, ingredientAndQuality);
     }
 
     private void resetRecipeValues() {
@@ -444,20 +459,20 @@ public class RecipeHelper {
          * then adds them to the list
          * @param ingredientAndQuantity String containing the ingredient and quantity
          */
-        private void addIngredient(String ingredientAndQuantity) {
+        private void addIngredient(Context context, String ingredientAndQuantity) {
             // Split the ingredient String into separated quantity and ingredient name
             Pair<String, String> ingredientQuantityPair = Utilities.getIngredientQuantity(ingredientAndQuantity);
             ingredient = ingredientQuantityPair.first;
             quantity = ingredientQuantityPair.second;
 
             // Check to see if ingredient already exists in database
-            ingredientId = Utilities.getIngredientIdFromName(mContext, ingredient);
+            ingredientId = Utilities.getIngredientIdFromName(context, ingredient);
             boolean skipAddIngredient = false;
 
             if (ingredientId == -1) {
                 // If it does not, find the ID that will be automatically generated for this
                 // ingredient
-                ingredientId = Utilities.generateNewId(mContext, Utilities.INGREDIENT_TYPE);
+                ingredientId = Utilities.generateNewId(context, Utilities.INGREDIENT_TYPE);
             } else {
                 skipAddIngredient = true;
             }

@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.ViewDragHelper;
@@ -50,6 +51,7 @@ public class ActivityRecipeDetails extends AppCompatActivity {
     private AdapterNutrition mNutritionAdapter;
     private boolean imageLoaded = false;
     private String mImageUrl;
+    private Snackbar mSnackbar;
 
     // Views bound by ButterKnife
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -65,8 +67,6 @@ public class ActivityRecipeDetails extends AppCompatActivity {
         setContentView(R.layout.activity_recipe_details);
         ButterKnife.bind(this);
 
-        supportPostponeEnterTransition();
-
         // Set Toolbar parameters
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -78,9 +78,16 @@ public class ActivityRecipeDetails extends AppCompatActivity {
         // Retrieve the image URL passed as an extra
         mImageUrl = getIntent().getStringExtra(getString(R.string.extra_image));
 
+        if (mImageUrl != null) {
+            supportPostponeEnterTransition();
+        }
+
+        boolean genericRecipe = getIntent().getBooleanExtra(getString(R.string.extra_generic_boolean), false);
+
         // Add the URI as part of a Bundle to attach to the FragmentRecipeDetails
         Bundle args = new Bundle();
         args.putParcelable(FragmentRecipeDetails.RECIPE_DETAILS_URL, recipeUrl);
+        args.putBoolean(getString(R.string.extra_generic_boolean), genericRecipe);
 
         // Instantiate the fragment and attach the Bundle containing the recipe URI
         mDetailsFragment = new FragmentRecipeDetails();
@@ -107,6 +114,7 @@ public class ActivityRecipeDetails extends AppCompatActivity {
 
                 // If image was not loaded previously, load the image from the imported recipe
                 if (!imageLoaded) {
+                    mImageUrl = cursor.getString(RecipeEntry.IDX_IMG_URL);
                     loadImageView();
                 }
             }

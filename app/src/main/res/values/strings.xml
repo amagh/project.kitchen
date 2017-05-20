@@ -192,6 +192,7 @@
     <string name="extra_url">extra_recipe_url</string>
     <string name="extra_time">time_in_millis</string>
     <string name="extra_image">recipe_image</string>
+    <string name="extra_generic_boolean">is_generic</string>
 
     <!-- Intent Filters -->
     <string name="intent_filter_sync_finished">project.hnoct.kitchen.ON_FINISH_SYNC</string>

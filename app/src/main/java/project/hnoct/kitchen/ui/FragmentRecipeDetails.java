@@ -85,6 +85,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     private boolean loaded = false;
     private boolean isConnected = true;
     private boolean connectivityRegistered = false;
+    private boolean genericRecipe = false;
 
     // Views bound by ButterKnife
     @BindView(R.id.details_ingredient_recycler_view) RecyclerView mIngredientsRecyclerView;
@@ -143,6 +144,8 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
 
                 mRecipeUri = LinkIngredientEntry.buildIngredientUriFromRecipe(mRecipeId);
             }
+
+            genericRecipe = getArguments().getBoolean(getString(R.string.extra_generic_boolean));
         } else {
             Log.d(LOG_TAG, "No bundle found!");
             return rootView;
@@ -320,6 +323,22 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                         if (getActivity() != null)
                         getLoaderManager().restartLoader(DETAILS_LOADER, null, FragmentRecipeDetails.this);
                         mSyncing = false;
+
+                        if (genericRecipe) {
+                            Snackbar editSnackbar = Snackbar.make(
+                                    getActivity().getWindow().getDecorView().findViewById(android.R.id.content),
+                                    "If the recipe does not look right, please click the button to edit it.",
+                                    Snackbar.LENGTH_INDEFINITE
+                            );
+
+                            editSnackbar.show();
+                        }
+                    }
+
+                    @Override
+                    public void onError() {
+                        Toast.makeText(mContext, "Unable to identify the recipe on the website. \nPlease use our \"Create recipe\" function to import the recipe.", Toast.LENGTH_LONG).show();
+                        getActivity().finish();
                     }
                 }, mRecipeUrl);
             } else if (!mSyncing && !connectivityRegistered) {
@@ -327,11 +346,11 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                 registerConnectivityListener();
 
                 // Show a Snackbar informing the user of network status
-//                mSnackbar = Snackbar.make((
-//                        (ActivityRecipeDetails)getActivity()).mNutritionDrawer,
-//                        "Not connected to a network. Unable to download recipe details.",
-//                        Snackbar.LENGTH_INDEFINITE
-//                );
+                mSnackbar = Snackbar.make(
+                        getActivity().getWindow().getDecorView().findViewById(android.R.id.content),
+                        "Not connected to a network. Unable to download recipe details.",
+                        Snackbar.LENGTH_INDEFINITE
+                );
 
                 // Set the Snackbar to be dismissed on click
                 mSnackbar.getView().setOnClickListener(new View.OnClickListener() {
@@ -728,6 +747,12 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                         if (getActivity() != null)
                             getLoaderManager().restartLoader(DETAILS_LOADER, null, FragmentRecipeDetails.this);
                         mSyncing = false;
+                    }
+
+                    @Override
+                    public void onError() {
+                        Toast.makeText(mContext, "Unable to identify the recipe on the website. \n Please use our \"Create recipe\" function to import the recipe.", Toast.LENGTH_LONG).show();
+                        getActivity().finish();
                     }
                 }, mRecipeUrl);
             }
