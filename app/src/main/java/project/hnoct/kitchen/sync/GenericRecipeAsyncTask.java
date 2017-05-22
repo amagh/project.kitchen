@@ -192,15 +192,26 @@ public class GenericRecipeAsyncTask extends AsyncTask<Object, Void, Boolean> {
      * @return String of the description
      */
     private String getDescription() {
-        // Array of Elements that could potentiall contain the recipe's description
+        // Array of Elements that could potentially contain the recipe's description
         Element[] elementArray = new Element[] {
-                mRecipeElement.select("[name=description]").first()
+                mRecipeElement.select("[name=description]").first(),
+                mRecipeElement.select("[itemprop=description").first()
         };
         // Iterate and find a valid Element containing the description
         for (Element descriptionElement : elementArray) {
             if (descriptionElement != null) {
+                // Init String that will hold the description
+                String description;
+
+                // Check whether the description is within the text or contained as an attr
+                if (descriptionElement.text() != null && !descriptionElement.text().isEmpty()) {
+                    description = descriptionElement.text();
+                } else {
+                    description = descriptionElement.attr("content");
+                }
+
                 // Return the description
-                return descriptionElement.attr("content");
+                return description;
             }
         }
 

@@ -17,8 +17,10 @@ import project.hnoct.kitchen.data.Utilities;
 
 public class ActivityCreateRecipe extends AppCompatActivity {
     // Constants
+    public static String DELETE_GENERIC_EXTRA = "delete_generic_extra";
 
     // Member Variables
+    public static boolean deleteOriginal = false;
     private boolean canDelete = false;
     private long mRecipeId;
 
@@ -37,6 +39,8 @@ public class ActivityCreateRecipe extends AppCompatActivity {
         // ActivityRecipeDetails
         Bundle args = new Bundle();
         Uri recipeUri = getIntent().getData();
+        deleteOriginal = getIntent().getBooleanExtra(DELETE_GENERIC_EXTRA, false);
+
         args.putParcelable(FragmentCreateRecipe.RECIPE_URI, recipeUri);
 
         // Instantiate the FragmentCreateRecipe and set the args

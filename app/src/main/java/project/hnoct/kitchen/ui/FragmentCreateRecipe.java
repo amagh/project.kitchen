@@ -817,6 +817,10 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
         // TODO: Start the ActivityRecipeDetails???
         Toast.makeText(mContext, "Recipe saved!", Toast.LENGTH_SHORT).show();
 
+        if (ActivityCreateRecipe.deleteOriginal) {
+            deleteOriginal();
+        }
+
         deleteAutosavedData();
         mSaved = true;
         return true;
@@ -879,6 +883,33 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
 
         // Delete all auto-saved data
         deleteAutosavedData();
+    }
+
+    private void deleteOriginal() {
+        // Retrieve the recipeId of the original recipe
+        long deleteId = Utilities.getRecipeIdFromSourceId(
+                mContext,
+                mRecipeSourceId.replace("*",""),
+                mSource
+        );
+
+        // Set selection and selection arguments for delete operation
+        String selection = RecipeEntry.COLUMN_RECIPE_ID + " = ?";
+        String[] selectionArgs = new String[] {Long.toString(deleteId)};
+
+        // Delete entry from recipe table
+        mContext.getContentResolver().delete(
+                RecipeEntry.CONTENT_URI,
+                selection,
+                selectionArgs
+        );
+
+        // Delete entry from link ingredient table
+        mContext.getContentResolver().delete(
+                LinkIngredientEntry.CONTENT_URI,
+                selection,
+                selectionArgs
+        );
     }
 
     /**

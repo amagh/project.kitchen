@@ -325,19 +325,48 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                         mSyncing = false;
 
                         if (genericRecipe) {
+                            // If recipe is a generic recipe, parsed from a web page, give tbe user
+                            // option to edit the recipe and delete the original with mistakes
+
+                            // Show a Snackbar informing the user of the ability to make changes
                             Snackbar editSnackbar = Snackbar.make(
                                     getActivity().getWindow().getDecorView().findViewById(android.R.id.content),
-                                    "If the recipe does not look right, please click the button to edit it.",
+                                    getString(R.string.snackbar_check_recipe_details),
                                     Snackbar.LENGTH_INDEFINITE
                             );
 
+                            // Set an click to open ActivityCreateRecipe with the boolean
+                            // deleteOriginal set to true
+                            editSnackbar.getView().setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    // Init Intent
+                                    Intent intent = new Intent(getActivity(), ActivityCreateRecipe.class);
+
+                                    // Set recipeUri as data to pass
+                                    intent.setData(RecipeEntry.buildRecipeUriFromId(mRecipeId));
+                                    intent.putExtra(ActivityCreateRecipe.DELETE_GENERIC_EXTRA, true);
+
+                                    // Start ActivityCreateRecipe
+                                    startActivity(intent);
+
+                                    // Close ActivityRecipeDetails
+                                    getActivity().finish();
+                                }
+                            });
+
+                            // Show the Snackbar
                             editSnackbar.show();
                         }
                     }
 
                     @Override
                     public void onError() {
-                        Toast.makeText(mContext, "Unable to identify the recipe on the website. \nPlease use our \"Create recipe\" function to import the recipe.", Toast.LENGTH_LONG).show();
+                        // If there is an error parsing the webpage for recipe information, show a
+                        // Toast to alert the user of the failture
+                        Toast.makeText(mContext, getString(R.string.toast_unable_to_parse_recipe), Toast.LENGTH_LONG).show();
+
+                        // Return to ActivityRecipeList
                         getActivity().finish();
                     }
                 }, mRecipeUrl);
