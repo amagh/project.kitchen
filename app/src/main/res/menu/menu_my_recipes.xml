@@ -43,17 +43,4 @@
         android:checked="false"
         android:checkable="true" />
 
-    <item
-        android:id="@+id/action_copy_db"
-        android:orderInCategory="5"
-        android:title="@string/transfer_db_title"
-        android:checked="false"
-        android:checkable="true" />
-
-    <item
-        android:id="@+id/action_clear_data"
-        android:title="@string/action_clear_data"
-        android:orderInCategory="99"
-        android:checked="false"
-        android:checkable="true" />
 </menu>
