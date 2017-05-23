@@ -717,7 +717,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
         // Generate the recipe ID for the link values
         long recipeId = Utilities.getRecipeIdFromSourceId(mContext, mRecipeSourceId, mSource);
         if (newRecipe) {
-             recipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
+             mRecipeId = recipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
         }
 
         // Create Lists to hold ingredientIds, ingredient ContentValues, and link ContentValues
@@ -910,6 +910,13 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                 selection,
                 selectionArgs
         );
+
+        // Increment the number of recipes deleted and store it in SharedPreferences
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        int recipesDeleted = prefs.getInt(getString(R.string.recipes_deleted_key), 0);
+        recipesDeleted++;
+
+        prefs.edit().putInt(getString(R.string.recipes_deleted_key), recipesDeleted).apply();
     }
 
     /**

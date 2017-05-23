@@ -79,6 +79,7 @@ import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.dialog.ImportRecipeDialog;
 import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.sync.AllRecipesService;
+import project.hnoct.kitchen.sync.DescriptionSummarizer;
 import project.hnoct.kitchen.sync.EpicuriousService;
 import project.hnoct.kitchen.sync.FoodDotComService;
 import project.hnoct.kitchen.sync.GenericRecipeAsyncTask;
@@ -607,60 +608,30 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
                 mDetailsVisible = false;
                 break;
             }
-            case R.id.action_copy_db: {
-                File sd = Environment.getExternalStorageDirectory();
-                File database = getApplicationContext().getDatabasePath(RecipeDbHelper.DATABASE_NAME + ".db");
-                Log.d(LOG_TAG, sd.toString());
-                if (sd.canWrite()) {
-                    Log.d(LOG_TAG, "Able to write to SD.");
-                    File dbCopy = new File(sd, RecipeDbHelper.DATABASE_NAME + ".db");
-                    if (database.exists()) {
-                        Log.d(LOG_TAG, "Database exists.");
-                        try {
-                            FileChannel src = new FileInputStream(database).getChannel();
-                            FileChannel dst = new FileInputStream(dbCopy).getChannel();
-                            dst.transferFrom(src, 0, src.size());
-
-                            src.close();
-                            dst.close();
-                            Toast.makeText(this, "Database copied to external storage!", Toast.LENGTH_SHORT).show();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                }
-//                Cursor cursor = getContentResolver().query(
-//                        RecipeContract.RecipeEntry.CONTENT_URI,
-//                        RecipeContract.RecipeEntry.RECIPE_PROJECTION,
-//                        null,
-//                        null,
-//                        RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " DESC"
-//                );
-
-//                if (cursor != null) {
-//                    cursor.moveToFirst();
-//                    int lastId = cursor.getInt(RecipeContract.RecipeEntry.IDX_RECIPE_ID);
-//                    int count = cursor.getCount();
+//            case R.id.action_copy_db: {
+//                File sd = Environment.getExternalStorageDirectory();
+//                File database = getApplicationContext().getDatabasePath(RecipeDbHelper.DATABASE_NAME + ".db");
+//                Log.d(LOG_TAG, sd.toString());
+//                if (sd.canWrite()) {
+//                    Log.d(LOG_TAG, "Able to write to SD.");
+//                    File dbCopy = new File(sd, RecipeDbHelper.DATABASE_NAME + ".db");
+//                    if (database.exists()) {
+//                        Log.d(LOG_TAG, "Database exists.");
+//                        try {
+//                            FileChannel src = new FileInputStream(database).getChannel();
+//                            FileChannel dst = new FileInputStream(dbCopy).getChannel();
+//                            dst.transferFrom(src, 0, src.size());
 //
-//                    int recipeDeleted = lastId - count;
+//                            src.close();
+//                            dst.close();
+//                            Toast.makeText(this, "Database copied to external storage!", Toast.LENGTH_SHORT).show();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
 //
-//                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//                    int prefsDeleted = prefs.getInt(getString(R.string.recipes_deleted_key), 0);
-//
-//                    cursor.close();
-//
-//                    SharedPreferences.Editor editor = prefs.edit();
-//                    editor.putInt(getString(R.string.recipes_deleted_key), recipeDeleted);
-//                    editor.apply();
 //                }
 
-//                getContentResolver().delete(
-//                        RecipeContract.RecipeEntry.CONTENT_URI,
-//                        RecipeContract.RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ?",
-//                        new String[] {"*591b18595e3ad7530e554fe5"}
-//                );
-//
 //                Cursor cursor = getContentResolver().query(
 //                        RecipeContract.RecipeEntry.CONTENT_URI,
 //                        RecipeContract.RecipeEntry.RECIPE_PROJECTION,
@@ -677,7 +648,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
 //                    int recipesDeleted = lastId - count;
 //
 //                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//                    recipesDeleted++;
+////                    recipesDeleted++;
 //
 //                    SharedPreferences.Editor editors = prefs.edit();
 //                    editors.putInt(getString(R.string.recipes_deleted_key), recipesDeleted);
@@ -686,29 +657,31 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
 //                    cursor.close();
 //                }
 
-
-                break;
-            }
-            case R.id.action_clear_data: {
-                // Delete the database and restart the application to rebuild it
-                boolean deleted = deleteDatabase(RecipeDbHelper.DATABASE_NAME);
-                Log.d(LOG_TAG, "Database deleted " + deleted);
-
-                // Set an Alarm to re-open the Application right after it is closed
-                AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                PendingIntent restartIntent = PendingIntent.getActivity(
-                        getBaseContext(), 0, new Intent(getIntent()),
-                        PendingIntent.FLAG_ONE_SHOT);
-                mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, restartIntent);
-
-                // Clear SharedPreferences
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-                prefs.edit().clear().commit();
-
-                // Exit the application
-                System.exit(2);
-                break;
-            }
+//                DescriptionSummarizer summarizer = new DescriptionSummarizer("http://gimmedelicious.com/2016/12/17/meal-prep-healthy-roasted-chicken-and-veggies/");
+//
+//
+//                break;
+//            }
+//            case R.id.action_clear_data: {
+//                // Delete the database and restart the application to rebuild it
+//                boolean deleted = deleteDatabase(RecipeDbHelper.DATABASE_NAME);
+//                Log.d(LOG_TAG, "Database deleted " + deleted);
+//
+//                // Set an Alarm to re-open the Application right after it is closed
+//                AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//                PendingIntent restartIntent = PendingIntent.getActivity(
+//                        getBaseContext(), 0, new Intent(getIntent()),
+//                        PendingIntent.FLAG_ONE_SHOT);
+//                mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, restartIntent);
+//
+//                // Clear SharedPreferences
+//                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//                prefs.edit().clear().commit();
+//
+//                // Exit the application
+//                System.exit(2);
+//                break;
+//            }
         }
     }
 

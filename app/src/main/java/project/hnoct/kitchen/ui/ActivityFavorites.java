@@ -108,43 +108,6 @@ public class ActivityFavorites extends AppCompatActivity implements FragmentFavo
                 finish();
                 break;
             }
-            case R.id.action_copy_db: {
-                File sd = Environment.getExternalStorageDirectory();
-                File database = getApplicationContext().getDatabasePath(RecipeDbHelper.DATABASE_NAME + ".db");
-                if (sd.canWrite()) {
-                    File dbCopy = new File(sd, RecipeDbHelper.DATABASE_NAME + ".db");
-                    if (database.exists()) {
-                        try {
-                            FileChannel src = new FileInputStream(database).getChannel();
-                            FileChannel dst = new FileInputStream(dbCopy).getChannel();
-                            dst.transferFrom(src, 0, src.size());
-
-                            src.close();
-                            dst.close();
-                            Toast.makeText(this, "Database copied to external storage!", Toast.LENGTH_SHORT).show();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                }
-                break;
-            }
-            case R.id.action_clear_data: {
-                // Delete the database and restart the application to rebuild it
-                boolean deleted = deleteDatabase(RecipeDbHelper.DATABASE_NAME);
-
-                // Set an Alarm to re-open the Application right after it is closed
-                AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                PendingIntent restartIntent = PendingIntent.getActivity(
-                        getBaseContext(), 0, new Intent(getIntent()),
-                        PendingIntent.FLAG_ONE_SHOT);
-                mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, restartIntent);
-
-                // Exit the application
-                System.exit(2);
-                break;
-            }
         }
     }
 

@@ -74,7 +74,6 @@ public class GenericRecipeAsyncTask extends AsyncTask<Object, Void, Boolean> {
 
             mRecipeElement = mRecipeDocument.select("[itemtype*=//schema.org/Recipe]").first();
             if (!jsonRecipe && mRecipeElement == null) {
-                Log.d(LOG_TAG, "No recipe found at: " + mRecipeUrl);
                 return false;
             }
 
@@ -97,19 +96,16 @@ public class GenericRecipeAsyncTask extends AsyncTask<Object, Void, Boolean> {
                 }
 
                 description = builder.toString().trim();
+
+                DescriptionSummarizer summarizer = new DescriptionSummarizer();
+                String descriptionSummary = summarizer.summarize(recipeTitle, description);
+
+                if (descriptionSummary != null && !descriptionSummary.isEmpty()) {
+                    description = descriptionSummary;
+                }
             }
 
             String directions = jsonRecipe ? getJsonDirections() : getRecipeDirections();
-
-            Log.d(LOG_TAG, "Recipe Source ID: " + recipeId);
-            Log.d(LOG_TAG, "Recipe name: " + recipeTitle);
-            Log.d(LOG_TAG, "Description: " + description);
-            Log.d(LOG_TAG, "Image URL: " + imageUrl);
-            Log.d(LOG_TAG, "Author: " + author);
-            Log.d(LOG_TAG, "Source: " + authority);
-            Log.d(LOG_TAG, "Rating: " + rating);
-            Log.d(LOG_TAG, "Reviews: " + reviews);
-            Log.d(LOG_TAG, "Servings: " + servings);
 
             if (directions == null || directions.isEmpty()) {
                 // No directions, no recipe
@@ -117,12 +113,6 @@ public class GenericRecipeAsyncTask extends AsyncTask<Object, Void, Boolean> {
             }
 
             List<String> ingredientList = jsonRecipe ? getJsonIngredients() : getIngredientsAndQuantities();
-
-            for (String ingredient : ingredientList) {
-                Log.d(LOG_TAG, "Ingredient: " + ingredient);
-            }
-
-            Log.d(LOG_TAG, "Directions: " + directions);
 
             if (ingredientList.isEmpty()) {
                 // No ingredients, no recipe
@@ -195,7 +185,9 @@ public class GenericRecipeAsyncTask extends AsyncTask<Object, Void, Boolean> {
         // Array of Elements that could potentially contain the recipe's description
         Element[] elementArray = new Element[] {
                 mRecipeElement.select("[name=description]").first(),
-                mRecipeElement.select("[itemprop=description").first()
+                mRecipeElement.select("[itemprop=description").first(),
+                mRecipeDocument.select("[class*=description]").first(),
+                mRecipeDocument.select("[p,h2]").select("[em]").first()
         };
         // Iterate and find a valid Element containing the description
         for (Element descriptionElement : elementArray) {
@@ -536,6 +528,8 @@ public class GenericRecipeAsyncTask extends AsyncTask<Object, Void, Boolean> {
 
         return null;
     }
+
+    // Methods to retrieve recipe information from a JSON Object
 
     private String getJsonRecipeTitle() throws JSONException {
         String JSON_RECIPE_NAME = "name";
