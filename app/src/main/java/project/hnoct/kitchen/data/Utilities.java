@@ -770,7 +770,7 @@ public class Utilities {
         }
 
         // Match the URI and return the recipeId
-        UriMatcher matcher = buildUriMatcher(context);
+        AuthorityMatcher matcher = buildUriMatcher(context);
         switch (matcher.match(recipeUri)) {
             case CUSTOM_RECIPE_URI: {
                 return getRecipeIdFromCustomUrl(recipeUri.toString());
@@ -829,22 +829,22 @@ public class Utilities {
      * Builds UriMatcher for identifying URLs input from user
      * @return UriMatcher
      */
-    public static UriMatcher buildUriMatcher(Context context) {
+    public static AuthorityMatcher buildUriMatcher(Context context) {
         // Root URI
-        UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+        AuthorityMatcher uriMatcher = new AuthorityMatcher(UriMatcher.NO_MATCH);
 
         // Add URIs that need to be matched
-        uriMatcher.addURI(context.getString(R.string.custom_authority) , "/*", CUSTOM_RECIPE_URI);
-        uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#/*", ALLRECIPES_URI);
-        uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#/*", ALLRECIPES_URI);
-        uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#", ALLRECIPES_URI);
-        uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#", ALLRECIPES_URI);
-        uriMatcher.addURI(context.getString(R.string.food_authority), "/recipe/*", FOOD_URI);
-        uriMatcher.addURI(context.getString(R.string.food_www_authority), "/recipe/*", FOOD_URI);
-        uriMatcher.addURI(context.getString(R.string.seriouseats_authority), "/recipes/#/#/*", SERIOUSEATS_URI);
-        uriMatcher.addURI(context.getString(R.string.seriouseats_www_authority), "/recipes/#/#/*", SERIOUSEATS_URI);
-        uriMatcher.addURI(context.getString(R.string.epicurious_authority), "/recipes/food/views/*", EPICURIOUS_URI);
-        uriMatcher.addURI(context.getString(R.string.epicurious_www_authority), "/recipes/food/views/*", EPICURIOUS_URI);
+        uriMatcher.addURI(context.getString(R.string.custom_authority) , CUSTOM_RECIPE_URI);
+        uriMatcher.addURI(context.getString(R.string.allrecipes_authority), ALLRECIPES_URI);
+//        uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#/*", ALLRECIPES_URI);
+//        uriMatcher.addURI(context.getString(R.string.allrecipes_www_authority), "/recipe/#", ALLRECIPES_URI);
+//        uriMatcher.addURI(context.getString(R.string.allrecipes_authority), "/recipe/#", ALLRECIPES_URI);
+        uriMatcher.addURI(context.getString(R.string.food_authority), FOOD_URI);
+//        uriMatcher.addURI(context.getString(R.string.food_www_authority), "/recipe/*", FOOD_URI);
+        uriMatcher.addURI(context.getString(R.string.seriouseats_authority), SERIOUSEATS_URI);
+//        uriMatcher.addURI(context.getString(R.string.seriouseats_www_authority), "/recipes/#/#/*", SERIOUSEATS_URI);
+        uriMatcher.addURI(context.getString(R.string.epicurious_authority), EPICURIOUS_URI);
+//        uriMatcher.addURI(context.getString(R.string.epicurious_www_authority), "/recipes/food/views/*", EPICURIOUS_URI);
 
         // Return UriMatcher
         return uriMatcher;
@@ -1489,5 +1489,38 @@ public class Utilities {
         }
 
         return strippedIngredientString;
+    }
+
+    public static class AuthorityMatcher {
+        int defaultCode;
+        Map<String, Integer> authorityCodeMap = new HashMap<>();
+
+        public AuthorityMatcher(int code) {
+            defaultCode = code;
+        }
+
+        public void addURI(String authority, int code) {
+            if (authority.matches("^www\\..*")) {
+                authority = authority.replaceAll("^www\\.", "");
+            }
+
+            authorityCodeMap.put(authority, code);
+        }
+
+        public int match(Uri uri) {
+            String authority = uri.getAuthority();
+
+            if (authority.matches("^www\\..*")) {
+                authority = authority.replaceAll("^www\\.", "");
+            }
+
+            Log.d(LOG_TAG, authority);
+
+            if (authorityCodeMap.keySet().contains(authority)) {
+                return authorityCodeMap.get(authority);
+            } else {
+                return defaultCode;
+            }
+        }
     }
 }

@@ -26,7 +26,7 @@ public class RecipeImporter {
     public static void importRecipeFromUrl(Context context, final UtilitySyncer syncer, String recipeUrl) {
         // Build the UriMatcher
         /** @see Utilities#buildUriMatcher **/
-        UriMatcher matcher = Utilities.buildUriMatcher(context);
+        Utilities.AuthorityMatcher matcher = Utilities.buildUriMatcher(context);
 
         // Parse the URL to a URI
         Uri recipeUri = Uri.parse(recipeUrl);
