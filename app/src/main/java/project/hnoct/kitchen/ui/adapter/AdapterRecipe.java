@@ -39,6 +39,8 @@ import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.ui.FragmentRecipeDetails;
 import project.hnoct.kitchen.ui.FragmentRecipeList;
 
+import static project.hnoct.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_URL;
+
 /**
  * Created by hnoct on 2/20/2017.
  */
@@ -407,7 +409,7 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
 
             // Add the recipe's URL as a Bundle to the fragment
             Bundle args = new Bundle();
-            args.putParcelable(FragmentRecipeDetails.RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
+            args.putParcelable(RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
             fragment.setArguments(args);
 
             // Swap the fragment into the container

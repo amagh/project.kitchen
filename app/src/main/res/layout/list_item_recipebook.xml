@@ -72,7 +72,7 @@
                 android:layout_height="@dimen/touchpad_size"
                 android:padding="@dimen/button_margin_small"
                 android:layout_gravity="end"
-                android:src="@drawable/ic_menu_edit"/>
+                android:src="@drawable/ic_menu_edit_grey"/>
 
             <ImageView
                 android:id="@+id/list_recipebook_gradient"

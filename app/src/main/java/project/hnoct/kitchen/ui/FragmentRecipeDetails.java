@@ -56,6 +56,10 @@ import project.hnoct.kitchen.sync.RecipeImporter;
 import project.hnoct.kitchen.ui.adapter.AdapterDirection;
 import project.hnoct.kitchen.ui.adapter.AdapterIngredient;
 
+import static project.hnoct.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_IMAGE_URL;
+import static project.hnoct.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_URL;
+import static project.hnoct.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECPE_DETAILS_GENERIC;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -64,12 +68,14 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     private static final String LOG_TAG = FragmentRecipeDetails.class.getSimpleName();
     private static final int DETAILS_LOADER = 1;
     private static final String RECIPE_DETAILS_URI = "recipe_and_ingredients_uri";
-    public static final String RECIPE_DETAILS_URL = "recipe_url";
+//    public static final String RECIPE_DETAILS_URL = "recipe_url";
+//    public static final String RECIPE_DETAILS_IMAGE_URL = "image_url";
     private static final String DIALOG_SHOPPING_LIST = "shopping_list_dialog";
 
     /** Member Variables **/
     private Uri mRecipeUri;
     private String mRecipeUrl;
+    private String mImageUrl;
     private long mRecipeId;
     private Context mContext;
     private Cursor mCursor;
@@ -90,7 +96,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     // Views bound by ButterKnife
     @BindView(R.id.details_ingredient_recycler_view) RecyclerView mIngredientsRecyclerView;
     @BindView(R.id.details_direction_recycler_view) RecyclerView mDirectionsRecyclerView;
-//    @BindView(R.id.details_recipe_image) ImageView mRecipeImageView;
+    @Nullable @BindView(R.id.details_recipe_image) ImageView mRecipeImageView;
     @BindView(R.id.details_recipe_title_text) TextView mRecipeTitleText;
     @BindView(R.id.details_recipe_author_text) TextView mRecipeAuthorText;
     @BindView(R.id.details_recipe_attribution_text) TextView mRecipeAttributionText;
@@ -129,145 +135,152 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         mContext = getActivity();
         mContentResolver = mContext.getContentResolver();
 
-        if (getArguments() != null) {
-            // Get the URL passed from the ActivityRecipeList/ActivityRecipeDetails
-            mRecipeUri = getArguments().getParcelable(RECIPE_DETAILS_URI);
-            if(getArguments().getParcelable(RECIPE_DETAILS_URL) != null) {
-                mRecipeUrl = getArguments().getParcelable(RECIPE_DETAILS_URL).toString();
-
-                // Get the recipeIdArray and generate recipeUri for database
-                mRecipeId = Utilities.getRecipeIdFromUrl(mContext, mRecipeUrl);
-
-                if (mRecipeId == -1) {
-                    mRecipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
-                }
-
-                mRecipeUri = LinkIngredientEntry.buildIngredientUriFromRecipe(mRecipeId);
-            }
-
-            genericRecipe = getArguments().getBoolean(getString(R.string.extra_generic_boolean));
-        } else {
+        // Retrieve member variable values from Bundle
+        if (!initRecipeVars()) {
             Log.d(LOG_TAG, "No bundle found!");
-            return rootView;
         }
 
-        // Initialize the AdapterIngredient and AdapterDirection
-        mIngredientAdapter = new AdapterIngredient(getActivity());
-        mDirectionAdapter = new AdapterDirection(getActivity());
+        // Set up RecyclerViews
+        initRecyclerViews();
 
-
-        // Initialize and set the LayoutManagers
-        LinearLayoutManager llm = new LinearLayoutManager(getActivity()) {
-            @Override
-            public boolean canScrollVertically() {
-                return false;
-            }
-
-            @Override
-            public boolean canScrollHorizontally() {
-                return false;
-            }
-        };
-        LinearLayoutManager llm2 = new LinearLayoutManager(getActivity()) {
-            @Override
-            public boolean canScrollVertically() {
-                return false;
-            }
-
-            @Override
-            public boolean canScrollHorizontally() {
-                return false;
-            }
-        };
-
-        mIngredientsRecyclerView.setNestedScrollingEnabled(false);
-        mDirectionsRecyclerView.setNestedScrollingEnabled(false);
-
-        mIngredientsRecyclerView.setLayoutManager(llm);
-        mDirectionsRecyclerView.setLayoutManager(llm2);
-
-
-        // Set the AdapterIngredient for the ingredient's RecyclerView
-        mIngredientsRecyclerView.setAdapter(mIngredientAdapter);
-        mDirectionsRecyclerView.setAdapter(mDirectionAdapter);
-
-//        loadImageView();
+        // mImageUrl is only passed when in two-pane mode. If the variable is not null, then the
+        // ImageView is located in the Fragment and needs to be populated
+        if (mImageUrl != null) {
+            loadImageView();
+        }
 
         return rootView;
     }
 
-//    private void loadImageView() {
-//        Cursor cursor = mContentResolver.query(
-//                RecipeEntry.CONTENT_URI,
-//                RecipeEntry.RECIPE_PROJECTION,
-//                RecipeEntry.COLUMN_RECIPE_ID + " = ?",
-//                new String[] {Long.toString(mRecipeId)},
-//                null
-//        );
-//
-//        if (cursor != null && cursor.moveToFirst()) {
-//            String recipeImageUrl = cursor.getString(RecipeEntry.IDX_IMG_URL);
-//            String source = cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE);
-//            if (!recipeImageUrl.isEmpty()) {
-//                loaded = true;
+    /**
+     * Initializes member variables by retrieving their values from arguments and the database
+     * @return true if Bundle was passed from calling Activity, false if no Bundle was passed
+     */
+    private boolean initRecipeVars() {
+        // Retrieve the Bundle passed to the Fragment
+        Bundle args = getArguments();
+
+        if (args == null) {
+            // If there is nothing passed to the Activity to load, then there is nothing to do and
+            // the Fragment will be stuck
+            if (getActivity() instanceof ActivityRecipeDetails) {
+                getActivity().finish();
+            }
+
+            return false;
+        } else {
+            // Retrieve the recipe's info from the Bundle
+            mRecipeUrl = args.getParcelable(RECIPE_DETAILS_URL).toString();
+            mImageUrl = args.getString(RECIPE_DETAILS_IMAGE_URL);
+            genericRecipe = args.getBoolean(RECPE_DETAILS_GENERIC);
+
+            // Retrieve the recipe's corresponding ID from database. This prevents duplicate recipes
+            // from being added
+            mRecipeId = Utilities.getRecipeIdFromUrl(mContext, mRecipeUrl);
+
+            if (mRecipeId == -1) {
+                // If the URL passed doesn't have a corresponding ID, generate the ID that will be
+                // used by the recipe once it has been imported
+                mRecipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
+            }
+
+            // Generate the recipe's URI for its database entry
+            mRecipeUri = LinkIngredientEntry.buildIngredientUriFromRecipe(mRecipeId);
+
+            return true;
+        }
+    }
+
+    /**
+     * Sets up the RecyclerViews by initialized and setting proper Adapters and LayoutManagers
+     */
+    private void initRecyclerViews() {
+        // Initialize the AdapterIngredient and AdapterDirection
+        mIngredientAdapter = new AdapterIngredient(getActivity());
+        mDirectionAdapter = new AdapterDirection(getActivity());
+
+        // Initialize and set the LayoutManagers
+        LinearLayoutManager llm = new LinearLayoutManager(getActivity()) {
+//            @Override
+//            public boolean canScrollVertically() {
+//                return false;
 //            }
 //
-//            if (source.equals(mContext.getString(R.string.attribution_custom))) {
-//                Glide.with(mContext)
-//                        .load(recipeImageUrl)
-//                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-//                        .skipMemoryCache(true)
-//                        .listener(new RequestListener<String, GlideDrawable>() {
-//                            @Override
-//                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-//                                return false;
-//                            }
-//
-//                            @Override
-//                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-//                                // When image has finished loading, load image into target
-//                                target.onResourceReady(resource, null);
-//
-//                                if (getActivity() instanceof ActivityRecipeDetails && loaded) {
-//                                    scheduleStartPostponedTransition(mRecipeImageView);
-//                                }
-//
-//                                Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
-//                                return false;
-//
-//                            }
-//                        })
-//                        .into(mRecipeImageView);
-//            } else {
-//                Glide.with(mContext)
-//                        .load(recipeImageUrl)
-//                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-//                        .listener(new RequestListener<String, GlideDrawable>() {
-//                            @Override
-//                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-//                                return false;
-//                            }
-//
-//                            @Override
-//                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-//                                // When image has finished loading, load image into target
-//                                target.onResourceReady(resource, null);
-//
-//                                if (getActivity() instanceof ActivityRecipeDetails && loaded) {
-//                                    scheduleStartPostponedTransition(mRecipeImageView);
-//                                }
-//
-//                                Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
-//                                return false;
-//
-//                            }
-//                        })
-//                        .into(mRecipeImageView);
+//            @Override
+//            public boolean canScrollHorizontally() {
+//                return false;
+//            }
+        };
+        LinearLayoutManager llm2 = new LinearLayoutManager(getActivity()) {
+//            @Override
+//            public boolean canScrollVertically() {
+//                return false;
 //            }
 //
-//            cursor.close();
-//        }
-//    }
+//            @Override
+//            public boolean canScrollHorizontally() {
+//                return false;
+//            }
+        };
+
+        mIngredientsRecyclerView.setLayoutManager(llm);
+        mDirectionsRecyclerView.setLayoutManager(llm2);
+
+        // Disable nested scrolling to allow for proper scrolling physics
+        mIngredientsRecyclerView.setNestedScrollingEnabled(false);
+        mDirectionsRecyclerView.setNestedScrollingEnabled(false);
+
+        // Set the AdapterIngredient for the ingredient's RecyclerView
+        mIngredientsRecyclerView.setAdapter(mIngredientAdapter);
+        mDirectionsRecyclerView.setAdapter(mDirectionAdapter);
+    }
+
+    private void loadImageView() {
+        // Init the default parameters for loading the image with Glide
+        boolean skipMemCache = false;
+        DiskCacheStrategy strategy = DiskCacheStrategy.SOURCE;
+
+        // Check that an image URL was passed with the Intent
+        if (mImageUrl != null) {
+            // Determine the scheme of the URL
+            String scheme = Uri.parse(mImageUrl).getScheme();
+
+            if (scheme.contains("file")) {
+                // If the image is a local image, then Glide needs to skip loading from cache
+                // otherwise it will load the wrong image on occasion.
+                skipMemCache = true;
+                strategy = DiskCacheStrategy.NONE;
+            }
+        } else {
+            // If no image URL was passed, immediately start the transition animation
+            scheduleStartPostponedTransition(mRecipeImageView);
+        }
+
+        // Use Glide to load the image into the ImageView
+        Glide.with(this)
+                .load(mImageUrl)
+                .diskCacheStrategy(strategy)
+                .skipMemoryCache(skipMemCache)
+                .listener(new RequestListener<String, GlideDrawable>() {
+                    @Override
+                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                        // When image has finished loading, load image into target
+                        target.onResourceReady(resource, null);
+
+                        // Once the resource has been loaded, then start the transition animation
+                        scheduleStartPostponedTransition(mRecipeImageView);
+
+                        return false;
+
+                    }
+                })
+                .into(mRecipeImageView);
+    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -335,7 +348,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                                     Snackbar.LENGTH_INDEFINITE
                             );
 
-                            // Set an click to open ActivityCreateRecipe with the boolean
+                            // Set a click to open ActivityCreateRecipe with the boolean
                             // deleteOriginal set to true
                             editSnackbar.getView().setOnClickListener(new View.OnClickListener() {
                                 @Override
@@ -363,7 +376,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                     @Override
                     public void onError() {
                         // If there is an error parsing the webpage for recipe information, show a
-                        // Toast to alert the user of the failture
+                        // Toast to alert the user of the failure
                         Toast.makeText(mContext, getString(R.string.toast_unable_to_parse_recipe), Toast.LENGTH_LONG).show();
 
                         // Return to ActivityRecipeList
@@ -409,32 +422,6 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         int recipeServings = mCursor.getInt(LinkIngredientEntry.IDX_RECIPE_SERVINGS);
 
         // Populate the views with the data
-        if (!loaded) {
-//            loadImageView();
-        }
-//        Glide.with(mContext)
-//                .load(recipeImageUrl)
-////                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-//                .listener(new RequestListener<String, GlideDrawable>() {
-//                    @Override
-//                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-//                        return false;
-//                    }
-//
-//                    @Override
-//                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-//                        // When image has finished loading, load image into target
-////                        target.onResourceReady(resource, null);
-//
-//                        if (getActivity() instanceof ActivityRecipeDetails) {
-//                            scheduleStartPostponedTransition(mRecipeImageView);
-//                        }
-//                        Log.d(LOG_TAG, "Time elapsed: " + (Utilities.getCurrentTime() - time   + "ms"));
-//                        return false;
-//                    }
-//                })
-//                .into(mRecipeImageView);
-
         mRecipeTitleText.setText(recipeTitle);
         mRecipeAuthorText.setText(Utilities.formatAuthor(mContext, recipeAuthor));
         mRecipeAttributionText.setText(recipeSource);
@@ -786,5 +773,11 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
                 }, mRecipeUrl);
             }
         }
+    }
+
+    public interface BundleKeys {
+        public static final String RECIPE_DETAILS_URL = "recipe_url";
+        public static final String RECIPE_DETAILS_IMAGE_URL = "image_url";
+        public static final String RECPE_DETAILS_GENERIC = "generic_recipe";
     }
 }

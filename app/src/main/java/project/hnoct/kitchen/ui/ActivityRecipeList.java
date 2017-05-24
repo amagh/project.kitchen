@@ -88,6 +88,9 @@ import project.hnoct.kitchen.sync.RecipeGcmService;
 import project.hnoct.kitchen.sync.SeriousEatsService;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
+import static project.hnoct.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_IMAGE_URL;
+import static project.hnoct.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_URL;
+
 public class ActivityRecipeList extends AppCompatActivity implements FragmentRecipeList.RecipeCallBack {
     /** Constants **/
     private static final String LOG_TAG = ActivityRecipeList.class.getSimpleName();
@@ -1033,7 +1036,8 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             // Create the Bundle and add the recipe's URL to it and set it as the argument for the
             // fragment
             Bundle args = new Bundle();
-            args.putParcelable(FragmentRecipeDetails.RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
+            args.putParcelable(RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
+            args.putString(RECIPE_DETAILS_IMAGE_URL, imageUrl);
             fragment.setArguments(args);
 
             // Replace the existing FragmentRecipeDetails with the newly created one
@@ -1085,7 +1089,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             // Create the Bundle and add the recipe's URL to it and set it as the argument for the
             // fragment
             Bundle args = new Bundle();
-            args.putParcelable(FragmentRecipeDetails.RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
+            args.putParcelable(RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
             fragment.setArguments(args);
 
             // Replace the existing FragmentRecipeDetails with the newly created one

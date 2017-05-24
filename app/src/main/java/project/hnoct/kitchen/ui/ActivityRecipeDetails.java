@@ -42,6 +42,7 @@ import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.ui.adapter.AdapterNutrition;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+import static project.hnoct.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_URL;
 
 public class ActivityRecipeDetails extends AppCompatActivity {
     /** Constants **/
@@ -49,7 +50,7 @@ public class ActivityRecipeDetails extends AppCompatActivity {
     /** Member Variables **/
     private FragmentRecipeDetails mDetailsFragment;
     private AdapterNutrition mNutritionAdapter;
-    private boolean imageLoaded = false;
+    public boolean imageLoaded = false;
     private String mImageUrl;
     private Snackbar mSnackbar;
 
@@ -86,7 +87,7 @@ public class ActivityRecipeDetails extends AppCompatActivity {
 
         // Add the URI as part of a Bundle to attach to the FragmentRecipeDetails
         Bundle args = new Bundle();
-        args.putParcelable(FragmentRecipeDetails.RECIPE_DETAILS_URL, recipeUrl);
+        args.putParcelable(RECIPE_DETAILS_URL, recipeUrl);
         args.putBoolean(getString(R.string.extra_generic_boolean), genericRecipe);
 
         // Instantiate the fragment and attach the Bundle containing the recipe URI
