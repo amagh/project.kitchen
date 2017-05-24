@@ -139,9 +139,11 @@ public class GenericRecipeAsyncTask extends AsyncTask<Object, Void, Boolean> {
             }
 
         } catch (IOException e) {
-
+            e.printStackTrace();
+            return false;
         } catch (JSONException e) {
             e.printStackTrace();
+            return false;
         }
 
         return true;
