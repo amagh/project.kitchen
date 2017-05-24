@@ -88,7 +88,7 @@ import project.hnoct.kitchen.sync.RecipeGcmService;
 import project.hnoct.kitchen.sync.SeriousEatsService;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
-public class ActivityRecipeList extends AppCompatActivity implements FragmentRecipeList.RecipeCallBack, ImportRecipeDialog.ImportRecipeDialogListener {
+public class ActivityRecipeList extends AppCompatActivity implements FragmentRecipeList.RecipeCallBack {
     /** Constants **/
     private static final String LOG_TAG = ActivityRecipeList.class.getSimpleName();
     private final String DETAILS_FRAGMENT = "DFTAG";
@@ -148,7 +148,8 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     @Optional
     @OnEditorAction(R.id.searchview)
     boolean onEditorAction(int actionId) {
-        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+        Log.d(LOG_TAG, "ActionID: " + actionId);
+        if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
             // Re-query the database with the search term when user presses the search button on the
             // soft keyboard
             // Retrieve the search term from mSearchView
@@ -986,6 +987,12 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
      */
     private void showImportDialog() {
         ImportRecipeDialog dialog = new ImportRecipeDialog();
+        dialog.addImportRecipeDialogListener(new ImportRecipeDialog.ImportRecipeDialogListener() {
+            @Override
+            public void onDialogPositiveClick(String recipeUrl) {
+                ActivityRecipeList.this.onDialogPositiveClick(recipeUrl);
+            }
+        });
         String IMPORT_DIALOG = "ImportRecipeDialog";
         dialog.show(getFragmentManager(), IMPORT_DIALOG);
     }
@@ -1042,8 +1049,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         }
     }
 
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialog, String recipeUrl) {
+    public void onDialogPositiveClick(String recipeUrl) {
         if (getResources().getBoolean(R.bool.recipeAdapterUseDetailView)) {
 
             RecipeImporter.importRecipeFromUrl(this, new RecipeImporter.UtilitySyncer() {

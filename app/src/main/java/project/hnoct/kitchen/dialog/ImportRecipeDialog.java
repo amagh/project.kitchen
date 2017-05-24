@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,7 +22,7 @@ public class ImportRecipeDialog extends DialogFragment {
     /** Constants **/
 
     /** Member Variables **/
-    private ImportRecipeDialogListener mlistener;
+    private ImportRecipeDialogListener mListener;
 
     // Bound by ButterKnife
     @BindView(R.id.dialog_import_text_input) EditText mEditText;
@@ -47,7 +46,11 @@ public class ImportRecipeDialog extends DialogFragment {
                         if (mEditText != null) {
                             // Get the URL from the EditText
                             String inputText = mEditText.getText().toString();
-                            mlistener.onDialogPositiveClick(ImportRecipeDialog.this, inputText);
+
+                            if (!inputText.trim().isEmpty()) {
+                                // If user did not input any text, dismiss the Dialog
+                                mListener.onDialogPositiveClick(inputText);
+                            }
                         }
                     }
                 })
@@ -61,24 +64,14 @@ public class ImportRecipeDialog extends DialogFragment {
         return builder.create();
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        // Verify that host activity implements the Callback interface
-        try {
-            // Instantiate the listener
-            mlistener = (ImportRecipeDialogListener) context;
-        } catch (ClassCastException e) {
-            // Activity doesn't implement Callback
-            throw new ClassCastException(context.toString() +
-                    " must implement ImportRecipeDialogListener!");
-        }
-    }
-
     /**
      * Callback interface to pass information back to Activity
      */
     public interface ImportRecipeDialogListener {
-        public void onDialogPositiveClick(DialogFragment dialog, String recipeUrl);
+        public void onDialogPositiveClick(String recipeUrl);
+    }
+
+    public void addImportRecipeDialogListener(ImportRecipeDialogListener listener) {
+        mListener = listener;
     }
 }
