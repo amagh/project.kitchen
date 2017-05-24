@@ -4,49 +4,28 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.app.AlarmManager;
-import android.app.DialogFragment;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.StrictMode;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.util.Pair;
-import android.support.v4.view.accessibility.AccessibilityRecordCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
-import android.transition.Fade;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.View;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.view.Window;
+import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.Animation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -60,10 +39,6 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,24 +49,17 @@ import butterknife.OnEditorAction;
 import butterknife.Optional;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.data.RecipeContract;
-import project.hnoct.kitchen.data.RecipeDbHelper;
 import project.hnoct.kitchen.data.Utilities;
 import project.hnoct.kitchen.dialog.ImportRecipeDialog;
-import project.hnoct.kitchen.prefs.SettingsActivity;
 import project.hnoct.kitchen.sync.AllRecipesService;
-import project.hnoct.kitchen.sync.DescriptionSummarizer;
 import project.hnoct.kitchen.sync.EpicuriousService;
 import project.hnoct.kitchen.sync.FoodDotComService;
-import project.hnoct.kitchen.sync.GenericRecipeAsyncTask;
 import project.hnoct.kitchen.sync.RecipeImporter;
 import project.hnoct.kitchen.sync.RecipeGcmService;
 import project.hnoct.kitchen.sync.SeriousEatsService;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
-import static project.hnoct.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_IMAGE_URL;
-import static project.hnoct.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_URL;
-
-public class ActivityRecipeList extends AppCompatActivity implements FragmentRecipeList.RecipeCallBack {
+public class ActivityRecipeList extends ActivityModel implements FragmentRecipeList.RecipeCallBack {
     /** Constants **/
     private static final String LOG_TAG = ActivityRecipeList.class.getSimpleName();
     private final String DETAILS_FRAGMENT = "DFTAG";
@@ -104,9 +72,8 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     /** Member Variables **/
     public static boolean mFabMenuOpen;
     public static boolean hideFab = false;
-    public static boolean mTwoPane = false;
-    public static boolean mDetailsVisible = false;
-    private static int mPosition;
+    private static boolean mTwoPane = false;
+    private static boolean mDetailsVisible = false;
     private SearchListener mSearchListener;
     private ConnectivityListener mConnectivityListener;
     private boolean isConnected;
@@ -127,10 +94,9 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     @BindView(R.id.main_menu_text) TextView mMainFabText;
     @BindView(R.id.main_add_recipe_text) TextView mAddRecipeText;
     @BindView(R.id.main_import_recipe_text) TextView mImportRecipeText;
-    @BindView(R.id.main_drawer_layout) DrawerLayout mDrawerLayout;
+    @BindView(R.id.drawer_layout) DrawerLayout mDrawerLayout;
     @BindView(R.id.recipe_search_more) CardView mSearchMore;
-    @Nullable @BindView(R.id.recipe_detail_container) FrameLayout mDetailsContainer;
-    @Nullable @BindView(R.id.detail_fragment_container) FrameLayout mContainer;
+    @Nullable @BindView(R.id.detail_fragment_container) FrameLayout mDetailsContainer;
     @Nullable @BindView(R.id.temp_button) ImageView mTempButton;
     @Nullable @BindView(R.id.searchview) EditText mSearchView;
     @Nullable @BindView(R.id.search_icon) ImageView mSearchIcon;
@@ -140,9 +106,11 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     @OnClick(R.id.temp_button)
     public void closePreview() {
         mDetailsVisible = false;
-        ViewGroup.LayoutParams params = mContainer.getLayoutParams();
-        params.width = 0;
-        mContainer.setLayoutParams(params);
+
+        hideDetailsContainer();
+
+        mDetailsVisible = false;
+
         FragmentRecipeList fragment = (FragmentRecipeList) getSupportFragmentManager().findFragmentById(R.id.fragment);
         fragment.setLayoutColumns();
 //        fragment.mRecipeRecyclerView.scrollToPosition(mPosition);
@@ -151,7 +119,6 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     @Optional
     @OnEditorAction(R.id.searchview)
     boolean onEditorAction(int actionId) {
-        Log.d(LOG_TAG, "ActionID: " + actionId);
         if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
             // Re-query the database with the search term when user presses the search button on the
             // soft keyboard
@@ -310,26 +277,6 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     @OnClick(R.id.main_import_recipe_fab)
     public void onClickFabImport() {
         closeFabMenu();
-//        String testIngredient = "1/2 Teaspoon of salt";
-//        Utilities.getIngredientQuantity(testIngredient);
-//        GenericRecipeAsyncTask asyncTask1 = new GenericRecipeAsyncTask(this, "http://gimmedelicious.com/2016/12/17/meal-prep-healthy-roasted-chicken-and-veggies/");
-////        asyncTask1.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-//        GenericRecipeAsyncTask asyncTask2 = new GenericRecipeAsyncTask(this, "https://mymealprepsunday.com/2016/10/25/red-curry-chicken-stir-fry/");
-////        asyncTask2.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-//        GenericRecipeAsyncTask asyncTask3 = new GenericRecipeAsyncTask(this, "http://notwithoutsalt.com/");
-//        asyncTask3.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-//        GenericRecipeAsyncTask asyncTask4 = new GenericRecipeAsyncTask(this, "http://www.andiemitchell.com/chicken-parmesan-wraps/");
-//        asyncTask4.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-
-//        RecipeImporter.importRecipeFromUrl(this, new RecipeImporter.UtilitySyncer() {
-//            @Override
-//            public void onFinishLoad() {
-//                FragmentRecipeList recipeListFragment =
-//                        (FragmentRecipeList) getSupportFragmentManager().findFragmentById(R.id.fragment);
-//                recipeListFragment.mRecipeAdapter.notifyDataSetChanged();
-//                recipeListFragment.mRecipeAdapter.setDetailCardPosition(0);
-//            }
-//        }, recipeUrl);
 
         showImportDialog();
     }
@@ -363,45 +310,14 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         ButterKnife.bind(this);
 
         setSupportActionBar(mToolbar);
+        setActivityId(R.id.action_browse);
 
         // Set up the hamburger menu used for opening mDrawerLayout
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.button_confirm, R.string.button_deny);
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-        mDrawerToggle.syncState();
+        initNavigationDrawer();
 
-        mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                selectDrawerItem(item);
-                return true;
-            }
-        });
-
-        if (findViewById(R.id.recipe_detail_container) == null) {
-            // If container is not found, then utilizing phone layout without two panes
-            mTwoPane = false;
-        } else {
-            // Set the boolean indicating that there are two panes in view
-            mTwoPane = true;
-            if (savedInstanceState == null && !mDetailsVisible) {
-                // If no recipe has been selected yet, then set boolean indicating that the
-                // details fragment is not visible
-                mDetailsVisible = false;
-
-                // Set the visibility of the container to GONE to allow the FragmentRecipeList
-                // to take the full width of the view
-                ViewGroup.LayoutParams params = mContainer.getLayoutParams();
-                params.width = 0;
-                mContainer.setLayoutParams(params);
-//                mContainer.setVisibility(View.GONE);
-
-                // Create a new FragmentRecipeDetails and load it into the container
-                FragmentRecipeDetails fragment = new FragmentRecipeDetails();
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.recipe_detail_container, fragment, DETAILS_FRAGMENT)
-                        .commit();
-            }
-        }
+        // Set up whether to use tablet or phone layout
+        initLayout(savedInstanceState);
+        mTwoPane = getTwoPane();
 
         // Query the database to check if any recipes exist in case the user has wiped data somehow
         Cursor cursor = getContentResolver().query(
@@ -422,7 +338,7 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
         long currentTime = Utilities.getCurrentTime();
 
         if (currentTime - lastSync > SIX_HOURS_IN_SECONDS * 1000 ||
-                (cursor != null && !cursor.moveToFirst())) {
+                cursor == null || !cursor.moveToFirst()) {
 
             if (isConnected) {
                 // If the database was last synced more than six hours ago (e.g. on first start), then
@@ -573,127 +489,6 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             return;
         }
         super.onBackPressed();
-    }
-
-    private void selectDrawerItem(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_browse: {
-                break;
-            }
-            case R.id.action_favorites: {
-                startActivity(new Intent(this, ActivityFavorites.class));
-                hideNavigationDrawer();
-                mDetailsVisible = false;
-                break;
-            }
-            case R.id.action_settings: {
-                startActivity(new Intent(this, SettingsActivity.class));
-                hideNavigationDrawer();
-                mDetailsVisible = false;
-                break;
-            }
-            case R.id.action_my_recipes: {
-                startActivity(new Intent(this, ActivityMyRecipes.class));
-                hideNavigationDrawer();
-                mDetailsVisible = false;
-                break;
-            }
-            case R.id.action_my_recipe_books: {
-                hideNavigationDrawer();
-                Intent intent = new Intent(this, ActivityRecipeBook.class);
-                startActivity(intent);
-                mDetailsVisible = false;
-                break;
-            }
-            case R.id.action_shopping_list: {
-                hideNavigationDrawer();
-                Intent intent = new Intent(this, ActivityShoppingList.class);
-                startActivity(intent);
-                mDetailsVisible = false;
-                break;
-            }
-//            case R.id.action_copy_db: {
-//                File sd = Environment.getExternalStorageDirectory();
-//                File database = getApplicationContext().getDatabasePath(RecipeDbHelper.DATABASE_NAME + ".db");
-//                Log.d(LOG_TAG, sd.toString());
-//                if (sd.canWrite()) {
-//                    Log.d(LOG_TAG, "Able to write to SD.");
-//                    File dbCopy = new File(sd, RecipeDbHelper.DATABASE_NAME + ".db");
-//                    if (database.exists()) {
-//                        Log.d(LOG_TAG, "Database exists.");
-//                        try {
-//                            FileChannel src = new FileInputStream(database).getChannel();
-//                            FileChannel dst = new FileInputStream(dbCopy).getChannel();
-//                            dst.transferFrom(src, 0, src.size());
-//
-//                            src.close();
-//                            dst.close();
-//                            Toast.makeText(this, "Database copied to external storage!", Toast.LENGTH_SHORT).show();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//
-//                }
-
-//                Cursor cursor = getContentResolver().query(
-//                        RecipeContract.RecipeEntry.CONTENT_URI,
-//                        RecipeContract.RecipeEntry.RECIPE_PROJECTION,
-//                        null,
-//                        null,
-//                        RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " DESC"
-//                );
-//
-//                if (cursor != null) {
-//                    cursor.moveToFirst();
-//                    int lastId = cursor.getInt(RecipeContract.RecipeEntry.IDX_RECIPE_ID);
-//                    int count = cursor.getCount();
-//
-//                    int recipesDeleted = lastId - count;
-//
-//                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-////                    recipesDeleted++;
-//
-//                    SharedPreferences.Editor editors = prefs.edit();
-//                    editors.putInt(getString(R.string.recipes_deleted_key), recipesDeleted);
-//                    editors.apply();
-//
-//                    cursor.close();
-//                }
-
-//                DescriptionSummarizer summarizer = new DescriptionSummarizer("http://gimmedelicious.com/2016/12/17/meal-prep-healthy-roasted-chicken-and-veggies/");
-//
-//
-//                break;
-//            }
-//            case R.id.action_clear_data: {
-//                // Delete the database and restart the application to rebuild it
-//                boolean deleted = deleteDatabase(RecipeDbHelper.DATABASE_NAME);
-//                Log.d(LOG_TAG, "Database deleted " + deleted);
-//
-//                // Set an Alarm to re-open the Application right after it is closed
-//                AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//                PendingIntent restartIntent = PendingIntent.getActivity(
-//                        getBaseContext(), 0, new Intent(getIntent()),
-//                        PendingIntent.FLAG_ONE_SHOT);
-//                mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, restartIntent);
-//
-//                // Clear SharedPreferences
-//                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//                prefs.edit().clear().commit();
-//
-//                // Exit the application
-//                System.exit(2);
-//                break;
-//            }
-        }
-    }
-
-    /**
-     * Hides the Navigation Drawer
-     */
-    private void hideNavigationDrawer() {
-        mDrawerLayout.closeDrawer(Gravity.LEFT);
     }
 
     /**
@@ -1001,55 +796,24 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
     }
 
     @Override
+    public void selectDrawerItem(MenuItem item) {
+        super.selectDrawerItem(item);
+        mDetailsVisible = false;
+    }
+
+    @Override
     public void onItemSelected(String recipeUrl, String imageUrl, AdapterRecipe.RecipeViewHolder viewHolder) {
         if (!mTwoPane) {
-            // If in single-view mode, then start the ActivityRecipeDetails
-            View statusBar = findViewById(android.R.id.statusBarBackground);
-            View navigationBar = findViewById(android.R.id.navigationBarBackground);
-
-            List<Pair<View, String>> pairs = new ArrayList<>();
-            pairs.add(Pair.create(statusBar, Window.STATUS_BAR_BACKGROUND_TRANSITION_NAME));
-            if (navigationBar != null) {
-                pairs.add(Pair.create(navigationBar, Window.NAVIGATION_BAR_BACKGROUND_TRANSITION_NAME));
-            }
-            pairs.add(Pair.create((View) viewHolder.recipeImage, getString(R.string.transition_recipe_image)));
-            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                    this,
-                    pairs.toArray(new Pair[pairs.size()])
-            );
-            Intent intent = new Intent(this, ActivityRecipeDetails.class);
-            intent.setData(Uri.parse(recipeUrl));
-            intent.putExtra(getString(R.string.extra_image), imageUrl);
-            ActivityCompat.startActivity(this, intent, options.toBundle());
+            // For phone UI, launch ActivityRecipeDetails
+            startDetailsActivity(recipeUrl, imageUrl, viewHolder);
         } else {
-            mDetailsVisible = true;
-
-            // Create a new FragmentRecipeDetails
-            FragmentRecipeDetails fragment = new FragmentRecipeDetails();
-
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                // Set a fade animation to occur during transition between recipes in two-pane
-                fragment.setEnterTransition(new Fade());
-            }
-
-            // Create the Bundle and add the recipe's URL to it and set it as the argument for the
-            // fragment
-            Bundle args = new Bundle();
-            args.putParcelable(RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
-            args.putString(RECIPE_DETAILS_IMAGE_URL, imageUrl);
-            fragment.setArguments(args);
-
-            // Replace the existing FragmentRecipeDetails with the newly created one
-            getSupportFragmentManager().beginTransaction()
-                    .addSharedElement(viewHolder.recipeImage, getString(R.string.transition_recipe_image))
-                    .replace(R.id.recipe_detail_container, fragment, DETAILS_FRAGMENT)
-                    .commit();
+            // For tablet UI inflate FragmentRecipeDetails into the container
+            inflateDetailsFragment(recipeUrl, imageUrl, viewHolder);
 
             // Show the FragmentRecipeDetails in the master-flow view
-            ViewGroup.LayoutParams params = mContainer.getLayoutParams();
-            params.width = (int) Utilities.convertDpToPixels(600);
-            mContainer.setLayoutParams(params);
+            showDetailsContainer();
+
+            mDetailsVisible = true;
         }
     }
 
@@ -1081,24 +845,13 @@ public class ActivityRecipeList extends AppCompatActivity implements FragmentRec
             intent.putExtra(getString(R.string.extra_generic_boolean), true);
             startActivity(intent);
         } else {
-            mDetailsVisible = true;
-
-            // Create a new FragmentRecipeDetails
-            FragmentRecipeDetails fragment = new FragmentRecipeDetails();
-
-            // Create the Bundle and add the recipe's URL to it and set it as the argument for the
-            // fragment
-            Bundle args = new Bundle();
-            args.putParcelable(RECIPE_DETAILS_URL, Uri.parse(recipeUrl));
-            fragment.setArguments(args);
-
-            // Replace the existing FragmentRecipeDetails with the newly created one
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.recipe_detail_container, fragment, DETAILS_FRAGMENT)
-                    .commit();
+            // Inflate FragmentRecipeDetails
+            inflateDetailsFragment(recipeUrl);
 
             // Show the FragmentRecipeDetails in the master-flow view
-            mContainer.setVisibility(View.VISIBLE);
+            showDetailsContainer();
+
+            mDetailsVisible = true;
 
             FragmentRecipeList recipeListFragment = (FragmentRecipeList) getSupportFragmentManager().findFragmentById(R.id.fragment);
             recipeListFragment.setLayoutColumns();

@@ -117,9 +117,9 @@ public class ActivitySearch extends AppCompatActivity implements FragmentSearch.
 //                    .commit();
 //
 //            // Show the FragmentRecipeDetails in the master-flow view
-//            ViewGroup.LayoutParams params = mContainer.getLayoutParams();
+//            ViewGroup.LayoutParams params = mDetailsContainer.getLayoutParams();
 //            params.width = (int) Utilities.convertDpToPixels(600);
-//            mContainer.setLayoutParams(params);
+//            mDetailsContainer.setLayoutParams(params);
         }
     }
 }

@@ -35,7 +35,6 @@
         <activity
             android:name=".ui.ActivityRecipeDetails"
             android:label="@string/title_activity_recipe_details"
-            android:parentActivityName=".ui.ActivityRecipeList"
             android:theme="@style/AppTheme.Details">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -52,7 +51,6 @@
         <activity
             android:name=".ui.ActivityCreateRecipe"
             android:label="@string/title_activity_create_recipe"
-            android:parentActivityName=".ui.ActivityRecipeList"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="stateHidden|adjustResize">
             <meta-data
