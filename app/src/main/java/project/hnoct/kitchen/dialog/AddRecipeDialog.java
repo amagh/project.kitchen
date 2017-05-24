@@ -270,7 +270,7 @@ public class AddRecipeDialog extends DialogFragment {
     @OnEditorAction(R.id.dialog_add_recipe_search)
     boolean onEditorAction(int actionId) {
         // Check if the user has pressed the search key on the soft keyboard
-        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+        if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
             // User has input a term, set the boolean to true
             search = true;
 
