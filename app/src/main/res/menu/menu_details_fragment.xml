@@ -18,6 +18,6 @@
     <item
         android:id="@+id/detail_menu_add_to_recipebook"
         android:title="@string/action_add_to_recipebook"
-        android:icon="@drawable/perm_group_bookmarks"
+        android:icon="@drawable/ic_menu_bookmark"
         app:showAsAction="ifRoom" />
 </menu>

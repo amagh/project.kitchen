@@ -38,6 +38,14 @@
 
     <style name="AppTheme.Details" parent="AppTheme" />
 
+    <style name="AppTheme.Favorites" parent="AppTheme" />
+
+    <style name="AppTheme.MyRecipes" parent="AppTheme" />
+
+    <style name="AppTheme.Chapter" parent="AppTheme" />
+
+    <style name="AppTheme.RecipeBooks" parent="AppTheme" />
+
     <style name="titleText">
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textColor">@color/primary_text_black</item>

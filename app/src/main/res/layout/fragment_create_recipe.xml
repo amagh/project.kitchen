@@ -17,7 +17,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_menu_add_custom"/>
+                android:src="@drawable/ic_menu_add_photo"/>
 
             <com.inthecheesefactory.thecheeselibrary.widget.AdjustableImageView
                 android:id="@+id/create_recipe_image"
@@ -30,11 +30,11 @@
 
             <ImageView
                 android:id="@+id/create_recipe_clear_image"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/touchpad_size"
+                android:layout_height="@dimen/touchpad_size"
                 android:layout_gravity="right|end|top"
-                android:padding="@dimen/button_margin"
-                android:src="@drawable/ic_menu_close_clear_cancel"/>
+                android:padding="@dimen/button_margin_small"
+                android:src="@drawable/ic_menu_delete"/>
         </FrameLayout>
 
         <LinearLayout

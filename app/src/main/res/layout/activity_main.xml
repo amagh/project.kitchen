@@ -53,6 +53,7 @@
                         android:layout_height="48dp"
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
                         android:padding="@dimen/button_margin"
                         android:src="@drawable/ic_menu_search"/>
 
@@ -60,6 +61,7 @@
                         android:id="@+id/right_bound"
                         android:layout_width="0dp"
                         android:layout_height="0dp"
+                        android:layout_centerVertical="true"
                         android:layout_alignLeft="@id/search_icon"
                         android:layout_alignStart="@id/search_icon" />
 
@@ -67,9 +69,11 @@
                         android:id="@+id/searchview"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
                         android:inputType="textAutoCorrect"
                         android:imeOptions="actionSearch"
                         android:hint="@string/search_hint"
+                        android:backgroundTint="@color/opaque_white"
                         android:layout_alignRight="@id/right_bound"
                         android:layout_alignEnd="@id/right_bound"
                         android:visibility="invisible"/>

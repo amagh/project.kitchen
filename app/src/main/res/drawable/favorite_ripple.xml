@@ -1,13 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ripple
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:color="@color/favorite_enabled"
-    tools:targetApi="lollipop">
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:id="@android:id/mask">
-        <shape android:shape="oval">
-            <solid android:color="@color/favorite_enabled" />
-        </shape>
-    </item>
-</ripple>
+</selector>

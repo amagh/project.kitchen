@@ -72,7 +72,7 @@
             android:name=".ui.ActivityRecipeBook"
             android:label="@string/title_activity_recipe_book"
             android:parentActivityName=".ui.ActivityRecipeList"
-            android:theme="@style/AppTheme"
+            android:theme="@style/AppTheme.RecipeBooks"
             android:windowSoftInputMode="stateHidden|adjustPan">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

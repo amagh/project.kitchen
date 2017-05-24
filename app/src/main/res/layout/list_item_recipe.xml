@@ -37,7 +37,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/card_thumbnail_gradient_height_single"
                 android:layout_alignBottom="@id/list_recipe_image"
-                android:src="@drawable/list_title_gradient"/>
+                app:srcCompat="@drawable/list_title_gradient"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -132,6 +132,7 @@
                     <FrameLayout
                         android:layout_width="@dimen/touchpad_size"
                         android:layout_height="@dimen/touchpad_size">
+
                         <ImageView
                             android:id="@+id/list_recipe_favorite_button_off"
                             android:layout_width="@dimen/touchpad_size"
@@ -151,7 +152,7 @@
                             android:layout_gravity="end"
                             android:background="@drawable/favorite_ripple"
                             android:visibility="invisible"
-                            android:src="@drawable/btn_rating_star_on_normal_holo_light" />
+                            app:srcCompat="@drawable/btn_rating_star_on_normal_holo_light" />
                     </FrameLayout>
 
                 </LinearLayout>
