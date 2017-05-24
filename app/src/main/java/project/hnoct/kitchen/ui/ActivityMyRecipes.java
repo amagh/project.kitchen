@@ -16,7 +16,7 @@ import butterknife.OnClick;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
-public class ActivityMyRecipes extends ActivityModel implements FragmentMyRecipes.RecipeCallback {
+public class ActivityMyRecipes extends ActivityModel implements FragmentModel.RecipeCallback {
     // Member Variables
     private boolean mTwoPane = false;
     private boolean mDetailsVisible = false;

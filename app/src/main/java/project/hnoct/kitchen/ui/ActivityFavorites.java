@@ -15,7 +15,7 @@ import butterknife.ButterKnife;
 import project.hnoct.kitchen.R;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
-public class ActivityFavorites extends ActivityModel implements FragmentFavorites.RecipeCallBack {
+public class ActivityFavorites extends ActivityModel implements FragmentModel.RecipeCallback {
     // Member Variables
     private boolean mTwoPane = false;
     private boolean mDetailsVisible = false;

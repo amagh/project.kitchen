@@ -10,7 +10,7 @@
     tools:showIn="@layout/activity_favorites">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/favorites_recyclerview"
+        android:id="@+id/fragment_recyclerview"
         android:paddingRight="4dp"
         android:paddingEnd="4dp"
         android:layout_width="match_parent"

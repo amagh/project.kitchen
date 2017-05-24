@@ -59,7 +59,7 @@ import project.hnoct.kitchen.sync.RecipeGcmService;
 import project.hnoct.kitchen.sync.SeriousEatsService;
 import project.hnoct.kitchen.ui.adapter.AdapterRecipe;
 
-public class ActivityRecipeList extends ActivityModel implements FragmentRecipeList.RecipeCallBack {
+public class ActivityRecipeList extends ActivityModel implements FragmentModel.RecipeCallback {
     /** Constants **/
     private static final String LOG_TAG = ActivityRecipeList.class.getSimpleName();
     private final String DETAILS_FRAGMENT = "DFTAG";
@@ -72,8 +72,8 @@ public class ActivityRecipeList extends ActivityModel implements FragmentRecipeL
     /** Member Variables **/
     public static boolean mFabMenuOpen;
     public static boolean hideFab = false;
-    private static boolean mTwoPane = false;
-    private static boolean mDetailsVisible = false;
+    public static boolean mTwoPane = false;
+    public static boolean mDetailsVisible = false;
     private SearchListener mSearchListener;
     private ConnectivityListener mConnectivityListener;
     private boolean isConnected;
