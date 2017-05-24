@@ -79,7 +79,7 @@ public class AllRecipesService extends RecipeSyncService {
                 recipeUrl = ALL_RECIPES_BASE_URL + recipeUrl;
 
                 // Get the recipe Id by converting the link to a URI and selecting the 2nd segment
-                String recipeSourceId = Utilities.getRecipeSourceIdFromUrl(this, recipeUrl);
+                String recipeSourceId = recipe.select("ar-save-item.favorite").attr("data-id");
 
                 // Retrieve the recipe name, thumbnail URL, and description
                 Element recipeElement = recipe.getElementsByClass("grid-col__rec-image").first();

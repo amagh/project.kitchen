@@ -14,7 +14,7 @@ import project.hnoct.kitchen.data.RecipeContract.*;
 public class RecipeDbHelper extends SQLiteOpenHelper {
     // Constants
     private static final String LOG_TAG = RecipeDbHelper.class.getSimpleName();
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "recipe.db";
 
     // SQL Statements for upgrades

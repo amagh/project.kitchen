@@ -286,15 +286,15 @@ public class AdapterAddIngredient extends RecyclerView.Adapter<AdapterAddIngredi
         void onNameChanged(CharSequence text) {
             Uri ingredientUri = IngredientEntry.CONTENT_URI;
             String[] projection = new String[] {"DISTINCT " + IngredientEntry.COLUMN_INGREDIENT_NAME};
-            String selection = "instr(" + IngredientEntry.COLUMN_INGREDIENT_NAME + ", '" + text + "')"; //GROUP BY " + IngredientEntry.COLUMN_INGREDIENT_NAME;
-            String[] selectionArgs = new String[] {text + "'"};
+            String selection = IngredientEntry.COLUMN_INGREDIENT_NAME + " LIKE ?"; //GROUP BY " + IngredientEntry.COLUMN_INGREDIENT_NAME;
+            String[] selectionArgs = new String[] {"%" + text + "%"};
             String sortOrder = IngredientEntry.COLUMN_INGREDIENT_NAME + " ASC";
 
             Cursor cursor = mContext.getContentResolver().query(
                     ingredientUri,
                     projection,
                     selection,
-                    null,
+                    selectionArgs,
                     sortOrder
             );
 
