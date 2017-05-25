@@ -29,11 +29,11 @@
         style="@style/descriptionText"
         tools:text="This is the first chapter of my book and it contains some decent recipes... I think."/>
 
-    <project.hnoct.kitchen.view.NonScrollingRecyclerView
+    <project.kitchen.view.NonScrollingRecyclerView
         android:id="@+id/list_chapter_recipe_recyclerview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    </project.hnoct.kitchen.view.NonScrollingRecyclerView>
+    </project.kitchen.view.NonScrollingRecyclerView>
 
 </LinearLayout>

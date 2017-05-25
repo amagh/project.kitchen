@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="project.hnoct.kitchen.ui.ActivityCreateRecipe">
+    tools:context="project.kitchen.ui.ActivityCreateRecipe">
     <item
         android:id="@+id/action_clear_recipe"
         android:title="@string/action_clear_recipe"

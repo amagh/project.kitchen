@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="project.hnoct.kitchen">
+    package="project.kitchen">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -28,7 +28,7 @@
 
         <provider
             android:name=".data.RecipeProvider"
-            android:authorities="project.hnoct.kitchen"
+            android:authorities="project.kitchen"
             android:enabled="true"
             android:exported="false" />
 
@@ -38,7 +38,7 @@
             android:theme="@style/AppTheme.Details">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
+                android:value="project.kitchen.ui.ActivityRecipeList" />
         </activity>
         <activity
             android:name=".prefs.SettingsActivity"
@@ -46,7 +46,7 @@
             android:parentActivityName=".ui.ActivityRecipeList">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
+                android:value="project.kitchen.ui.ActivityRecipeList" />
         </activity>
         <activity
             android:name=".ui.ActivityCreateRecipe"
@@ -55,7 +55,7 @@
             android:windowSoftInputMode="stateHidden|adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
+                android:value="project.kitchen.ui.ActivityRecipeList" />
         </activity>
         <activity
             android:name=".ui.ActivityFavorites"
@@ -64,7 +64,7 @@
             android:theme="@style/AppTheme.Favorites">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
+                android:value="project.kitchen.ui.ActivityRecipeList" />
         </activity>
         <activity
             android:name=".ui.ActivityRecipeBook"
@@ -74,7 +74,7 @@
             android:windowSoftInputMode="stateHidden|adjustPan">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
+                android:value="project.kitchen.ui.ActivityRecipeList" />
         </activity>
         <activity
             android:name=".ui.ActivityChapter"
@@ -84,7 +84,7 @@
             android:windowSoftInputMode="stateHidden|adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="project.hnoct.kitchen.ui.ActivityRecipeBook" />
+                android:value="project.kitchen.ui.ActivityRecipeBook" />
         </activity>
         <activity
             android:name=".ui.ActivityMyRecipes"
@@ -93,7 +93,7 @@
             android:theme="@style/AppTheme.MyRecipes">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
+                android:value="project.kitchen.ui.ActivityRecipeList" />
         </activity>
         <activity
             android:name=".ui.ActivitySearch"
@@ -102,7 +102,7 @@
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
+                android:value="project.kitchen.ui.ActivityRecipeList" />
         </activity>
 
         <service android:name=".sync.AllRecipesService" />
@@ -125,7 +125,7 @@
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="project.hnoct.kitchen.ui.ActivityRecipeList" />
+                android:value="project.kitchen.ui.ActivityRecipeList" />
         </activity>
     </application>
 

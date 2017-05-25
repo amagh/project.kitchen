@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="project.hnoct.kitchen.ui.ActivityCreateRecipe">
+    tools:context="project.kitchen.ui.ActivityCreateRecipe">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"

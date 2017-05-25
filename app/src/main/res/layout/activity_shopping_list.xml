@@ -6,13 +6,13 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="project.hnoct.kitchen.ui.ActivityShoppingList">
+    tools:context="project.kitchen.ui.ActivityShoppingList">
 
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        tools:context="project.hnoct.kitchen.ui.ActivityFavorites">
+        tools:context="project.kitchen.ui.ActivityFavorites">
 
         <android.support.design.widget.AppBarLayout
             android:layout_width="match_parent"

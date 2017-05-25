@@ -195,7 +195,7 @@
     <string name="extra_generic_boolean">is_generic</string>
 
     <!-- Intent Filters -->
-    <string name="intent_filter_sync_finished">project.hnoct.kitchen.ON_FINISH_SYNC</string>
+    <string name="intent_filter_sync_finished">project.kitchen.ON_FINISH_SYNC</string>
 
     <!-- Error Handling -->
     <string name="error_empty">Please wait while recipes are imported.</string>

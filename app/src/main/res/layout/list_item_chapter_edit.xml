@@ -62,7 +62,7 @@
             android:src="@drawable/ic_menu_delete"/>
     </LinearLayout>
 
-    <project.hnoct.kitchen.view.NonScrollingRecyclerView
+    <project.kitchen.view.NonScrollingRecyclerView
         android:id="@+id/list_chapter_recipe_recyclerview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="project.hnoct.kitchen.ui.ActivityRecipeList">
+    tools:context="project.kitchen.ui.ActivityRecipeList">
     <!--<item-->
         <!--android:id="@+id/action_settings"-->
         <!--android:orderInCategory="100"-->
@@ -43,12 +43,12 @@
         android:checked="false"
         android:checkable="true" />
 
-    <!--<item-->
-        <!--android:id="@+id/action_copy_db"-->
-        <!--android:orderInCategory="5"-->
-        <!--android:title="@string/transfer_db_title"-->
-        <!--android:checked="false"-->
-        <!--android:checkable="true" />-->
+    <item
+        android:id="@+id/action_copy_db"
+        android:orderInCategory="5"
+        android:title="@string/transfer_db_title"
+        android:checked="false"
+        android:checkable="true" />
 
     <!--<item-->
         <!--android:id="@+id/action_clear_data"-->

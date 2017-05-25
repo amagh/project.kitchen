@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:custom="project.hnoct.kitchen.view"
+    xmlns:custom="project.kitchen.view"
     android:orientation="vertical"
     android:layout_width="@dimen/pref_dialog_nutrient_width"
     android:layout_height="wrap_content">
@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"/>
 
-    <project.hnoct.kitchen.view.MacroSelector
+    <project.kitchen.view.MacroSelector
         android:layout_gravity="center"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"

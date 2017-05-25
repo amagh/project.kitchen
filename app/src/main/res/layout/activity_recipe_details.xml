@@ -14,7 +14,7 @@
         android:id="@+id/detail_coordinatorlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="project.hnoct.kitchen.ui.ActivityRecipeDetails">
+        tools:context="project.kitchen.ui.ActivityRecipeDetails">
 
         <android.support.v4.widget.NestedScrollView
             android:id="@+id/details_nested_scrollview"

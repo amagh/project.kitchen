@@ -2,27 +2,27 @@
     <PreferenceCategory
         android:title="@string/pref_nutrition_title"
         android:key="@string/pref_nutrition_key">
-        <project.hnoct.kitchen.prefs.NutrientDialogPreference
+        <project.kitchen.prefs.NutrientDialogPreference
             android:defaultValue="@string/calories_default"
             android:key="@string/pref_calorie_key"
             android:title="@string/nutrient_calories_title" />
-        <project.hnoct.kitchen.prefs.NutrientDialogPreference
+        <project.kitchen.prefs.NutrientDialogPreference
             android:defaultValue="@string/fat_percent_float_default"
             android:key="@string/pref_fat_key"
             android:title="@string/nutrient_fat_title" />
-        <project.hnoct.kitchen.prefs.NutrientDialogPreference
+        <project.kitchen.prefs.NutrientDialogPreference
             android:defaultValue="@string/carb_percent_float_default"
             android:key="@string/pref_carb_key"
             android:title="@string/nutrient_carbs_title" />
-        <project.hnoct.kitchen.prefs.NutrientDialogPreference
+        <project.kitchen.prefs.NutrientDialogPreference
             android:defaultValue="@string/protein_percent_float_default"
             android:key="@string/pref_protein_key"
             android:title="@string/nutrient_protein_title" />
-        <project.hnoct.kitchen.prefs.NutrientDialogPreference
+        <project.kitchen.prefs.NutrientDialogPreference
             android:defaultValue="@string/cholesterol_mg_default"
             android:key="@string/pref_cholesterol_key"
             android:title="@string/nutrient_cholesterol_title" />
-        <project.hnoct.kitchen.prefs.NutrientDialogPreference
+        <project.kitchen.prefs.NutrientDialogPreference
             android:defaultValue="@string/sodium_mg_default"
             android:key="@string/pref_sodium_key"
             android:title="@string/nutrient_sodium_title" />

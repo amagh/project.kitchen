@@ -6,7 +6,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="project.hnoct.kitchen.ui.ActivityRecipeList">
+    tools:context="project.kitchen.ui.ActivityRecipeList">
 
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
@@ -88,7 +88,7 @@
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:id="@+id/fragment"
-                android:name="project.hnoct.kitchen.ui.FragmentMyRecipes"
+                android:name="project.kitchen.ui.FragmentMyRecipes"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_alignEnd="@id/align"
@@ -115,7 +115,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/opaque_white"
-        app:menu="@menu/menu_favorites">
+        app:menu="@menu/menu_my_recipes">
 
     </android.support.design.widget.NavigationView>
 
