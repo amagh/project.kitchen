@@ -153,42 +153,10 @@ public class FragmentMyRecipes extends FragmentModel implements LoaderManager.Lo
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 // Create the Map used as the index
-                do {
-                    // Get the first letter of the recipe
-                    String letter = cursor.getString(RecipeContract.RecipeEntry.IDX_RECIPE_NAME).substring(0,1);
-                    if (mRecipeIndex.get(letter) != -1) {
-                        // If the position of the first instance of the letter already exists, then skip
-                        continue;
-                    }
-
-                    // Put the position of the first instance of the letter in mRecipeIndex
-                    mRecipeIndex.put(letter, cursor.getPosition());
-
-                } while (cursor.moveToNext());
+                populateRecipeIndex(mRecipeIndex, cursor);
 
                 // Reset the Cursor to the first position and swap it into mRecipeAdapter
                 cursor.moveToFirst();
-
-
-                // Set the position of any letters that haven't been favorite'd
-                int lastPos = cursor.getCount();    // Used to hold the last position that had a favorite'd recipe with the first letter
-
-                for (int i = 1; i < ALPHABET.length() + 1; i++) {
-                    // Iterate in reverse so that missing letters will jump to the position of the next letter
-                    String letter = Character.toString(ALPHABET.charAt(ALPHABET.length() - i));
-
-                    if (mRecipeIndex.get(letter) == -1) {
-                        // If no recipe has been favorite'd that start with that letter, then set it go
-                        // go to the same position as the letter after it (e.g. If no N exist, it will
-                        // go to the first position of O)
-                        mRecipeIndex.put(letter, lastPos);
-                    } else {
-                        // If recipe does exist that starts with that letter, then set it as the last
-                        // position to be used for the next unused letter
-                        lastPos = mRecipeIndex.get(letter);
-                    }
-
-                }
 
                 // Hide mCardView
                 mCardView.setVisibility(View.INVISIBLE);
