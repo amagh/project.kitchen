@@ -33,4 +33,6 @@ public class SettingsActivity extends PreferenceActivity {
                 GeneralPreferenceFragment.class.getName().equals(fragmentName);
     }
 
+
+
 }

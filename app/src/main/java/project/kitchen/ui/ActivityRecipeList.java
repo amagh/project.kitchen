@@ -20,7 +20,6 @@ import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -48,7 +47,6 @@ import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import butterknife.Optional;
 import project.kitchen.R;
-import project.kitchen.data.BackupRestore;
 import project.kitchen.data.RecipeContract;
 import project.kitchen.data.Utilities;
 import project.kitchen.dialog.ImportRecipeDialog;
@@ -70,6 +68,7 @@ public class ActivityRecipeList extends ActivityModel implements FragmentModel.R
     private final long DAY_IN_SECONDS = 86400;
     private final long HOUR_IN_SECONDS = 3600;
 
+
     /** Member Variables **/
     public static boolean mFabMenuOpen;
     public static boolean hideFab = false;
@@ -80,7 +79,6 @@ public class ActivityRecipeList extends ActivityModel implements FragmentModel.R
     private boolean isConnected;
     private boolean connectivityRegistered = false;
     private Snackbar mSnackBar;
-    private ActionBarDrawerToggle mDrawerToggle;
 
     public static List<AnimatorSet> mAnimQueue = new ArrayList<>();
     private boolean animQueueLock = false;
@@ -483,6 +481,8 @@ public class ActivityRecipeList extends ActivityModel implements FragmentModel.R
         }
     }
 
+
+
     @Override
     public void onBackPressed() {
         if (mSearchView.getVisibility() == View.VISIBLE) {
@@ -800,13 +800,6 @@ public class ActivityRecipeList extends ActivityModel implements FragmentModel.R
     public void selectDrawerItem(MenuItem item) {
         super.selectDrawerItem(item);
         mDetailsVisible = false;
-
-        if (item.getItemId() == R.id.action_copy_db) {
-            BackupRestore backupRestore = new BackupRestore(this);
-//            backupRestore.backup();
-            backupRestore.restore();
-        }
-
     }
 
     @Override

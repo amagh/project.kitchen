@@ -62,7 +62,7 @@ public class RecipeDbHelper extends SQLiteOpenHelper {
 
         // Table for relating the amount of ingredients in each recipe
         final String SQL_CREATE_INGREDIENT_LINK_TABLE = "CREATE TABLE " + LinkIngredientEntry.TABLE_NAME + " (" +
-                LinkRecipeBookEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                LinkIngredientEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 RecipeEntry.COLUMN_RECIPE_ID + " INTEGER NOT NULL, " +
                 IngredientEntry.COLUMN_INGREDIENT_ID + " INTEGER NOT NULL, " +
                 LinkIngredientEntry.COLUMN_QUANTITY + " TEXT NOT NULL, " +

@@ -127,6 +127,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="project.kitchen.ui.ActivityRecipeList" />
         </activity>
+        <activity android:name=".prefs.BackupRestoreActivity"
+            android:label="@string/pref_backup_title"
+            android:parentActivityName=".prefs.SettingsActivity"
+            android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="project.kitchen.BACKUP_AND_RESTORE_SETTINGS" />
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
