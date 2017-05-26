@@ -101,7 +101,7 @@ public class ActivityModel extends AppCompatActivity {
         // Create the Intent and add the recipeUrl and imageUrl to be passed to ActivityRecipeDetails
         Intent intent = new Intent(this, ActivityRecipeDetails.class);
         intent.setData(Uri.parse(recipeUrl));
-        intent.putExtra(getString(R.string.extra_image), imageUrl);
+        intent.putExtra(RECIPE_DETAILS_IMAGE_URL, imageUrl);
 
         // Start the Activity with the transition animation Bundle
         ActivityCompat.startActivity(this, intent, options.toBundle());

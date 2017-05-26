@@ -42,6 +42,8 @@ import project.kitchen.data.Utilities;
 import project.kitchen.ui.adapter.AdapterNutrition;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+import static project.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_GENERIC;
+import static project.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_IMAGE_URL;
 import static project.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_URL;
 
 public class ActivityRecipeDetails extends AppCompatActivity {
@@ -77,18 +79,18 @@ public class ActivityRecipeDetails extends AppCompatActivity {
         Uri recipeUrl = getIntent().getData();
 
         // Retrieve the image URL passed as an extra
-        mImageUrl = getIntent().getStringExtra(getString(R.string.extra_image));
+        mImageUrl = getIntent().getStringExtra(RECIPE_DETAILS_IMAGE_URL);
 
         if (mImageUrl != null) {
             supportPostponeEnterTransition();
         }
 
-        boolean genericRecipe = getIntent().getBooleanExtra(getString(R.string.extra_generic_boolean), false);
+        boolean genericRecipe = getIntent().getBooleanExtra(RECIPE_DETAILS_GENERIC, false);
 
         // Add the URI as part of a Bundle to attach to the FragmentRecipeDetails
         Bundle args = new Bundle();
         args.putParcelable(RECIPE_DETAILS_URL, recipeUrl);
-        args.putBoolean(getString(R.string.extra_generic_boolean), genericRecipe);
+        args.putBoolean(RECIPE_DETAILS_GENERIC, genericRecipe);
 
         // Instantiate the fragment and attach the Bundle containing the recipe URI
         mDetailsFragment = new FragmentRecipeDetails();

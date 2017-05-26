@@ -8,19 +8,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.net.ConnectivityManagerCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -58,7 +54,7 @@ import project.kitchen.ui.adapter.AdapterIngredient;
 
 import static project.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_IMAGE_URL;
 import static project.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_URL;
-import static project.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECPE_DETAILS_GENERIC;
+import static project.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_GENERIC;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -83,12 +79,10 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     private AdapterIngredient mIngredientAdapter;
     private AdapterDirection mDirectionAdapter;
     private CursorLoaderListener listener;
-    private long time;
     private ConnectivityListener mConnectivityListener;
     private Snackbar mSnackbar;
 
     private boolean mSyncing = false;
-    private boolean loaded = false;
     private boolean isConnected = true;
     private boolean connectivityRegistered = false;
     private boolean genericRecipe = false;
@@ -129,7 +123,17 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
         View rootView = inflater.inflate(R.layout.fragment_recipe_details, container, false);
         ButterKnife.bind(this, rootView);
         setHasOptionsMenu(true);
-        time = Utilities.getCurrentTime();
+
+        // Retrieve Bundled arguments
+        Bundle args = getArguments();
+        if (args != null) {
+            // In master-detail flow, the imageUrl is passed as part of the Bundle
+            mImageUrl = args.getString(RECIPE_DETAILS_IMAGE_URL);
+
+            // Generic is always passed from either ActivityRecipeDetails or as part of the Bundle
+            // in master-detail flow
+            genericRecipe = args.getBoolean(RECIPE_DETAILS_GENERIC);
+        }
 
         // Initialize member variables
         mContext = getActivity();
@@ -172,7 +176,7 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
             // Retrieve the recipe's info from the Bundle
             mRecipeUrl = args.getParcelable(RECIPE_DETAILS_URL).toString();
             mImageUrl = args.getString(RECIPE_DETAILS_IMAGE_URL);
-            genericRecipe = args.getBoolean(RECPE_DETAILS_GENERIC);
+            genericRecipe = args.getBoolean(RECIPE_DETAILS_GENERIC);
 
             // Retrieve the recipe's corresponding ID from database. This prevents duplicate recipes
             // from being added
@@ -778,6 +782,6 @@ public class FragmentRecipeDetails extends Fragment implements LoaderManager.Loa
     public interface BundleKeys {
         public static final String RECIPE_DETAILS_URL = "recipe_url";
         public static final String RECIPE_DETAILS_IMAGE_URL = "image_url";
-        public static final String RECPE_DETAILS_GENERIC = "generic_recipe";
+        public static final String RECIPE_DETAILS_GENERIC = "generic_recipe";
     }
 }

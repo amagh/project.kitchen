@@ -8,12 +8,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -22,6 +24,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -37,6 +40,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
+import com.google.android.gms.tasks.RuntimeExecutionException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -799,6 +803,33 @@ public class ActivityRecipeList extends ActivityModel implements FragmentModel.R
     @Override
     public void selectDrawerItem(MenuItem item) {
         super.selectDrawerItem(item);
+
+        if (item.getItemId() == R.id.action_copy_db) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = prefs.edit();
+
+            int oldDeleted = prefs.getInt(getString(R.string.recipes_deleted_key), 0);
+
+            Cursor cursor = getContentResolver().query(
+                    RecipeContract.RecipeEntry.CONTENT_URI,
+                    RecipeContract.RecipeEntry.RECIPE_PROJECTION,
+                    null,
+                    null,
+                    RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " DESC"
+            );
+
+            cursor.moveToFirst();
+            int lastId = cursor.getInt(RecipeContract.RecipeEntry.IDX_RECIPE_ID);
+            int count = cursor.getCount();
+
+            int deleted = lastId - count;
+
+            Log.d(LOG_TAG, "Old deleted count: " + oldDeleted);
+            Log.d(LOG_TAG, "New deleted count; " + deleted);
+
+            editor.putInt(getString(R.string.recipes_deleted_key), deleted);
+            editor.apply();
+        }
         mDetailsVisible = false;
     }
 
@@ -843,7 +874,7 @@ public class ActivityRecipeList extends ActivityModel implements FragmentModel.R
             // If in single-view mode, then start the ActivityRecipeDetails
             Intent intent = new Intent(this, ActivityRecipeDetails.class);
             intent.setData(Uri.parse(recipeUrl));
-            intent.putExtra(getString(R.string.extra_generic_boolean), true);
+            intent.putExtra(FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_GENERIC, true);
             startActivity(intent);
         } else {
             // Inflate FragmentRecipeDetails
