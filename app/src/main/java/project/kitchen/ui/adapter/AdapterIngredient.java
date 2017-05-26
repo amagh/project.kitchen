@@ -95,6 +95,7 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
         if (mCursor != null) {
             // Initialize the position modifier
             int positionModifier = 0;
+
             for (int i : mRecipeTitlePositionList) {
                 // For recipe titles, they can just return their position as they do not need to
                 // be animated
@@ -105,9 +106,10 @@ public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.In
                     positionModifier++;
                 }
 
-                // Modify the position the Cursor should point to
-                position = position - positionModifier;
+
             }
+            // Modify the position the Cursor should point to
+            position = position - positionModifier;
 
             // Retrieve the Link ID to be used as the item ID
             mCursor.moveToPosition(position);
