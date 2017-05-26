@@ -216,6 +216,15 @@
     <string name="toast_chapter_contains_recipe">This chapter already contains this recipe. Please select another recipe!</string>
     <string name="toast_recipe_in_chapter">This chapter already contains this recipe. Please select another chapter!</string>
     <string name="toast_unable_to_parse_recipe">"Unable to identify the recipe on the website. \nPlease use our \"Create recipe\" function to import the recipe."</string>
+    <string name="toast_backup_local_success">Backup completed! Files can be found in your Downloads/project.kitchen/ folder</string>
+    <string name="toast_restore_local_success">Restore completed! Please close the app and open it to see the changes.</string>
+    <string name="toast_backup_drive_success">Backup to Google Drive completed!</string>
+    <string name="toast_restore_drive_success">Restore from Google Drive completed! Please close the app and open it to see the changes.</string>
+    <string name="toast_local_failed">Procedure failed. Please grant permission to access storage.</string>
+    <string name="toast_local_no_backup">No backup found at Downloads/project.kitchen/ folder.</string>
+    <string name="toast_drive_failed">Failed to connect to Google Drive.</string>
+    <string name="toast_drive_no_backup">No backup found on Google Drive. Unable to restore.</string>
+
     <string name="dialog_confirm_delete_chapter">Are you sure you want to remove this chapter and all its contents?</string>
     <string name="dialog_confirm_delete_recipe_book">Are you sure you want to remove this recipe book and all its contents?</string>
     <string name="dialog_confirm_delete_recipe">Are you sure you want to remove this recipe and all its contents?</string>
@@ -226,4 +235,5 @@
     <string name="favorites_empty_card">Favorite a recipe to see it here!</string>
     <string name="recipe_book_empty_card">Create a recipe book with the button below!</string>
     <string name="my_recipes_empty_card">Recipes that you create will show up here.\nCreate one now by clicking the button below!</string>
+
 </resources>

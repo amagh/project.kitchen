@@ -140,7 +140,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
         // Check to ensure the app has sufficient permissions to save the backed up file to the
         // external storage
         if (!checkStoragePermissions(activity)) {
-            Toast.makeText(this, "Please grant permission and try again", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.toast_local_failed), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -173,11 +173,11 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
                 dst.close();
             }
 
-            Toast.makeText(this, "Backup success!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.toast_backup_local_success), Toast.LENGTH_LONG).show();
 
         } catch (IOException e) {
             e.printStackTrace();
-            Toast.makeText(this, "Backup failed! Please check to make sure the application has permission to write to storage.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.toast_local_failed), Toast.LENGTH_LONG).show();
         }
 
         // Backup images for custom-recipes
@@ -211,7 +211,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
     public void restore() {
         // Check that the application has sufficient permissions to read from storage
         if (!checkStoragePermissions(activity)) {
-            Toast.makeText(this, "Please grant permission and try again", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.toast_local_failed), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -221,7 +221,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
 
         if (!restoreDbFile.exists()) {
             // If there is no back up to restore, inform the user
-            Toast.makeText(this, "No previous backup file found! Please make sure the back up file is found in the Downloads folder", Toast.LENGTH_LONG).show();
+            Toast.makeText(this,getString(R.string.toast_local_no_backup), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -240,7 +240,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
 
         } catch (IOException e) {
             e.printStackTrace();
-            Toast.makeText(this, "Restore failed! Please check to make sure the application has permission to write to storage.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.toast_local_failed), Toast.LENGTH_LONG).show();
         }
 
         // Get reference to directory containing images for custom-recipes
@@ -276,12 +276,12 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
 
             } catch (IOException e) {
                 e.printStackTrace();
-                Toast.makeText(this, "Restore failed! Please check to make sure the application has permission to write to storage.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.toast_local_failed), Toast.LENGTH_LONG).show();
             }
         }
 
         // Inform the user of the successful restore
-        Toast.makeText(this, "Restore success!", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.toast_restore_local_success), Toast.LENGTH_LONG).show();
 
         // Edit SharedPreferences so number of deleted recipes matches the number deleted in the
         // restored database File
@@ -470,7 +470,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
 
         @Override
         public void onFailure(@NonNull Status status) {
-            Log.d(LOG_TAG, "Failed to connect to Google Drive!");
+            Toast.makeText(mContext, getString(R.string.toast_drive_failed), Toast.LENGTH_LONG).show();
         }
     };
 
@@ -525,6 +525,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
                         asyncTask.execute(dbDriveId);
                     } else {
                         Log.d(LOG_TAG, "No database file found on Drive");
+                        Toast.makeText(mContext, getString(R.string.toast_drive_no_backup), Toast.LENGTH_LONG).show();
                     }
                 }
             }
@@ -535,7 +536,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
 
         @Override
         public void onFailure(@NonNull Status status) {
-
+            Toast.makeText(mContext, getString(R.string.toast_drive_failed), Toast.LENGTH_LONG).show();
         }
     };
 
@@ -552,6 +553,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
             if (driveFile != null) {
                 //
                 Log.d(LOG_TAG, "Success! DriveId: " + driveFile.getDriveId());
+                Toast.makeText(mContext, getString(R.string.toast_restore_drive_success), Toast.LENGTH_LONG).show();
                 driveFile.getMetadata(mGoogleApiClient);
             }
         }
@@ -559,6 +561,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
         @Override
         public void onFailure(@NonNull Status status) {
             Log.d(LOG_TAG, "Failed to transfer database to Google Drive.");
+            Toast.makeText(mContext, getString(R.string.toast_drive_failed), Toast.LENGTH_LONG).show();
         }
     };
 
@@ -684,8 +687,9 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
         @Override
         protected void onPostExecute(Boolean bool) {
             if (bool) {
-                Log.d(LOG_TAG, "Successfully restored database from GoogleDrive!");
+                Toast.makeText(mContext, getString(R.string.toast_restore_drive_success), Toast.LENGTH_LONG).show();
             } else {
+                Toast.makeText(mContext, getString(R.string.toast_drive_failed), Toast.LENGTH_LONG).show();
                 Log.d(LOG_TAG, "Error restoring database from Google Drive!");
             }
         }
