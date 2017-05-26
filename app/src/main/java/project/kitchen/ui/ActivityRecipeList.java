@@ -42,6 +42,7 @@ import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.tasks.RuntimeExecutionException;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +67,7 @@ public class ActivityRecipeList extends ActivityModel implements FragmentModel.R
     /** Constants **/
     private static final String LOG_TAG = ActivityRecipeList.class.getSimpleName();
     private final String DETAILS_FRAGMENT = "DFTAG";
-    private static final boolean DEVELOPER_MODE = true;
+    private static final boolean DEVELOPER_MODE = false;
     private int SIX_HOURS_IN_SECONDS = 60 * 60 * 6;
     private int FLEX_TWO_HOURS = 60 * 60 * 2;
     private final long DAY_IN_SECONDS = 86400;
@@ -804,32 +805,61 @@ public class ActivityRecipeList extends ActivityModel implements FragmentModel.R
     public void selectDrawerItem(MenuItem item) {
         super.selectDrawerItem(item);
 
-        if (item.getItemId() == R.id.action_copy_db) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            SharedPreferences.Editor editor = prefs.edit();
+//        if (item.getItemId() == R.id.action_copy_db) {
+//            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//            SharedPreferences.Editor editor = prefs.edit();
+//
+//            int oldDeleted = prefs.getInt(getString(R.string.recipes_deleted_key), 0);
+//
+//            Cursor cursor = getContentResolver().query(
+//                    RecipeContract.RecipeEntry.CONTENT_URI,
+//                    RecipeContract.RecipeEntry.RECIPE_PROJECTION,
+//                    null,
+//                    null,
+//                    RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " DESC"
+//            );
+//
+//            cursor.moveToFirst();
+//            int lastId = cursor.getInt(RecipeContract.RecipeEntry.IDX_RECIPE_ID);
+//            int count = cursor.getCount();
+//
+//            int deleted = lastId - count;
+//
+//            Log.d(LOG_TAG, "Old deleted count: " + oldDeleted);
+//            Log.d(LOG_TAG, "New deleted count; " + deleted);
+//
+//            editor.putInt(getString(R.string.recipes_deleted_key), deleted);
+//            editor.apply();
+//
 
-            int oldDeleted = prefs.getInt(getString(R.string.recipes_deleted_key), 0);
-
-            Cursor cursor = getContentResolver().query(
-                    RecipeContract.RecipeEntry.CONTENT_URI,
-                    RecipeContract.RecipeEntry.RECIPE_PROJECTION,
-                    null,
-                    null,
-                    RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " DESC"
-            );
-
-            cursor.moveToFirst();
-            int lastId = cursor.getInt(RecipeContract.RecipeEntry.IDX_RECIPE_ID);
-            int count = cursor.getCount();
-
-            int deleted = lastId - count;
-
-            Log.d(LOG_TAG, "Old deleted count: " + oldDeleted);
-            Log.d(LOG_TAG, "New deleted count; " + deleted);
-
-            editor.putInt(getString(R.string.recipes_deleted_key), deleted);
-            editor.apply();
-        }
+//            cursor.close();
+//
+////            getContentResolver().delete(
+////                    RecipeContract.RecipeEntry.CONTENT_URI,
+////                    RecipeContract.RecipeEntry.COLUMN_RECIPE_NAME + " LIKE ?",
+////                    new String[] {"%Baos%"}
+////            );
+//
+////            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+////            SharedPreferences.Editor editor = prefs.edit();
+////
+////            int oldDeleted = prefs.getInt(getString(R.string.recipes_deleted_key), 0);
+////            oldDeleted++;
+////
+////            editor.putInt(getString(R.string.recipes_deleted_key), oldDeleted);
+////            editor.apply();
+//
+//            File imageDirectory = getDir(
+//                    getString(R.string.food_image_dir),
+//                    Context.MODE_PRIVATE
+//            );
+//
+//            File[] imageList = imageDirectory.listFiles();
+//
+//            for (File file : imageList) {
+//                Log.d(LOG_TAG, "File: " + file.getName());
+//            }
+//        }
         mDetailsVisible = false;
     }
 

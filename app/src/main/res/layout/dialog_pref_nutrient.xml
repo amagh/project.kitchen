@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:custom="project.kitchen.view"
+    xmlns:custom="http://project.kitchen.view"
     android:orientation="vertical"
     android:layout_width="@dimen/pref_dialog_nutrient_width"
     android:layout_height="wrap_content">

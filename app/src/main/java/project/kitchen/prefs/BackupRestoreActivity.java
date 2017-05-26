@@ -5,10 +5,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -37,6 +40,7 @@ import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -52,6 +56,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import project.kitchen.R;
+import project.kitchen.data.RecipeContract;
 import project.kitchen.data.RecipeDbHelper;
 
 /**
@@ -124,6 +129,8 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
 
         mContext = this;
         dbHelper = new RecipeDbHelper(this);
+
+        EXPORT_DB_PATH = new File(EXPORT_DB_PATH, "project.kitchen");
     }
 
     /**
@@ -172,6 +179,30 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
             e.printStackTrace();
             Toast.makeText(this, "Backup failed! Please check to make sure the application has permission to write to storage.", Toast.LENGTH_LONG).show();
         }
+
+        // Backup images for custom-recipes
+        File imageDirectory = getDir(
+                getString(R.string.food_image_dir),
+                Context.MODE_PRIVATE
+        );
+
+        File[] imageList = imageDirectory.listFiles();
+
+        for (File file : imageList) {
+            java.io.File backupImage = new File(EXPORT_DB_PATH, file.getName());
+
+            try {
+                FileChannel src = new FileInputStream(file).getChannel();
+                FileChannel dst = new FileOutputStream(backupImage).getChannel();
+
+                dst.transferFrom(src, 0, src.size());
+
+                src.close();
+                dst.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -206,12 +237,83 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
             src.close();
             dst.close();
 
-            // Inform the user of the successful restore
-            Toast.makeText(this, "Restore success!", Toast.LENGTH_LONG).show();
+
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(this, "Restore failed! Please check to make sure the application has permission to write to storage.", Toast.LENGTH_LONG).show();
         }
+
+        // Get reference to directory containing images for custom-recipes
+        File imageDirectory = getDir(
+                getString(R.string.food_image_dir),
+                Context.MODE_PRIVATE
+        );
+
+        // Get reference to directory containing backed up resources
+        File backupImageDirectory = EXPORT_DB_PATH;
+        File[] imageList = backupImageDirectory.listFiles();
+
+        // Restore all backed up images
+        for (File imageFile : imageList) {
+
+            if (imageFile.getName().equals(dbHelper.getDatabaseName())) {
+                // Do not restore database File
+                continue;
+            }
+
+            // Create the image file in the app's private directory
+            java.io.File restoreImage = new File(imageDirectory, imageFile.getName());
+
+            try {
+                // Copy File
+                FileChannel src = new FileInputStream(imageFile).getChannel();
+                FileChannel dst = new FileOutputStream(restoreImage).getChannel();
+
+                dst.transferFrom(src, 0, src.size());
+
+                src.close();
+                dst.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Restore failed! Please check to make sure the application has permission to write to storage.", Toast.LENGTH_LONG).show();
+            }
+        }
+
+        // Inform the user of the successful restore
+        Toast.makeText(this, "Restore success!", Toast.LENGTH_LONG).show();
+
+        // Edit SharedPreferences so number of deleted recipes matches the number deleted in the
+        // restored database File
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        int oldDeleted = prefs.getInt(getString(R.string.recipes_deleted_key), 0);
+
+        // Query the database and use the difference between the last recipeId and the total count
+        // as the number deleted
+        Cursor cursor = getContentResolver().query(
+                RecipeContract.RecipeEntry.CONTENT_URI,
+                RecipeContract.RecipeEntry.RECIPE_PROJECTION,
+                null,
+                null,
+                RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " DESC"
+        );
+
+        if (cursor == null) {
+            return;
+        }
+
+        cursor.moveToFirst();
+        int lastId = cursor.getInt(RecipeContract.RecipeEntry.IDX_RECIPE_ID);
+        int count = cursor.getCount();
+
+        int deleted = lastId - count;
+
+        editor.putInt(getString(R.string.recipes_deleted_key), deleted);
+        editor.apply();
+
+        cursor.close();
     }
 
     /**

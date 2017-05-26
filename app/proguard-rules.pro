@@ -12,6 +12,26 @@
 # If your project uses WebView with JS, uncomment the following
 # and specify the fully qualified class name to the JavaScript interface
 # class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
+-keepclassmembers class project.kitchen.ui.FragmentSearch.MyJavaScriptInterface {
+   public *;
+}
+-ignorewarnings
+
+-keep class * {
+    public private *;
+}
+
+## Butterknife
+#-dontwarn butterknife.internal.**
+#-keep class butterknife.** { *; }
+#-keep class **$$ViewInjector { *; }
+#-keepclasseswithmembernames class * {
+#    @butterknife.InjectView <fields>;
+#}
+#-keepclasseswithmembernames class * {
+#    @butterknife.OnClick <methods>;
+#    @butterknife.OnEditorAction <methods>;
+#    @butterknife.OnItemClick <methods>;
+#    @butterknife.OnItemLongClick <methods>;
+#    @butterknife.OnLongClick <methods>;
 #}
