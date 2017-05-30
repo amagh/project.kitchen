@@ -36,9 +36,7 @@ import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
-import com.google.android.gms.drive.query.SearchableField;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -50,6 +48,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -77,6 +76,9 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
     };
 
     private java.io.File EXPORT_DB_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    private java.io.File EXPORT_IMAGE_PATH;
+    private File IMAGE_DIRECTORY;
+
     private String EXPORT_DB_FILE_NAME = "recipe.db";
     private GoogleApiClient mGoogleApiClient;
 
@@ -84,6 +86,8 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
     Activity activity = this;
     Context mContext;
     RecipeDbHelper dbHelper;
+    List<File> imageFiles;
+    List<String> fileTitleStrings;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({BACKUP, RESTORE})
@@ -112,7 +116,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
 
     @OnClick(R.id.backup_drive)
     void onClickDriveBackup(View view) {
-        backupToDrive();
+        queryDriveForDelete();
     }
 
     @OnClick(R.id.restore_drive)
@@ -131,6 +135,11 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
         dbHelper = new RecipeDbHelper(this);
 
         EXPORT_DB_PATH = new File(EXPORT_DB_PATH, "project.kitchen");
+        EXPORT_IMAGE_PATH = new File(EXPORT_DB_PATH, "images");
+        IMAGE_DIRECTORY = getDir(
+                getString(R.string.food_image_dir),
+                Context.MODE_PRIVATE
+        );
     }
 
     /**
@@ -180,16 +189,12 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
             Toast.makeText(this, getString(R.string.toast_local_failed), Toast.LENGTH_LONG).show();
         }
 
-        // Backup images for custom-recipes
-        File imageDirectory = getDir(
-                getString(R.string.food_image_dir),
-                Context.MODE_PRIVATE
-        );
-
-        File[] imageList = imageDirectory.listFiles();
+        // Save image files to a subdirectory on the the user's internal storage
+        File[] imageList = IMAGE_DIRECTORY.listFiles();
+        EXPORT_IMAGE_PATH.mkdir();
 
         for (File file : imageList) {
-            java.io.File backupImage = new File(EXPORT_DB_PATH, file.getName());
+            java.io.File backupImage = new File(EXPORT_IMAGE_PATH, file.getName());
 
             try {
                 FileChannel src = new FileInputStream(file).getChannel();
@@ -243,14 +248,8 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
             Toast.makeText(this, getString(R.string.toast_local_failed), Toast.LENGTH_LONG).show();
         }
 
-        // Get reference to directory containing images for custom-recipes
-        File imageDirectory = getDir(
-                getString(R.string.food_image_dir),
-                Context.MODE_PRIVATE
-        );
-
         // Get reference to directory containing backed up resources
-        File backupImageDirectory = EXPORT_DB_PATH;
+        File backupImageDirectory = EXPORT_IMAGE_PATH;
         File[] imageList = backupImageDirectory.listFiles();
 
         // Restore all backed up images
@@ -262,7 +261,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
             }
 
             // Create the image file in the app's private directory
-            java.io.File restoreImage = new File(imageDirectory, imageFile.getName());
+            java.io.File restoreImage = new File(IMAGE_DIRECTORY, imageFile.getName());
 
             try {
                 // Copy File
@@ -474,6 +473,66 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
         }
     };
 
+    final private ResultCallbacks<DriveApi.DriveContentsResult> backupImageDriveCallback =
+            new ResultCallbacks<DriveApi.DriveContentsResult>() {
+        @Override
+        public void onSuccess(@NonNull DriveApi.DriveContentsResult driveContentsResult) {
+            DriveContents contents = driveContentsResult.getDriveContents();
+
+            // Obtain a reference to the database to be uploaded
+            java.io.File imageFile = imageFiles.get(0);
+
+            if (contents != null) {
+                // Get a reference to the OutputStream to upload to GoogleDrive from the connection
+                // to the DriveContents
+                OutputStream outStream = contents.getOutputStream();;
+                try {
+                    // Create InputStream from the database File
+                    InputStream inStream = new FileInputStream(imageFile);
+
+                    // Init a buffer to read/write data
+                    byte[] buffer = new byte[4096];
+                    int c;
+
+                    // Iterate through the File and write all the data to the OutputStream in
+                    // chunks using the buffer
+                    while ((c = inStream.read(buffer, 0, buffer.length)) > 0) {
+                        outStream.write(buffer, 0, c);
+                        outStream.flush();
+                    }
+
+                    // Close the input/output Streams
+                    inStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        outStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            // Init the Metadata to be used for the DriveFile
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                    .setTitle(imageFile.getName())
+                    .setMimeType("image/jpeg")
+                    .build();
+
+            // Obtain a reference to the Drive appDataFolder
+            DriveFolder folder = Drive.DriveApi.getAppFolder(mGoogleApiClient);
+
+            // Create the DriveFile within the DriveFolder with the Metadata
+            folder.createFile(mGoogleApiClient, changeSet, contents).setResultCallback(imageFileCallback);
+        }
+
+        @Override
+        public void onFailure(@NonNull Status status) {
+
+        }
+    };
+
     /**
      * Queries the user's Google Drive appDataFolder for the presence of a database file, and then
      * depending on the procedure (mProcedure), either deletes the DriveFile or downloads and
@@ -512,21 +571,36 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
                         backupToDrive();
                     }
 
+                    break;
                 }
                 case RESTORE: {
                     // Obtain a reference to the DriveId of the matching DriveFile
-                    dbDriveId = metadatas.get(0).getDriveId();
+//                    dbDriveId = metadatas.get(0).getDriveId();
+                    List<DriveId> driveIdList = new ArrayList<>();
+
+                    // Init the List to store the file names of the items to be restored
+                    fileTitleStrings = new ArrayList<>();
+
+                    for (Metadata metadata : metadatas) {
+                        // Add the DriveId and the file name to the appropriate Lists
+                        driveIdList.add(metadata.getDriveId());
+                        fileTitleStrings.add(metadata.getTitle());
+                    }
 
                     // Check to make sure a matching DriveFile was identified
-                    if (dbDriveId != null) {
+                    if (driveIdList.size() > 0) {
                         // Init and execute the AsyncTask for downloading and restore the database
-                        Log.d(LOG_TAG, "Found DriveId: " + dbDriveId);
+                        DriveId[] driveIds = new DriveId[driveIdList.size()];
+                        driveIdList.toArray(driveIds);
+
                         RestoreAsyncTask asyncTask = new RestoreAsyncTask(mContext);
-                        asyncTask.execute(dbDriveId);
+                        asyncTask.execute(driveIds);
                     } else {
                         Log.d(LOG_TAG, "No database file found on Drive");
                         Toast.makeText(mContext, getString(R.string.toast_drive_no_backup), Toast.LENGTH_LONG).show();
                     }
+
+                    break;
                 }
             }
 
@@ -550,11 +624,42 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
             // Get the DriveFile
             DriveFile driveFile = driveFileResult.getDriveFile();
 
-            if (driveFile != null) {
-                //
+            // Check to see if there are image files to backup
+            if (imageFiles.size() > 0) {
+                // If there are image files, then start backing them up to Google Drive
+                mGoogleApiClient.unregisterConnectionCallbacks(backupCallbacks);
+                mGoogleApiClient.registerConnectionCallbacks(imageBackupCallbacks);
+                mGoogleApiClient.connect();
+            } else if (driveFile != null) {
                 Log.d(LOG_TAG, "Success! DriveId: " + driveFile.getDriveId());
-                Toast.makeText(mContext, getString(R.string.toast_restore_drive_success), Toast.LENGTH_LONG).show();
-                driveFile.getMetadata(mGoogleApiClient);
+                Toast.makeText(mContext, getString(R.string.toast_backup_drive_success), Toast.LENGTH_LONG).show();
+            }
+        }
+
+        @Override
+        public void onFailure(@NonNull Status status) {
+            Log.d(LOG_TAG, "Failed to transfer database to Google Drive.");
+            Toast.makeText(mContext, getString(R.string.toast_drive_failed), Toast.LENGTH_LONG).show();
+        }
+    };
+
+    /**
+     * Checks to ensure that the database File was successfully uploaded to Google Drive
+     */
+    final private ResultCallbacks<DriveFolder.DriveFileResult> imageFileCallback = new
+            ResultCallbacks<DriveFolder.DriveFileResult>() {
+        @Override
+        public void onSuccess(@NonNull DriveFolder.DriveFileResult driveFileResult) {
+            // Remove the backed up image File from the List of images to back up
+            imageFiles.remove(0);
+
+            // If there are remaining image Files to back up, then back them up
+            if (imageFiles.size() > 0) {
+                mGoogleApiClient.unregisterConnectionCallbacks(backupCallbacks);
+                mGoogleApiClient.registerConnectionCallbacks(imageBackupCallbacks);
+                mGoogleApiClient.connect();
+            } else {
+                Toast.makeText(mContext, getString(R.string.toast_backup_drive_success), Toast.LENGTH_LONG).show();
             }
         }
 
@@ -582,6 +687,22 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
     };
 
     /**
+     * Callback for backing up the user's database File to Google Drive if successfully connected
+     */
+    private GoogleApiClient.ConnectionCallbacks imageBackupCallbacks =
+            new GoogleApiClient.ConnectionCallbacks() {
+        @Override
+        public void onConnected(@Nullable Bundle bundle) {
+            Drive.DriveApi.newDriveContents(mGoogleApiClient).setResultCallback(backupImageDriveCallback);
+        }
+
+        @Override
+        public void onConnectionSuspended(int i) {
+
+        }
+    };
+
+    /**
      * Callback for querying the contents of the user's appDataFolder on Google Drive if
      * successfully connected
      */
@@ -590,9 +711,7 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
         @Override
         public void onConnected(@Nullable Bundle bundle) {
             // Create a Query and filter only for database files
-            Query query = new Query.Builder()
-                    .addFilter(Filters.eq(SearchableField.TITLE, dbHelper.getDatabaseName()))
-                    .build();
+            Query query = new Query.Builder().build();
 
             // Obtain a reference to the appDataFolder on Google Drive and only query its contents
             // for the File
@@ -634,27 +753,48 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
 
         @Override
         protected Boolean doInBackground(DriveId... driveIds) {
-            // Obtain the DriveFile passed
-            DriveFile dbDriveFile = driveIds[0].asDriveFile();
+            // Creates the image directory for the app if it does not exist
+            IMAGE_DIRECTORY.mkdir();
 
-            // Open a connection to Google Drive and attempt to get the DriveContent for the DriveFile
-            DriveApi.DriveContentsResult driveContentsResult =
-                    dbDriveFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null).await();
+            // Iterate through the DriveFiles and restore them to the local storage
+            for (int i = 0; i < driveIds.length; i++) {
+                // Retrieve the name of the file to be downloaded from Google Drive
+                String fileTitle = fileTitleStrings.get(i);
 
-            if (!driveContentsResult.getStatus().isSuccess()) {
-                // If unable to connect, do nothing
-                return false;
+                // Retrieve the DriveContent
+                DriveFile driveFile = driveIds[i].asDriveFile();
+                DriveApi.DriveContentsResult driveContentsResult = driveFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null).await();
+
+                if (!driveContentsResult.getStatus().isSuccess()) {
+                    // If unable to connect, then do nothing
+                    return false;
+                }
+
+                DriveContents driveContents = driveContentsResult.getDriveContents();
+
+                // Init the File to save to
+                File file;
+
+                // Check to see if the file to be restored is the database or image file
+                if (fileTitle.equals(dbHelper.getDatabaseName())) {
+                    file = getDatabasePath(dbHelper.getDatabaseName());
+                } else {
+                    file = new File(IMAGE_DIRECTORY, fileTitleStrings.get(i));
+                }
+
+                // Download and save the file to local storage
+                saveToFile(driveContents, file);
             }
 
-            // Get the DriveContents and reference to the current database File
-            DriveContents driveContents = driveContentsResult.getDriveContents();
-            java.io.File dbFile = mContext.getDatabasePath(dbHelper.getDatabaseName());
+            return true;
+        }
 
+        private boolean saveToFile(DriveContents driveContents, File file) {
             // Init the inputStream from the DriveContents
             InputStream inStream = driveContents.getInputStream();
             try {
                 // Init the outputStream to the database File
-                OutputStream outStream = new FileOutputStream(dbFile);
+                OutputStream outStream = new FileOutputStream(file);
 
                 try {
                     // Init the buffer for read/writing the database File
