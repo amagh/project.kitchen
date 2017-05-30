@@ -5,15 +5,18 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.BroadcastReceiver;
+import android.content.ContentProviderOperation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -384,6 +387,86 @@ public class ActivityRecipeList extends ActivityModel implements FragmentModel.R
         if (cursor != null) {
             cursor.close();
         }
+
+        runOnce();
+    }
+
+    private void runOnce() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        int runOnceVersion = prefs.getInt(getString(R.string.pref_run_once_key), 0);
+
+        switch (runOnceVersion) {
+            case 0: {
+                Cursor cursor = getContentResolver().query(
+                        RecipeContract.RecipeEntry.CONTENT_URI,
+                        RecipeContract.RecipeEntry.RECIPE_PROJECTION,
+                        RecipeContract.RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " LIKE ?",
+                        new String[] {"*%"},
+                        null
+                );
+
+
+                if (cursor != null) {
+                    if (!cursor.moveToFirst()) {
+                        break;
+                    }
+
+                    ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+
+                    do {
+                        String recipeSourceId = cursor.getString(RecipeContract.RecipeEntry.IDX_RECIPE_SOURCE_ID);
+                        recipeSourceId = recipeSourceId.replace("*", getString(R.string.custom_prefix));
+
+                        int recipeId = cursor.getInt(RecipeContract.RecipeEntry.IDX_RECIPE_ID);
+
+                        String selection = RecipeContract.RecipeEntry.COLUMN_RECIPE_ID + " = ?";
+                        String[] selectionArgs = new String[] {Integer.toString(recipeId)};
+
+                        ContentProviderOperation operation = ContentProviderOperation.newUpdate(RecipeContract.RecipeEntry.CONTENT_URI)
+                                .withSelection(selection, selectionArgs)
+                                .withValue(RecipeContract.RecipeEntry.COLUMN_RECIPE_SOURCE_ID, recipeSourceId)
+                                .build();
+
+                        operations.add(operation);
+
+                    } while (cursor.moveToNext());
+
+                    cursor.close();
+
+                    try {
+                        getContentResolver().applyBatch(RecipeContract.CONTENT_AUTHORITY, operations);
+                    } catch (RemoteException | OperationApplicationException e) {
+                        e.printStackTrace();
+                        break;
+                    }
+
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putInt(getString(R.string.pref_run_once_key), 1);
+                    editor.apply();
+                }
+            }
+
+            case 1: {
+                File imageDirectory = getDir(getString(R.string.food_image_dir), Context.MODE_PRIVATE);
+                File[] imageFiles = imageDirectory.listFiles();
+
+                for (File imageFile : imageFiles) {
+                    File renamedImage = new File(
+                            imageDirectory,
+                            imageFile.getName().replace("*", getString(R.string.custom_prefix))
+                    );
+
+                    imageFile.renameTo(renamedImage);
+                }
+
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putInt(getString(R.string.pref_run_once_key), 2);
+                editor.apply();
+            }
+        }
+
+
+
     }
 
     /**

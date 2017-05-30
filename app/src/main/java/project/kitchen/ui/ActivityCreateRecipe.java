@@ -63,7 +63,7 @@ public class ActivityCreateRecipe extends AppCompatActivity {
             // referenced
             mRecipeId = RecipeContract.RecipeEntry.getRecipeIdFromUri(recipeUri);
 
-            if (recipeSourceId.substring(0,1).equals("*")) {
+            if (recipeSourceId.contains(getString(R.string.custom_prefix))) {
                 // If the recipe is a custom recipe, load the menu that includes the option to delete
                 canDelete = true;
             }

@@ -123,8 +123,8 @@ public class RecipeHelper {
      * @return The recipeId of the recipe just added to the ArrayList to be inserted into the
      * database
      */
-    public int nextNewRecipe() {
-        if (!checkRecipeValues()) {
+    public int nextNewRecipe(Context context) {
+        if (!checkRecipeValues(context)) {
             return -1;
         }
 
@@ -167,7 +167,7 @@ public class RecipeHelper {
      * @return true if recipe values can be added to database, false if required information is
      * missing
      */
-    private boolean checkRecipeValues() {
+    private boolean checkRecipeValues(Context context) {
         // Check for required values and
         if (recipeName == null || recipeName.isEmpty() || imageUrl == null || imageUrl.isEmpty()) {
             // Required values, if not set, eturn false to indicate the recipes values are invalid
@@ -181,7 +181,7 @@ public class RecipeHelper {
 
         if (isCustomRecipe) {
             // Utilize the function to fill in any information that is missing for custom recipes
-            customRecipe();
+            customRecipe(context);
         }
 
         if (recipeUrl == null || recipeUrl.isEmpty()) {
@@ -275,7 +275,7 @@ public class RecipeHelper {
      * @return Number of recipes inserted into database
      */
     public int insertRecipeValues(Context context) throws SQLException {
-        if (checkRecipeValues()) {
+        if (checkRecipeValues(context)) {
             mRecipeCVList.add(generateRecipeValues());
             resetRecipeValues();
         }
@@ -354,24 +354,24 @@ public class RecipeHelper {
     /**
      * Used to indicate that the recipe is a custom recipe
      */
-    public void customRecipe() {
+    public void customRecipe(Context context) {
         // Set boolean to indicate recipe is custom
         isCustomRecipe = true;
 
         if (recipeSourceId != null) {
             // If the source ID has already been set, prepend the asterisk to denote it is custom
             // within the database
-            recipeSourceId = "*" + recipeSourceId;
+            recipeSourceId = context.getString(R.string.custom_prefix) + recipeSourceId;
         } else {
             // Otherwise prepend an asterisk to the recipeId to be used as the recipeSourceId
-            recipeSourceId = "*" + recipeId;
+            recipeSourceId = context.getString(R.string.custom_prefix) + recipeId;
         }
 
         // Generate a recipeUrl based on the recipeSourceId
         recipeUrl = "content://user.custom/" + recipeSourceId;
 
         // Utilize the custom-source as the source, if it is a user-created source
-        if (source == null && recipeSourceId.equals("*" + recipeId)) {
+        if (source == null && recipeSourceId.equals(context.getString(R.string.custom_prefix) + recipeId)) {
             source = Resources.getSystem().getString(R.string.attribution_custom);
         }
     }

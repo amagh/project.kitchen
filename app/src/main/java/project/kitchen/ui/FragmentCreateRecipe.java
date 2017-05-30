@@ -188,7 +188,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                     // so the original can be easily referenced
                     mRecipeSourceId = mSource.equals(getString(R.string.attribution_custom))
                             ? cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE_ID)
-                            : "*" + cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE_ID);
+                            : getString(R.string.custom_prefix) + cursor.getString(RecipeEntry.IDX_RECIPE_SOURCE_ID);
 
                     // Retrieve the directions in String form
                     String directions = cursor.getString(RecipeEntry.IDX_RECIPE_DIRECTIONS);
@@ -210,7 +210,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
                         null,
                         null,
 //                        RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_RECIPE_SOURCE_ID + " = ? AND " + RecipeEntry.TABLE_NAME + "." + RecipeEntry.COLUMN_SOURCE + " = ?",
-//                        new String[] {mSource.equals(mContext.getString(R.string.attribution_custom))? mRecipeSourceId : "*" + mRecipeSourceId, mSource},
+//                        new String[] {mSource.equals(mContext.getString(R.string.attribution_custom))? mRecipeSourceId : getString(R.string.custom_prefix) + mRecipeSourceId, mSource},
                         LinkIngredientEntry.COLUMN_INGREDIENT_ORDER + " ASC"  // Sort by ingredient order to maintain order of ingredients
                 );
 
@@ -243,7 +243,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
         if (mRecipeSourceId == null) {
             // If no saved data exists, generate a new recipeIdArray
             mRecipeId = Utilities.generateNewId(mContext, Utilities.RECIPE_TYPE);
-            mRecipeSourceId = "*" + mRecipeId;
+            mRecipeSourceId = getString(R.string.custom_prefix) + mRecipeId;
             mRecipeAuthor = getUserAuthor();
 
         } else {
@@ -889,7 +889,7 @@ public class FragmentCreateRecipe extends Fragment implements ActivityCreateReci
         // Retrieve the recipeId of the original recipe
         long deleteId = Utilities.getRecipeIdFromSourceId(
                 mContext,
-                mRecipeSourceId.replace("*",""),
+                mRecipeSourceId.replace(getString(R.string.custom_prefix),""),
                 mSource
         );
 

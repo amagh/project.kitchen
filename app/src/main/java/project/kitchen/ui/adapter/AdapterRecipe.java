@@ -455,7 +455,8 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
             holder.recipeDescription.setText(recipeDescription);
 
             if (!editMode) {
-                if (recipeAttribution.equals(mContext.getString(R.string.attribution_custom)) || recipeSourceId.substring(0, 1).equals("*")) {
+                if (recipeAttribution.equals(mContext.getString(R.string.attribution_custom)) ||
+                        recipeSourceId.contains(mContext.getString(R.string.custom_prefix))) {
                     // Hide non-utilized views if recipe was made or edited by user
                     holder.recipeAttribution.setVisibility(View.INVISIBLE);
                     holder.recipeReviews.setVisibility(View.INVISIBLE);
