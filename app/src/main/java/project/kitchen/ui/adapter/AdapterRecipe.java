@@ -584,8 +584,6 @@ public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapte
         @Nullable @BindView(R.id.list_recipe_favorite_button_on) ImageView favoriteButtonOn;
         @Nullable @BindView(R.id.list_recipe_favorite_button_off) ImageView favoriteButtonOff;
         @Nullable @BindView(R.id.fragment_container) FrameLayout container;
-        @Nullable @BindView(R.id.list_recipe_image_container) RelativeLayout imageContainer;
-//        @Nullable @BindView(R.id.list_recipe_text_container) android.support.v7.widget.GridLayout textContainer;
         @Nullable @BindView(R.id.list_recipe_overlay) FrameLayout overlay;
 
         @Optional
