@@ -10,170 +10,140 @@
     android:layout_marginLeft="@dimen/card_horizontal_margin"
     app:cardCornerRadius="@dimen/card_corner_radius">
 
-    <FrameLayout
+    <android.support.constraint.ConstraintLayout
         android:id="@+id/list_recipe_content_container"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="240dp"
-        >
+        android:minHeight="240dp">
 
-        <RelativeLayout
-            android:id="@+id/list_recipe_image_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <com.inthecheesefactory.thecheeselibrary.widget.AdjustableImageView
+            android:id="@+id/list_recipe_image"
+            android:layout_width="0dp"
+            android:layout_height="240dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:transitionName="@string/transition_recipe_image"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/placeholder" />
 
-            <com.inthecheesefactory.thecheeselibrary.widget.AdjustableImageView
-                android:id="@+id/list_recipe_image"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/card_thumbnail_height_single"
-                android:scaleType="centerCrop"
-                android:adjustViewBounds="true"
-                android:transitionName="@string/transition_recipe_image"
-                tools:src="@drawable/placeholder"
-                />
+        <ImageView
+            android:id="@+id/list_recipe_gradient"
+            android:layout_width="0dp"
+            android:layout_height="180dp"
+            android:layout_alignBottom="@id/list_recipe_image"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/list_recipe_image"
+            app:srcCompat="@drawable/list_title_gradient" />
 
-            <ImageView
-                android:id="@+id/list_recipe_gradient"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/card_thumbnail_gradient_height_single"
-                android:layout_alignBottom="@id/list_recipe_image"
-                app:srcCompat="@drawable/list_title_gradient"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignBottom="@id/list_recipe_image"
-                android:maxLines="2"
-                android:id="@+id/list_recipe_title"
-                android:paddingLeft="@dimen/card_text_horizontal_margin"
-                android:paddingRight="@dimen/card_text_horizontal_margin"
-                android:paddingBottom="@dimen/default_text_vertical_padding"
-                style="@style/titleText"
-                tools:text="Fried Chicken"/>
-
-        </RelativeLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/card_thumbnail_height_single"
+            android:layout_alignBottom="@id/list_recipe_image"
+            android:maxLines="2"
+            android:id="@+id/list_recipe_title"
+            android:paddingLeft="@dimen/card_text_horizontal_margin"
+            android:paddingRight="@dimen/card_text_horizontal_margin"
+            android:paddingBottom="@dimen/default_text_vertical_padding"
+            app:layout_constraintLeft_toLeftOf="@id/list_recipe_image"
+            app:layout_constraintRight_toRightOf="@id/list_recipe_image"
+            app:layout_constraintBottom_toBottomOf="@id/list_recipe_image"
+            style="@style/titleText"
+            tools:text="Fried Chicken"/>
+
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/list_recipe_description_text"
+            android:maxLines="8"
+            android:paddingBottom="@dimen/default_text_vertical_padding"
             android:layout_marginLeft="@dimen/card_text_horizontal_margin"
             android:layout_marginRight="@dimen/card_text_horizontal_margin"
-            android:layout_marginBottom="@dimen/card_vertical_padding"
-            android:orientation="vertical">
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/list_recipe_image"
+            tools:text="Simple fried chicken from Kentucky"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/list_recipe_description_text"
-                android:maxLines="8"
-                android:paddingBottom="@dimen/default_text_vertical_padding"
-                app:layout_columnSpan="2"
-                tools:text="Simple fried chicken from Kentucky" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/list_recipe_attribution_text"
+            app:layout_constraintTop_toBottomOf="@id/list_recipe_description_text"
+            app:layout_constraintRight_toRightOf="@id/list_recipe_description_text"
+            tools:text="Allrecipes" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+        <TextView
+            android:id="@+id/list_recipe_author_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxWidth="250dp"
+            android:maxLines="1"
+            android:layout_marginRight="@dimen/card_text_horizontal_margin"
+            android:layout_marginEnd="@dimen/card_text_horizontal_margin"
+            app:layout_constraintLeft_toLeftOf="@id/list_recipe_description_text"
+            app:layout_constraintRight_toRightOf="@id/list_recipe_attribution_text"
+            app:layout_constraintTop_toTopOf="@id/list_recipe_attribution_text"
+            tools:text="Recipe by hnocturna a;lsdkjfas ;laksdjf la;sdjf;a skjsdalkfjasd;flk" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/list_recipe_author_text"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:maxWidth="250dp"
-                        android:maxLines="1"
-                        app:layout_gravity="fill"
-                        tools:text="Recipe by hnocturna a;lsdkjfas ;laksdjf la;sdjf;a skjsdalkfjasd;flk" />
+        <TextView
+            android:id="@+id/list_recipe_reviews_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="@id/list_recipe_author_text"
+            app:layout_constraintTop_toBottomOf="@id/list_recipe_author_text"
+            tools:text="25 reviews" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/list_recipe_attribution_text"
-                        android:layout_gravity="end"
-                        app:layout_gravity="fill_horizontal"
-                        tools:text="Allrecipes" />
+        <TextView
+            android:id="@+id/list_recipe_rating_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            app:layout_constraintLeft_toLeftOf="@id/list_recipe_reviews_text"
+            app:layout_constraintTop_toBottomOf="@id/list_recipe_reviews_text"
+            tools:text="4.9\u2605" />
 
-                </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/list_recipe_favorite_button_off"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="@dimen/button_margin_small"
+            android:scaleType="fitCenter"
+            android:background="@drawable/favorite_ripple"
+            android:src="@drawable/btn_rating_star_off_normal_holo_light"
+            app:layout_constraintRight_toRightOf="@id/list_recipe_attribution_text"
+            app:layout_constraintTop_toBottomOf="@id/list_recipe_attribution_text"/>
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+        <ImageView
+            android:id="@+id/list_recipe_favorite_button_on"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="@dimen/button_margin_small"
+            android:scaleType="fitCenter"
+            android:background="@drawable/favorite_ripple"
+            android:visibility="invisible"
+            app:layout_constraintLeft_toLeftOf="@id/list_recipe_favorite_button_off"
+            app:layout_constraintRight_toRightOf="@id/list_recipe_favorite_button_off"
+            app:layout_constraintTop_toTopOf="@id/list_recipe_favorite_button_off"
+            app:layout_constraintBottom_toBottomOf="@id/list_recipe_favorite_button_off"
+            app:srcCompat="@drawable/btn_rating_star_on_normal_holo_light" />
 
-                        <TextView
-                            android:id="@+id/list_recipe_reviews_text"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:layout_gravity="fill_horizontal"
-                            tools:text="25 reviews" />
-
-                        <TextView
-                            android:id="@+id/list_recipe_rating_text"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            app:layout_gravity="fill_horizontal"
-                            tools:text="4.9\u2605" />
-
-                    </LinearLayout>
-
-                    <FrameLayout
-                        android:layout_width="@dimen/touchpad_size"
-                        android:layout_height="@dimen/touchpad_size">
-
-                        <ImageView
-                            android:id="@+id/list_recipe_favorite_button_off"
-                            android:layout_width="@dimen/touchpad_size"
-                            android:layout_height="@dimen/touchpad_size"
-                            android:padding="@dimen/button_margin_small"
-                            android:scaleType="fitCenter"
-                            android:layout_gravity="end"
-                            android:background="@drawable/favorite_ripple"
-                            android:src="@drawable/btn_rating_star_off_normal_holo_light" />
-
-                        <ImageView
-                            android:id="@+id/list_recipe_favorite_button_on"
-                            android:layout_width="@dimen/touchpad_size"
-                            android:layout_height="@dimen/touchpad_size"
-                            android:padding="@dimen/button_margin_small"
-                            android:scaleType="fitCenter"
-                            android:layout_gravity="end"
-                            android:background="@drawable/favorite_ripple"
-                            android:visibility="invisible"
-                            app:srcCompat="@drawable/btn_rating_star_on_normal_holo_light" />
-                    </FrameLayout>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </LinearLayout>
 
         <FrameLayout
             android:id="@+id/list_recipe_overlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:visibility="visible"
-            android:background="@drawable/custom_card_overlay"/>
+            android:background="@drawable/custom_card_overlay"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-    </FrameLayout>
+    </android.support.constraint.ConstraintLayout>
 
 </android.support.v7.widget.CardView>
-<!-- TODO -->
-<!-- Reviews -->
-<!-- Ratings -->
-<!-- Title -->
-<!-- Short Description -->
-<!-- Thumbnail -->
