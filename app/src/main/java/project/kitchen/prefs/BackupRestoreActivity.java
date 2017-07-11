@@ -252,30 +252,32 @@ public class BackupRestoreActivity extends AppCompatActivity implements GoogleAp
         File backupImageDirectory = EXPORT_IMAGE_PATH;
         File[] imageList = backupImageDirectory.listFiles();
 
-        // Restore all backed up images
-        for (File imageFile : imageList) {
+        if (imageList != null) {
+            // Restore all backed up images
+            for (File imageFile : imageList) {
 
-            if (imageFile.getName().equals(dbHelper.getDatabaseName())) {
-                // Do not restore database File
-                continue;
-            }
+                if (imageFile.getName().equals(dbHelper.getDatabaseName())) {
+                    // Do not restore database File
+                    continue;
+                }
 
-            // Create the image file in the app's private directory
-            java.io.File restoreImage = new File(IMAGE_DIRECTORY, imageFile.getName());
+                // Create the image file in the app's private directory
+                java.io.File restoreImage = new File(IMAGE_DIRECTORY, imageFile.getName());
 
-            try {
-                // Copy File
-                FileChannel src = new FileInputStream(imageFile).getChannel();
-                FileChannel dst = new FileOutputStream(restoreImage).getChannel();
+                try {
+                    // Copy File
+                    FileChannel src = new FileInputStream(imageFile).getChannel();
+                    FileChannel dst = new FileOutputStream(restoreImage).getChannel();
 
-                dst.transferFrom(src, 0, src.size());
+                    dst.transferFrom(src, 0, src.size());
 
-                src.close();
-                dst.close();
+                    src.close();
+                    dst.close();
 
-            } catch (IOException e) {
-                e.printStackTrace();
-                Toast.makeText(this, getString(R.string.toast_local_failed), Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, getString(R.string.toast_local_failed), Toast.LENGTH_LONG).show();
+                }
             }
         }
 
