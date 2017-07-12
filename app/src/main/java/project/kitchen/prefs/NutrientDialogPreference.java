@@ -14,7 +14,7 @@ import project.kitchen.R;
 import project.kitchen.data.RecipeContract.*;
 
 /**
- * Created by hnoct on 2/26/2017.
+ * Created by Alvin on 2/26/2017.
  */
 
 public class NutrientDialogPreference extends DialogPreference {

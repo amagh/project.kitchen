@@ -23,7 +23,7 @@ import project.kitchen.data.RecipeContract.*;
 import project.kitchen.data.Utilities;
 
 /**
- * Created by hnoct on 5/1/2017.
+ * Created by Alvin on 5/1/2017.
  */
 
 public class EpicuriousAsyncTask extends AsyncTask<Object, Void, Void> {

@@ -26,7 +26,7 @@ import project.kitchen.data.Utilities;
 import project.kitchen.data.RecipeContract.*;
 
 /**
- * Created by hnoct on 2/20/2017.
+ * Created by Alvin on 2/20/2017.
  */
 
 class AllRecipesAsyncTask extends AsyncTask<Object, Void, Void> {

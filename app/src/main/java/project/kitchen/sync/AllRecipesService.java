@@ -24,7 +24,7 @@ import project.kitchen.data.Utilities;
 import project.kitchen.ui.ActivityRecipeList;
 
 /**
- * Created by hnoct on 5/2/2017.
+ * Created by Alvin on 5/2/2017.
  */
 
 public class AllRecipesService extends RecipeSyncService {

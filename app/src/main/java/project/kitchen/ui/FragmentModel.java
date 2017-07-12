@@ -22,7 +22,7 @@ import project.kitchen.ui.adapter.RecipeItemAnimator;
 import project.kitchen.view.StaggeredGridLayoutManagerWithSmoothScroll;
 
 /**
- * Created by hnoct on 5/24/2017.
+ * Created by Alvin on 5/24/2017.
  */
 
 public class FragmentModel extends Fragment {

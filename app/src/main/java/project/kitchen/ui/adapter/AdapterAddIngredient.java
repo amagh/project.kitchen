@@ -31,7 +31,7 @@ import project.kitchen.R;
 import project.kitchen.data.RecipeContract.*;
 
 /**
- * Created by hnoct on 3/5/2017.
+ * Created by Alvin on 3/5/2017.
  */
 
 public class AdapterAddIngredient extends RecyclerView.Adapter<AdapterAddIngredient.AddIngredientViewHolder> {

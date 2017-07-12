@@ -8,7 +8,7 @@ import android.util.Log;
 import project.kitchen.data.RecipeContract.*;
 
 /**
- * Created by hnoct on 2/16/2017.
+ * Created by Alvin on 2/16/2017.
  */
 
 public class RecipeDbHelper extends SQLiteOpenHelper {

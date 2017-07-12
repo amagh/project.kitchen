@@ -24,7 +24,7 @@ import project.kitchen.data.RecipeContract.*;
 import project.kitchen.data.Utilities;
 
 /**
- * Created by hnoct on 4/28/2017.
+ * Created by Alvin on 4/28/2017.
  */
 
 public class AllRecipesSearchAsyncTask extends AsyncTask<Object, Void, List<Map<String, Object>>> {

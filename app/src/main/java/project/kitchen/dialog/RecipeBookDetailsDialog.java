@@ -14,7 +14,7 @@ import butterknife.ButterKnife;
 import project.kitchen.R;
 
 /**
- * Created by hnoct on 3/27/2017.
+ * Created by Alvin on 3/27/2017.
  */
 
 public class RecipeBookDetailsDialog extends DialogFragment {

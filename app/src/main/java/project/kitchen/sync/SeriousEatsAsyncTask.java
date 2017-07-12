@@ -28,7 +28,7 @@ import project.kitchen.data.RecipeContract.*;
 import project.kitchen.data.Utilities;
 
 /**
- * Created by hnoct on 4/22/2017.
+ * Created by Alvin on 4/22/2017.
  */
 
 public class SeriousEatsAsyncTask extends AsyncTask<Object, Void, Void> {

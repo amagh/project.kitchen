@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by hnoct on 3/22/2017.
+ * Created by Alvin on 3/22/2017.
  *
  * Manages Cursors for Adapters that have RecyclerViews within them. Automatically closes duplicate
  * Cursors, listens for changes in the database for the Cursors it is managing, replaces Cursors in

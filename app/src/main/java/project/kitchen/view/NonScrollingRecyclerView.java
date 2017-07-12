@@ -7,7 +7,7 @@ import android.view.MotionEvent;
 import android.view.ViewGroup;
 
 /**
- * Created by hnoct on 2/20/2017.
+ * Created by Alvin on 2/20/2017.
  *
  * @see <a href="http://stackoverflow.com/questions/18813296/non-scrollable-listview-inside-scrollview">StackOverflow.com</a>
  *

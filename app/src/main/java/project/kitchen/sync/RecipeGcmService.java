@@ -13,7 +13,7 @@ import project.kitchen.R;
 import project.kitchen.data.Utilities;
 
 /**
- * Created by hnoct on 5/3/2017.
+ * Created by Alvin on 5/3/2017.
  */
 
 public class RecipeGcmService extends GcmTaskService {

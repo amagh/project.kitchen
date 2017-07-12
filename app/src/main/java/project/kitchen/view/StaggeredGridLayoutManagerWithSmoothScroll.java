@@ -9,7 +9,7 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.AttributeSet;
 
 /**
- * Created by hnoct on 4/27/2017.
+ * Created by Alvin on 4/27/2017.
  */
 
 public class StaggeredGridLayoutManagerWithSmoothScroll extends StaggeredGridLayoutManager {

@@ -25,7 +25,7 @@ import butterknife.OnTouch;
 import project.kitchen.R;
 
 /**
- * Created by hnoct on 3/7/2017.
+ * Created by Alvin on 3/7/2017.
  */
 
 public class AdapterAddDirection extends RecyclerView.Adapter<AdapterAddDirection.AddDirectionViewHolder> {

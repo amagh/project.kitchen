@@ -15,7 +15,7 @@ import android.view.View;
 import project.kitchen.R;
 
 /**
- * Created by hnoct on 2/28/2017.
+ * Created by Alvin on 2/28/2017.
  * TODO: Create the sliding indicator for altering the values {@see ahref=https://github.com/navasmdc/MaterialDesignLibrary/blob/master/MaterialDesignLibrary/MaterialDesign/src/main/java/com/gc/materialdesign/views/Slider.java}
  * IDEA: Draw an invisible ring with a line from the center to a point on the ring. Make the point touchable and rotate around the axis. Use the line connecting to the point to calculate the angle. Use angle to set new values.
  */

@@ -15,7 +15,7 @@ import butterknife.ButterKnife;
 import project.kitchen.R;
 
 /**
- * Created by hnoct on 3/4/2017.
+ * Created by Alvin on 3/4/2017.
  */
 
 public class ImportRecipeDialog extends DialogFragment {

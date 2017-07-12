@@ -21,7 +21,7 @@ import project.kitchen.data.Utilities;
 
 
 /**
- * Created by hnoct on 2/26/2017.
+ * Created by Alvin on 2/26/2017.
  */
 
 public class AdapterNutrition extends RecyclerView.Adapter<AdapterNutrition.NutritionViewHolder> {

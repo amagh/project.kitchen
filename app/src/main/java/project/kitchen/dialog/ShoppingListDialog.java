@@ -28,7 +28,7 @@ import project.kitchen.data.RecipeContract.*;
 import project.kitchen.ui.adapter.AdapterIngredient;
 
 /**
- * Created by hnoct on 5/11/2017.
+ * Created by Alvin on 5/11/2017.
  */
 
 public class ShoppingListDialog extends DialogFragment {

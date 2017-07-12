@@ -32,7 +32,7 @@ import project.kitchen.data.RecipeContract.*;
 import project.kitchen.data.Utilities;
 
 /**
- * Created by hnoct on 4/20/2017.
+ * Created by Alvin on 4/20/2017.
  */
 
 public class FoodDotComAsyncTask extends AsyncTask<Object, Void, Void> {

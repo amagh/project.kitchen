@@ -16,7 +16,7 @@ import project.kitchen.R;
 import project.kitchen.data.Utilities;
 
 /**
- * Created by hnoct on 2/21/2017.
+ * Created by Alvin on 2/21/2017.
  */
 
 public class AdapterDirection extends RecyclerView.Adapter<AdapterDirection.DirectionViewHolder> {

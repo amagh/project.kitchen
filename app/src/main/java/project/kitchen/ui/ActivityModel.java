@@ -38,7 +38,7 @@ import static project.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS
 import static project.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_URL;
 
 /**
- * Created by hnoct on 5/24/2017.
+ * Created by Alvin on 5/24/2017.
  */
 
 public class ActivityModel extends AppCompatActivity {

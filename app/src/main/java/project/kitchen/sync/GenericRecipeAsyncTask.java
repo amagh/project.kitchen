@@ -28,7 +28,7 @@ import project.kitchen.data.RecipeHelper;
 import project.kitchen.data.Utilities;
 
 /**
- * Created by hnoct on 5/18/2017.
+ * Created by Alvin on 5/18/2017.
  */
 
 public class GenericRecipeAsyncTask extends AsyncTask<Object, Void, Boolean> {

@@ -27,7 +27,7 @@ import project.kitchen.data.Utilities;
 import project.kitchen.materialdesign.Utils;
 
 /**
- * Created by hnoct on 3/15/2017.
+ * Created by Alvin on 3/15/2017.
  */
 
 public class SlidingAlphabeticalIndex extends LinearLayout {

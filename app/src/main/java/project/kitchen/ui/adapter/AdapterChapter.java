@@ -44,7 +44,7 @@ import project.kitchen.ui.ActivityRecipeList;
 import project.kitchen.view.NonScrollingRecyclerView;
 
 /**
- * Created by hnoct on 3/22/2017.
+ * Created by Alvin on 3/22/2017.
  */
 
 public class AdapterChapter extends RecyclerView.Adapter<AdapterChapter.ChapterViewHolder> {

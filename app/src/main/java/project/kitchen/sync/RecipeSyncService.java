@@ -9,7 +9,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Created by hnoct on 5/3/2017.
+ * Created by Alvin on 5/3/2017.
  */
 
 public abstract class RecipeSyncService extends IntentService {

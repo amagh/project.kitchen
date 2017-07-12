@@ -35,7 +35,7 @@ import project.kitchen.data.RecipeContract.*;
 import project.kitchen.data.Utilities;
 
 /**
- * Created by hnoct on 2/21/2017.
+ * Created by Alvin on 2/21/2017.
  */
 
 public class AdapterIngredient extends RecyclerView.Adapter<AdapterIngredient.IngredientViewHolder> {

@@ -21,7 +21,7 @@ import project.kitchen.data.RecipeContract;
 import project.kitchen.data.Utilities;
 
 /**
- * Created by hnoct on 5/3/2017.
+ * Created by Alvin on 5/3/2017.
  */
 
 public class SeriousEatsService extends RecipeSyncService {

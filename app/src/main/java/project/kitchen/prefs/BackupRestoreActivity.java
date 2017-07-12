@@ -59,7 +59,7 @@ import project.kitchen.data.RecipeContract;
 import project.kitchen.data.RecipeDbHelper;
 
 /**
- * Created by hnoct on 5/24/2017.
+ * Created by Alvin on 5/24/2017.
  */
 
 public class BackupRestoreActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {

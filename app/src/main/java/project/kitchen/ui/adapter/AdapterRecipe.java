@@ -43,7 +43,7 @@ import static project.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS
 import static project.kitchen.ui.FragmentRecipeDetails.BundleKeys.RECIPE_DETAILS_URL;
 
 /**
- * Created by hnoct on 2/20/2017.
+ * Created by Alvin on 2/20/2017.
  */
 
 public class AdapterRecipe extends android.support.v7.widget.RecyclerView.Adapter<AdapterRecipe.RecipeViewHolder> {

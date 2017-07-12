@@ -23,7 +23,7 @@ import project.kitchen.ui.adapter.AdapterChapter;
 import project.kitchen.ui.adapter.AdapterRecipeBook;
 
 /**
- * Created by hnoct on 4/20/2017.
+ * Created by Alvin on 4/20/2017.
  */
 
 public class AddToRecipeBookDialog extends DialogFragment {

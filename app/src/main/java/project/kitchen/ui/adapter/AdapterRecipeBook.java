@@ -30,7 +30,7 @@ import project.kitchen.data.CursorManager;
 import project.kitchen.data.RecipeContract.*;
 
 /**
- * Created by hnoct on 3/25/2017.
+ * Created by Alvin on 3/25/2017.
  */
 
 public class AdapterRecipeBook extends RecyclerView.Adapter<AdapterRecipeBook.RecipeBookViewHolder> {

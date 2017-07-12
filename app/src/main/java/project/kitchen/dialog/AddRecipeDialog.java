@@ -31,7 +31,7 @@ import project.kitchen.ui.adapter.AdapterRecipe;
 import project.kitchen.ui.ActivityRecipeList;
 
 /**
- * Created by hnoct on 4/5/2017.
+ * Created by Alvin on 4/5/2017.
  */
 
 public class AddRecipeDialog extends DialogFragment {

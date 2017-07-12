@@ -6,7 +6,7 @@ import android.support.v4.util.Pair;
 import android.util.Log;
 
 /**
- * Created by hnoct on 2/17/2017.
+ * Created by Alvin on 2/17/2017.
  */
 
 class TestUtilities {

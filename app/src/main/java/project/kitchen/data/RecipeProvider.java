@@ -17,7 +17,7 @@ import project.kitchen.data.RecipeContract.*;
 
 
 /**
- * Created by hnoct on 2/16/2017.
+ * Created by Alvin on 2/16/2017.
  * ContentProvider with methods for accessing, inserting, modifying, and deleting from the database
  */
 

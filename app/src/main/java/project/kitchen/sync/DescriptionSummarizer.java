@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by hnoct on 5/22/2017.
+ * Created by Alvin on 5/22/2017.
  */
 
 public class DescriptionSummarizer {

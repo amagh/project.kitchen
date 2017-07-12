@@ -11,7 +11,7 @@ import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
- * Created by hnoct on 2/16/2017.
+ * Created by Alvin on 2/16/2017.
  */
 
 public class RecipeContract {

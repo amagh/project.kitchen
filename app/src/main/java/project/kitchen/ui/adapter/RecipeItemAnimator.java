@@ -21,7 +21,7 @@ import java.util.List;
 import project.kitchen.data.Utilities;
 
 /**
- * Created by hnoct on 4/27/2017.
+ * Created by Alvin on 4/27/2017.
  */
 
 public class RecipeItemAnimator extends DefaultItemAnimator {

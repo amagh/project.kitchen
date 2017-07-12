@@ -22,7 +22,7 @@ import project.kitchen.R;
 import project.kitchen.data.RecipeContract.*;
 
 /**
- * Created by hnoct on 5/19/2017.
+ * Created by Alvin on 5/19/2017.
  */
 
 public class RecipeHelper {
