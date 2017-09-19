@@ -14,5 +14,4 @@ capable of quickly adding all ingredients of a recipe and sorting them by recipe
 You can find a [signed-APK file](https://github.com/amagh/project.kitchen/releases/download/0.1b/project.kitchen_v0.1b.apk) under the 
 release tab. Simply download the APK file to your Android device and select it to install.
 
-Alternatively, the app is released on the [Google Play Store as a beta release here]
-(https://play.google.com/store/apps/details?id=project.kitchen)
+Alternatively, the app is released on the [Google Play Store as a beta release here](https://play.google.com/store/apps/details?id=project.kitchen)
